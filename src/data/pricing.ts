@@ -1,6 +1,6 @@
 /**
  * Tarifas, extras y condiciones. La ÚNICA fuente de los precios: de aquí salen la
- * calculadora, la página de tarifas, la de profesionales y los dossieres en PDF.
+ * calculadora, la página de tarifas, las preguntas y los dossieres en PDF.
  *
  * Origen: «Wedding planner dossier» (2026), el más reciente y el único que trae las
  * condiciones completas. Sus precios son el «precio final para los novios»: la web
@@ -65,29 +65,14 @@ export const services: Service[] = [
   },
 ];
 
-/**
- * Momentos de la jornada, para la línea de tiempo de la calculadora. El orden importa:
- * los extras del día dicen de qué momento a qué momento cubren.
- */
-export const stages = ['Preparativos', 'Ceremonia', 'Cóctel', 'Banquete', 'Barra libre'] as const;
-
-export type Slot =
-  /** Durante el día de la boda, de un momento a otro (índices de `stages`). */
-  | { kind: 'day'; from: number; to: number }
-  /** Otro día (preboda, postboda, entrevistas). */
-  | { kind: 'other' }
-  /** Llega con la entrega (álbum). */
-  | { kind: 'delivery' };
-
 export interface Extra {
   id: string;
   group: Group;
   name: string;
   price: number;
-  /** «cada vídeo», «cada sesión»… */
+  /** «cada vídeo», «cada sesión»… (opcional) */
   unit?: string;
   text: string;
-  slot: Slot;
   /** Segundo fotógrafo/a u operador/a: recomendado desde 80 invitados y obligatorio desde 130. */
   crew?: boolean;
   featured?: boolean;
@@ -100,7 +85,6 @@ export const extras: Extra[] = [
     name: 'Operador/a extra',
     price: 250,
     text: 'Cubre una de las casas en preparativos y el resto del evento en paralelo.',
-    slot: { kind: 'day', from: 0, to: 4 },
     crew: true,
   },
   {
@@ -109,7 +93,6 @@ export const extras: Extra[] = [
     name: 'Cámara extra',
     price: 100,
     text: 'Cámara fija en la ceremonia: un plano continuo de principio a fin.',
-    slot: { kind: 'day', from: 1, to: 1 },
   },
   {
     id: 'dron-video',
@@ -117,7 +100,6 @@ export const extras: Extra[] = [
     name: 'Dron',
     price: 400,
     text: 'Planos aéreos de la finca y los exteriores.',
-    slot: { kind: 'day', from: 1, to: 2 },
   },
   {
     id: 'same-day-edit',
@@ -125,7 +107,6 @@ export const extras: Extra[] = [
     name: 'Same Day Edit',
     price: 700,
     text: 'Montamos un resumen durante la jornada y lo proyectamos ante los invitados antes de que termine la celebración.',
-    slot: { kind: 'day', from: 0, to: 4 },
     featured: true,
   },
   {
@@ -134,7 +115,6 @@ export const extras: Extra[] = [
     name: 'Podcast',
     price: 1200,
     text: 'En directo durante la boda, con los invitados que elijan los novios.',
-    slot: { kind: 'day', from: 2, to: 3 },
   },
   {
     id: 'entrevistas',
@@ -142,16 +122,20 @@ export const extras: Extra[] = [
     name: 'Entrevistas',
     price: 300,
     text: 'Un día aparte grabando a las personas más cercanas a los novios (si es posible por ubicación).',
-    slot: { kind: 'other' },
   },
   {
     id: 'preboda-video',
     group: 'video',
-    name: 'Preboda o postboda',
+    name: 'Preboda',
     price: 250,
-    unit: 'cada vídeo',
-    text: 'Sesión aparte, sin la presión del cronograma del día.',
-    slot: { kind: 'other' },
+    text: 'Un vídeo aparte antes de la boda, sin la presión del cronograma del día.',
+  },
+  {
+    id: 'postboda-video',
+    group: 'video',
+    name: 'Postboda',
+    price: 250,
+    text: 'Un vídeo aparte después de la boda, con toda la calma.',
   },
   {
     id: 'fotografo-extra',
@@ -159,7 +143,6 @@ export const extras: Extra[] = [
     name: 'Fotógrafo/a extra',
     price: 250,
     text: 'Cubre una de las casas en preparativos y el resto del evento en paralelo.',
-    slot: { kind: 'day', from: 0, to: 4 },
     crew: true,
   },
   {
@@ -168,7 +151,6 @@ export const extras: Extra[] = [
     name: 'Dron',
     price: 400,
     text: 'Fotografía aérea de la finca y los exteriores.',
-    slot: { kind: 'day', from: 1, to: 2 },
   },
   {
     id: 'album',
@@ -176,16 +158,20 @@ export const extras: Extra[] = [
     name: 'Álbum de 26 páginas',
     price: 150,
     text: 'Toda la boda recogida en un álbum impreso.',
-    slot: { kind: 'delivery' },
   },
   {
     id: 'preboda-foto',
     group: 'foto',
-    name: 'Preboda o postboda',
+    name: 'Preboda',
     price: 250,
-    unit: 'cada sesión',
-    text: 'Con la calma de no tener que llegar a ningún cóctel.',
-    slot: { kind: 'other' },
+    text: 'Una sesión aparte antes de la boda, con la calma de no tener que llegar a ningún cóctel.',
+  },
+  {
+    id: 'postboda-foto',
+    group: 'foto',
+    name: 'Postboda',
+    price: 250,
+    text: 'Una sesión aparte después de la boda, ya sin nervios.',
   },
 ];
 
@@ -199,9 +185,6 @@ export const guestOptions = [
   { id: 'medium', label: 'De 80 a 129', crew: 'recommended' },
   { id: 'large', label: '130 o más', crew: 'required' },
 ] as const;
-
-/** Comisión para agencias (dossier para planners). Los extras no generan comisión. */
-export const commission: Record<ServiceId, number> = { foto: 200, video: 200, pack: 300 };
 
 /** Condiciones, cifras sueltas que se citan en varias páginas. */
 export const terms = {

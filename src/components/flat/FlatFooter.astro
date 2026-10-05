@@ -1,130 +1,98 @@
 ---
 /**
- * Pie: el cierre del dossier. Banda negra a sangre con la frase de la marca en Playfair
- * cursiva, el logotipo y los datos de contacto en una línea (el bloque NAP —nombre, base y
- * teléfono—, igual que en el perfil de Google: es lo que lee el SEO local). Debajo, los
- * enlaces y los avisos legales que pide la LSSI.
+ * Pie, mínimo: logotipo y el bloque NAP (nombre, base, teléfono y correo, igual que en el
+ * perfil de Google: es lo que lee el SEO local) en una línea; debajo, los avisos legales
+ * que pide la LSSI. Nada más.
  */
 import FlatWordmark from './FlatWordmark.astro';
-import { manifesto } from '../../data/copy';
 import { site } from '../../data/site';
 
 const year = new Date().getFullYear();
 ---
 
-<footer class="sec tone-dark ffooter">
+<footer class="ffooter">
   <div class="wrap ffooter__inner">
-    <div class="ffooter__close">
-      <p class="quote ffooter__quote" data-reveal>
-        {manifesto.map((line, i) => <span class:list={{ ffooter__gap: i === manifesto.length - 1 }}>{line}</span>)}
-      </p>
-      <a class="ffooter__logo" href="/" aria-label="Nanai Weddings, inicio" data-reveal style="--i: 2">
-        <FlatWordmark tone="paper" size="footer" />
+    <div class="ffooter__main">
+      <a class="ffooter__logo" href="/" aria-label="Nanai Weddings, inicio">
+        <FlatWordmark />
       </a>
-      <p class="ffooter__nap" data-reveal style="--i: 3">
+      <p class="ffooter__nap">
+        <span>{site.base}</span>
         <a href={site.phoneHref}>{site.phone}</a>
         <a href={`mailto:${site.email}`}>{site.email}</a>
         <a href={site.instagram}>{site.instagramHandle}</a>
-        <span>{site.base}</span>
       </p>
     </div>
 
-    <nav class="ffooter__links" aria-label="Pie">
-      <a class="chip" href="/historias">Historias</a>
-      <a class="chip" href="/tarifas">Tarifas</a>
-      <a class="chip" href="/tarifas#preguntas">Preguntas</a>
-      <a class="chip" href="/profesionales">Profesionales</a>
-      <a class="chip" href={site.whatsapp}>WhatsApp</a>
-    </nav>
-
     <div class="ffooter__legal">
-      <a href="/aviso-legal">Aviso legal</a>
-      <a href="/privacidad">Política de privacidad</a>
-      <a href="/cookies">Cookies</a>
-      <span class="ffooter__end">© {year} {site.name} · una línea de <a href={site.parent.url}>{site.parent.name}</a></span>
+      <span>© {year} {site.name} · una línea de <a href={site.parent.url}>{site.parent.name}</a></span>
+      <nav class="ffooter__links" aria-label="Legal">
+        <a href="/aviso-legal">Aviso legal</a>
+        <a href="/privacidad">Privacidad</a>
+        <a href="/cookies">Cookies</a>
+      </nav>
     </div>
   </div>
 </footer>
 
 <style>
-  .ffooter { padding-bottom: clamp(28px, 3vw, 40px); }
-
-  .ffooter__inner {
-    display: grid;
-    gap: clamp(40px, 5vw, 72px);
+  .ffooter {
+    padding-block: clamp(40px, 5vw, 64px) 20px;
+    background: linear-gradient(#FFFFFF, #F4F4F3);
+    color: #111111;
   }
 
-  .ffooter__close {
-    display: grid;
-    justify-items: center;
-    gap: clamp(28px, 3vw, 40px);
-    padding-top: clamp(16px, 3vw, 40px);
-    text-align: center;
+  .ffooter__inner { display: grid; gap: 28px; }
+
+  .ffooter__main {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px 40px;
   }
 
-  .ffooter__quote {
-    display: grid;
-    font-size: clamp(26px, 2.8vw, 42px);
-  }
-
-  .ffooter__gap { margin-top: 0.7em; }
-
-  .ffooter__logo { color: inherit; text-decoration: none; }
+  .ffooter__logo { display: inline-flex; align-items: center; min-height: 44px; color: inherit; text-decoration: none; }
 
   .ffooter__nap {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px 28px;
+    align-items: center;
+    gap: 4px 24px;
     color: var(--f-muted);
     font-size: 15px;
   }
 
-  .ffooter__nap a {
+  .ffooter__nap a,
+  .ffooter__nap span {
     display: inline-flex;
     align-items: center;
-    min-height: 32px;
-    color: var(--f-on-surface);
-    text-decoration: none;
+    min-height: 44px;
   }
 
-  .ffooter__nap a:first-child { font-weight: 700; }
+  .ffooter__nap a { color: #111111; text-decoration: none; }
   .ffooter__nap a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
-  .ffooter__nap span { display: inline-flex; align-items: center; min-height: 32px; }
-
-  .ffooter__links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .ffooter__links .chip:hover {
-    border-color: var(--f-yellow);
-    background: var(--f-yellow);
-    color: #111111;
-  }
 
   .ffooter__legal {
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px 24px;
-    padding-top: 18px;
-    border-top: var(--f-hair) solid var(--f-line);
-    color: var(--f-muted);
+    gap: 4px 24px;
+    padding-top: 14px;
+    border-top: var(--f-hair) solid rgba(17, 17, 17, 0.08);
+    color: var(--f-dim);
     font-size: 14px;
   }
 
-  .ffooter__legal a {
+  .ffooter__legal a { color: inherit; }
+  .ffooter__legal a:hover { color: #111111; }
+
+  .ffooter__links { display: flex; flex-wrap: wrap; gap: 0 20px; }
+
+  .ffooter__links a {
     display: inline-flex;
     align-items: center;
-    min-height: 32px;
-  }
-
-  .ffooter__end { margin-left: auto; }
-
-  @media (max-width: 699px) {
-    .ffooter__end { margin-left: 0; }
+    min-height: 44px;
   }
 </style>

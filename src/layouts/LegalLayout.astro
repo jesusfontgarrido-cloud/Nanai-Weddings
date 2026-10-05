@@ -4,10 +4,7 @@
  * de lectura sobre el papel. BORRADOR: los datos del titular están pendientes y el texto
  * debe revisarlo una asesoría antes de publicar.
  */
-import BaseLayout from './BaseLayout.astro';
-import FlatMotion from '../components/flat/FlatMotion.astro';
-import FlatNav from '../components/flat/FlatNav.astro';
-import FlatFooter from '../components/flat/FlatFooter.astro';
+import SiteLayout from './SiteLayout.astro';
 
 interface Props {
   title: string;
@@ -18,22 +15,17 @@ interface Props {
 const { title, path, updated } = Astro.props;
 ---
 
-<BaseLayout title={`${title} | Nanai Weddings`} description={`${title} de la web de Nanai Weddings.`} path={path}>
-  <div class="flat">
-    <FlatMotion />
-    <FlatNav />
-    <main id="contenido" class="sec flegal">
-      <div class="wrap flegal__inner">
-        <h1 class="h2 flegal__title">{title}</h1>
-        <p class="label">Actualizado el {updated} · borrador pendiente de revisión legal</p>
-        <div class="flegal__prose">
-          <slot />
-        </div>
+<SiteLayout title={`${title} | Nanai Weddings`} description={`${title} de la web de Nanai Weddings.`} path={path}>
+  <article class="sec flegal">
+    <div class="wrap flegal__inner">
+      <h1 class="h2 flegal__title">{title}</h1>
+      <p class="label">Actualizado el {updated} · borrador pendiente de revisión legal</p>
+      <div class="flegal__prose">
+        <slot />
       </div>
-    </main>
-    <FlatFooter />
-  </div>
-</BaseLayout>
+    </div>
+  </article>
+</SiteLayout>
 
 <style>
   .flegal { padding-top: clamp(120px, 18vh, 200px); }
@@ -49,5 +41,5 @@ const { title, path, updated } = Astro.props;
   .flegal__prose :global(table) { width: 100%; border-collapse: collapse; font-size: 15px; }
   .flegal__prose :global(th),
   .flegal__prose :global(td) { padding: 10px 8px; border-bottom: 1px solid var(--f-line); text-align: left; vertical-align: top; }
-  .flegal__prose :global([data-pending]) { background: var(--f-yellow); color: #111111; }
+  .flegal__prose :global([data-pending]) { padding-inline: 4px; border-radius: 4px; background: var(--f-surface-3); color: #111111; }
 </style>

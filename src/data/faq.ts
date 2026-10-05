@@ -4,9 +4,7 @@
  * Todas salen de los dossieres de 2026 (sobre todo «Condiciones», «Seguridad técnica» y
  * «Protocolo» del dossier para planners). Las cifras vienen de pricing.ts.
  */
-import { commission, crewRule, euros, services, terms } from './pricing';
-
-const prices = services.map((service) => `${euros(service.price)} €`);
+import { crewRule, terms } from './pricing';
 
 export interface Faq {
   q: string;
@@ -50,7 +48,7 @@ const q = {
   },
   crew: {
     q: '¿Necesitamos un segundo fotógrafo u operador?',
-    a: `La tarifa incluye un fotógrafo/a o un operador/a por servicio. El segundo (${crewRule.price} €) es recomendable a partir de ${crewRule.recommendedFrom} invitados y obligatorio a partir de ${crewRule.requiredFrom}. Os lo recomendamos siempre: así se cubren las dos casas y ningún momento se queda sin captar.`,
+    a: `La tarifa incluye un fotógrafo/a o un operador/a por servicio. El segundo (${crewRule.price} €) es recomendable a partir de ${crewRule.recommendedFrom} invitados y obligatorio a partir de ${crewRule.requiredFrom}: con tantos invitados, una sola persona no llega a todo como se merece. Os lo recomendamos siempre: así se cubren las dos casas y ningún momento se queda sin captar.`,
   },
   delivery: {
     q: '¿Cuándo recibimos las fotos y el vídeo?',
@@ -67,10 +65,6 @@ const q = {
   backup: {
     q: '¿Y si os pasa algo el día de la boda?',
     a: 'Siempre contamos con personal de reserva para cubrir el servicio, y llevamos cuerpos de cámara y ópticas de repuesto.',
-  },
-  security: {
-    q: '¿Cómo cuidáis el material?',
-    a: 'Todas las cámaras graban en dos tarjetas a la vez. Después hacemos tres copias de todo, en dos soportes distintos y una fuera del estudio (la regla 3-2-1). El sonido de votos y discursos se graba aparte, con grabadoras y micrófonos inalámbricos.',
   },
   drone: {
     q: '¿Se puede volar el dron en cualquier boda?',
@@ -102,48 +96,20 @@ export const faqGroups: FaqGroup[] = [
   { id: 'reserva', title: 'Reserva y pagos', items: [q.booking, q.payment, q.cancel, q.postpone] },
   { id: 'jornada', title: 'El día de la boda', items: [q.hours, q.openBar, q.overtime, q.crew, q.drone, q.dress, q.others] },
   { id: 'entrega', title: 'Entrega', items: [q.delivery, q.revisions, q.social] },
-  { id: 'tranquilidad', title: 'Desplazamiento y tranquilidad', items: [q.travel, q.backup, q.security, q.favourites] },
-];
-
-/** Profesionales: lo que pregunta una wedding planner o una finca. */
-export const proFaq: Faq[] = [
-  {
-    q: '¿Cómo funciona la comisión?',
-    a: `Vosotros cerráis la boda con los novios y os lleváis ${commission.foto} € por cada servicio (foto o vídeo) o ${commission.pack} € por el pack de foto y vídeo. Los extras mantienen su precio y no generan comisión.`,
-  },
-  {
-    q: '¿Los novios ven otro precio en vuestra web?',
-    a: `No. Las tarifas son las mismas aquí y en vuestra propuesta (${prices.slice(0, -1).join(', ')} y ${prices.at(-1)}): la comisión ya está incluida y sale de nuestra parte, no del bolsillo de los novios.`,
-  },
-  {
-    q: '¿Respetáis nuestro cronograma?',
-    a: 'Seguimos el guion y los tiempos que marca la wedding planner, y resolvemos con vosotros cualquier cambio durante el día.',
-  },
-  {
-    q: '¿Cómo usáis las imágenes en redes?',
-    a: 'Publicamos con el acuerdo de los novios, pasado un tiempo prudencial y etiquetando siempre a vuestra agencia.',
-  },
-  q.others,
-  q.dress,
-  q.hours,
-  q.crew,
-  q.delivery,
-  q.travel,
-  q.booking,
-  q.cancel,
+  { id: 'tranquilidad', title: 'Desplazamiento y tranquilidad', items: [q.travel, q.backup, q.favourites] },
 ];
 
 /**
  * Condiciones en rejilla, como la página «Condiciones» del dossier para planners. Las usan
- * los dossieres en PDF; en la web viven en las preguntas.
+ * los dossieres en PDF; en la web viven en las preguntas. `only`: solo en ese dossier.
  */
-export const conditions = [
+export const conditions: { name: string; text: string; only?: 'foto' | 'video' }[] = [
   { name: 'Duración de la jornada', text: `De ${terms.hours} desde la hora de llegada acordada. Si se excede, se contratan horas extra.` },
   { name: 'Horas extra', text: `${terms.extraHour} € por hora y servicio, o ${terms.extraFlat} € por servicio como tarifa plana que cubre todo lo que se alargue.` },
   { name: 'Plazo de entrega', text: `Fotografía y vídeo en un plazo máximo de ${terms.deliveryMonths} meses desde la boda, en pendrive.` },
-  { name: 'Revisiones del vídeo', text: `Incluye una revisión. Cada versión extra, ${terms.revisionExtra} €.` },
+  { name: 'Revisiones del vídeo', text: `Incluye una revisión. Cada versión extra, ${terms.revisionExtra} €.`, only: 'video' },
   { name: 'Reserva', text: `${terms.booking} € por servicio, no reembolsables.` },
-  { name: 'Pago del vídeo', text: 'Opcionalmente, 50 % el día de la boda y 50 % al aprobar el vídeo final, que se enseña antes con marca de agua.' },
+  { name: 'Pago del vídeo', text: 'Opcionalmente, 50 % el día de la boda y 50 % al aprobar el vídeo final, que se enseña antes con marca de agua.', only: 'video' },
   { name: 'Cancelación', text: 'Dentro del mismo mes de la boda se abona el servicio completo. Con más antelación, solo se retiene la reserva.' },
   { name: 'Aplazamiento y sustitución', text: 'El aplazamiento se concreta en cada caso y requiere nueva reserva. Siempre hay personal de reserva para cubrir el servicio.' },
   { name: 'Desplazamiento', text: `Salimos de Dos Hermanas (Sevilla). Hasta ${terms.freeKm} km sin coste; después, ${terms.perKm} € por km.` },

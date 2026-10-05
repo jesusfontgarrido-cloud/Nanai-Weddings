@@ -1,182 +1,123 @@
 ---
 /**
- * Contacto (misma estructura que en Nanai Studio, con los campos de una boda). WhatsApp primero, como un
- * enlace grande sin caja; el correo y el teléfono debajo; el formulario al lado.
+ * Contacto: «¿Tenéis fecha?». A la izquierda, los tres canales —WhatsApp (el principal),
+ * correo y teléfono—; a la derecha, el formulario en un panel claro.
  *
- * Parejas: lo que hace falta para responder con disponibilidad y presupuesto sin ir y
- * venir (fecha, lugar, invitados, servicio) y un campo libre para contarse. Si en la
- * página hay calculadora, su selección llega sola («nanai:selection»).
- * Profesionales: tipo de empresa, nombre, agencia y mensaje.
+ * Lo que hace falta para responder con disponibilidad y presupuesto sin ir y venir
+ * (fecha, lugar, invitados, servicio) y un campo libre. Si en la página hay calculadora,
+ * su selección llega sola («nanai:selection»).
  *
- * RGPD: casilla de consentimiento desmarcada y obligatoria, con la primera capa de
- * información al lado del botón y enlace a la política completa. Envío con Web3Forms
- * (encargado del tratamiento), sin salir de la página. En desarrollo no envía.
+ * RGPD: FlatConsent (casilla desmarcada y obligatoria y primera capa). El envío lo hace
+ * FlatScripts con Web3Forms, sin salir de la página. En desarrollo no envía.
  */
 import FlatEm from './FlatEm.astro';
-import { contact, proContact } from '../../data/copy';
+import FlatConsent from './FlatConsent.astro';
+import { contact } from '../../data/copy';
 import { guestOptions, services } from '../../data/pricing';
 import { site } from '../../data/site';
-
-interface Props {
-  kind?: 'couple' | 'pro';
-}
-
-const { kind = 'couple' } = Astro.props;
-const pro = kind === 'pro';
-const text = pro ? proContact : contact;
-const interests = [...services.map((service) => ({ value: service.id, label: service.name })), { value: 'preboda', label: 'Preboda o postboda' }];
-const proKinds = ['Wedding planner', 'Finca o espacio', 'Otro proveedor'];
 ---
 
 <section id="contacto" class="sec fcontact" aria-labelledby="contact-title">
   <div class="wrap fcontact__grid">
     <div class="fcontact__intro">
-      <h2 id="contact-title" class="h2 fcontact__title" data-reveal="lines"><span><FlatEm text={text.title} /></span></h2>
-      <p class="lead fcontact__lead" data-reveal style="--i: 2">{text.lead}</p>
+      <h2 id="contact-title" class="h2 fcontact__title" data-reveal="lines"><span><FlatEm text={contact.title} /></span></h2>
+      <p class="lead fcontact__lead" data-reveal style="--i: 2">{contact.lead}</p>
 
-      <a class="fcontact__wa" href={site.whatsapp} data-reveal style="--i: 3">
-        <span>Escribidnos por WhatsApp</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8" /></svg>
-      </a>
-
-      <div class="fcontact__direct" data-reveal style="--i: 4">
-        <p><span class="label">o por correo</span> <a class="link" href={`mailto:${site.email}`}>{site.email}</a></p>
-        <p><span class="label">o llamando al</span> <a class="link" href={site.phoneHref}>{site.phone}</a></p>
+      <div class="fcontact__channels" data-reveal style="--i: 3">
+        <a class="btn fcontact__wa" href={site.whatsapp}>
+          Escribidnos por WhatsApp
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8" /></svg>
+        </a>
+        <a class="fcontact__line" href={`mailto:${site.email}`}>
+          <span class="label">Correo</span>
+          <span>{site.email}</span>
+        </a>
+        <a class="fcontact__line" href={site.phoneHref}>
+          <span class="label">Llamadnos</span>
+          <span>{site.phone}</span>
+        </a>
       </div>
     </div>
 
-    <form class="fcontact__form" action="https://api.web3forms.com/submit" method="POST" data-flat-form data-reveal style="--i: 2">
-      <p class="label fcontact__form-head">{text.form}</p>
+    <form class="fcontact__form" action="https://api.web3forms.com/submit" method="POST" data-flat-form data-contact-form data-reveal style="--i: 2">
+      <p class="label fcontact__form-head">{contact.form}</p>
 
       <input type="hidden" name="access_key" value={site.web3formsKey} />
-      <input type="hidden" name="subject" value={pro ? 'Nuevo contacto profesional · web de Nanai Weddings' : 'Nueva consulta de boda · web de Nanai Weddings'} />
+      <input type="hidden" name="subject" value="Nueva consulta de boda · web de Nanai Weddings" />
       <input type="hidden" name="pagina" value={Astro.url.pathname} />
       <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" hidden />
 
-      {
-        pro ? (
-          <>
-            <fieldset class="fcontact__kind">
-              <legend class="ffield__label">¿Qué sois?</legend>
-              <div class="fcontact__chips">
-                {proKinds.map((value, i) => (
-                  <label class="fchip">
-                    <input type="radio" name="tipo" value={value} checked={i === 0} />
-                    <span class="chip">{value}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            <div class="fcontact__row">
-              <label class="ffield">
-                <span class="ffield__label">Nombre</span>
-                <input type="text" name="nombre" autocomplete="name" required />
+      <fieldset class="fcontact__kind">
+        <legend class="ffield__label">¿Qué os interesa?</legend>
+        <div class="fcontact__chips">
+          {
+            services.map((service) => (
+              <label class="fchip">
+                <input type="radio" name="servicio" value={service.name} data-service={service.id} checked={service.id === 'pack'} />
+                <span class="chip">{service.name}</span>
               </label>
-              <label class="ffield">
-                <span class="ffield__label">Agencia o empresa</span>
-                <input type="text" name="empresa" autocomplete="organization" />
-              </label>
-            </div>
-            <div class="fcontact__row">
-              <label class="ffield">
-                <span class="ffield__label">Email</span>
-                <input type="email" name="email" autocomplete="email" required />
-              </label>
-              <label class="ffield">
-                <span class="ffield__label">Teléfono <span class="ffield__opt">(opcional)</span></span>
-                <input type="tel" name="telefono" autocomplete="tel" />
-              </label>
-            </div>
-            <label class="ffield">
-              <span class="ffield__label">¿En qué podemos ayudaros?</span>
-              <textarea name="mensaje" rows="4" placeholder="Una boda concreta, el dossier, colaborar a menudo…" required></textarea>
-            </label>
-          </>
-        ) : (
-          <>
-            <fieldset class="fcontact__kind">
-              <legend class="ffield__label">¿Qué os interesa?</legend>
-              <div class="fcontact__chips">
-                {interests.map((option) => (
-                  <label class="fchip">
-                    <input type="radio" name="servicio" value={option.label} data-service={option.value} checked={option.value === 'pack'} />
-                    <span class="chip">{option.label}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
+            ))
+          }
+        </div>
+      </fieldset>
 
-            <label class="ffield fcontact__selection" data-selection hidden>
-              <span class="ffield__label">Vuestra selección en la calculadora</span>
-              <input type="text" name="seleccion" readonly data-selection-input />
-            </label>
+      <label class="ffield fcontact__selection" data-selection hidden>
+        <span class="ffield__label">Vuestra selección en la calculadora</span>
+        <input type="text" name="seleccion" readonly data-selection-input />
+      </label>
 
-            <label class="ffield">
-              <span class="ffield__label">Vuestros nombres</span>
-              <input type="text" name="nombres" autocomplete="name" required />
-            </label>
+      <label class="ffield">
+        <span class="ffield__label">Vuestros nombres</span>
+        <input type="text" name="nombres" autocomplete="name" required />
+      </label>
 
-            <div class="fcontact__row">
-              <label class="ffield">
-                <span class="ffield__label">Email</span>
-                <input type="email" name="email" autocomplete="email" required />
-              </label>
-              <label class="ffield">
-                <span class="ffield__label">Teléfono <span class="ffield__opt">(opcional)</span></span>
-                <input type="tel" name="telefono" autocomplete="tel" />
-              </label>
-            </div>
-
-            <div class="fcontact__row">
-              <label class="ffield">
-                <span class="ffield__label">Fecha de la boda</span>
-                <input type="text" name="fecha" placeholder={contact.placeholders.date} />
-              </label>
-              <label class="ffield">
-                <span class="ffield__label">Invitados</span>
-                <select name="invitados" data-guests>
-                  <option value="">Aún no lo sabemos</option>
-                  {guestOptions.map((option) => (
-                    <option value={option.label} data-guest-id={option.id}>{option.label}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <label class="ffield">
-              <span class="ffield__label">Dónde</span>
-              <input type="text" name="lugar" placeholder={contact.placeholders.place} />
-            </label>
-
-            <label class="ffield">
-              <span class="ffield__label">Contadnos <span class="ffield__opt">(opcional)</span></span>
-              <textarea name="historia" rows="3" placeholder={contact.placeholders.story}></textarea>
-            </label>
-          </>
-        )
-      }
-
-      <!-- RGPD: primera capa de información y consentimiento expreso (casilla desmarcada) -->
-      <div class="fconsent">
-        <label class="fconsent__check">
-          <input type="checkbox" name="consentimiento" value="Acepta la política de privacidad" required />
-          <span>He leído y acepto la <a href="/privacidad">política de privacidad</a>.</span>
+      <div class="fcontact__row">
+        <label class="ffield">
+          <span class="ffield__label">Email</span>
+          <input type="email" name="email" autocomplete="email" required />
         </label>
-        <p class="fconsent__info">
-          <strong>Responsable:</strong> {site.name} ({site.legal.holder}). <strong>Finalidad:</strong> responder a vuestra consulta y, si la pedís, prepararos un presupuesto.
-          <strong>Legitimación:</strong> vuestro consentimiento. <strong>Destinatarios:</strong> no se ceden datos a terceros salvo obligación legal; el formulario se envía a través de Web3Forms.
-          <strong>Derechos:</strong> acceso, rectificación, supresión y los demás que explica la <a href="/privacidad">política de privacidad</a>, escribiendo a {site.email}.
-        </p>
+        <label class="ffield">
+          <span class="ffield__label">Teléfono <span class="ffield__opt">(opcional)</span></span>
+          <input type="tel" name="telefono" autocomplete="tel" />
+        </label>
       </div>
+
+      <div class="fcontact__row">
+        <label class="ffield">
+          <span class="ffield__label">Fecha de la boda</span>
+          <input type="text" name="fecha" placeholder={contact.placeholders.date} />
+        </label>
+        <label class="ffield">
+          <span class="ffield__label">Invitados</span>
+          <select name="invitados" data-guests>
+            <option value="">Aún no lo sabemos</option>
+            {
+              guestOptions.map((option) => (
+                <option value={option.label} data-guest-id={option.id}>{option.label}</option>
+              ))
+            }
+          </select>
+        </label>
+      </div>
+
+      <label class="ffield">
+        <span class="ffield__label">Dónde</span>
+        <input type="text" name="lugar" placeholder={contact.placeholders.place} />
+      </label>
+
+      <label class="ffield">
+        <span class="ffield__label">Contadnos <span class="ffield__opt">(opcional)</span></span>
+        <textarea name="historia" rows="3" placeholder={contact.placeholders.story}></textarea>
+      </label>
+
+      <FlatConsent id="contact-consent" />
 
       <button class="btn fcontact__submit" type="submit">
         Enviar
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M5 12h14M13 6l6 6-6 6" />
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
       </button>
 
-      <p class="note" role="status" data-flat-note>{text.note}</p>
+      <p class="note" role="status" data-flat-note>{contact.note}</p>
     </form>
   </div>
 </section>
@@ -185,7 +126,7 @@ const proKinds = ['Wedding planner', 'Finca o espacio', 'Otro proveedor'];
   // La selección de la calculadora llega al formulario.
   document.addEventListener('nanai:selection', (event) => {
     const detail = (event as CustomEvent<{ service: string; summary: string; guests?: string; detailed: boolean }>).detail;
-    const form = document.querySelector<HTMLFormElement>('[data-flat-form]');
+    const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
     if (!form) return;
     const radio = form.querySelector<HTMLInputElement>(`input[data-service="${detail.service}"]`);
     if (radio) radio.checked = true;
@@ -203,49 +144,12 @@ const proKinds = ['Wedding planner', 'Finca o espacio', 'Otro proveedor'];
       if (option && select) select.value = option.value;
     }
   });
-
-  document.querySelectorAll<HTMLFormElement>('[data-flat-form]').forEach((form) => {
-    const note = form.querySelector<HTMLElement>('[data-flat-note]');
-    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]');
-
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      // En desarrollo y en las vistas previas (html[data-preview]) no se envía nada.
-      if (import.meta.env.DEV || document.documentElement.hasAttribute('data-preview')) {
-        if (note) note.textContent = 'Vista previa: el formulario funciona, pero aquí no envía nada.';
-        return;
-      }
-
-      const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
-      if (data.email) data.replyto = data.email;
-      data.from_name = `${data.nombres ?? data.nombre ?? 'Web'} · web de Nanai Weddings`;
-
-      if (button) button.disabled = true;
-      if (note) note.textContent = 'Enviando…';
-
-      try {
-        const response = await fetch(form.action, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify(data),
-        });
-        const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.message);
-        form.reset();
-        if (note) note.textContent = '¡Recibido! Os respondemos en cuanto podamos. Si os corre prisa, escribidnos por WhatsApp.';
-      } catch {
-        if (note) note.textContent = 'No se ha podido enviar. Probad otra vez o escribidnos por WhatsApp o por correo.';
-      } finally {
-        if (button) button.disabled = false;
-      }
-    });
-  });
 </script>
 
 <style>
   .fcontact__grid {
     display: grid;
-    gap: clamp(48px, 6vw, 88px);
+    gap: clamp(40px, 5vw, 80px);
   }
 
   .fcontact__intro {
@@ -258,43 +162,42 @@ const proKinds = ['Wedding planner', 'Finca o espacio', 'Otro proveedor'];
   .fcontact__title > span { display: block; }
   .fcontact__lead { max-width: 34ch; color: var(--f-muted); }
 
-  .fcontact__wa {
-    display: inline-flex;
-    align-items: center;
-    justify-self: start;
-    gap: 14px;
-    margin-top: 12px;
-    padding-bottom: 6px;
-    border-bottom: 2px solid var(--f-on-surface);
-    color: var(--f-on-surface);
-    font-family: var(--font-display);
-    font-size: clamp(26px, 2.6vw, 40px);
-    font-weight: 620;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    text-decoration: none;
+  .fcontact__channels {
+    display: grid;
+    justify-items: start;
+    gap: 6px;
+    margin-top: 10px;
   }
 
-  .fcontact__wa svg {
-    width: 0.8em;
-    height: 0.8em;
-    color: var(--f-on-surface);
-    transition: transform 320ms var(--f-ease-out);
-  }
+  .fcontact__wa { min-height: 56px; margin-bottom: 10px; padding-inline: 26px; font-size: 17px; }
 
-  .fcontact__wa:hover svg { transform: translate(4px, -4px); }
-
-  .fcontact__direct { display: grid; gap: 2px; }
-
-  .fcontact__direct p {
+  .fcontact__line {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: 4px 12px;
+    gap: 4px 14px;
+    min-height: 44px;
+    padding-top: 10px;
+    color: var(--f-on-surface);
+    font-size: 18px;
+    text-decoration: none;
   }
 
-  .fcontact__form { display: grid; gap: 18px; }
-  .fcontact__form-head { padding-bottom: 6px; color: var(--f-on-surface); }
+  .fcontact__line .label { min-width: 9ch; color: var(--f-muted); }
+  .fcontact__line:hover span:last-child { text-decoration: underline; text-underline-offset: 0.2em; }
+
+  /* El formulario, en un panel claro y redondeado */
+  .fcontact__form {
+    display: grid;
+    gap: 18px;
+    padding: clamp(22px, 3vw, 40px);
+    border: var(--f-hair) solid var(--f-line);
+    border-radius: var(--f-r-card);
+    background: linear-gradient(160deg, #FFFFFF, #F6F6F5);
+    box-shadow: var(--f-shadow);
+  }
+
+  .fcontact__form-head { color: var(--f-on-surface); }
 
   .fcontact__kind {
     display: grid;
@@ -302,94 +205,15 @@ const proKinds = ['Wedding planner', 'Finca o espacio', 'Otro proveedor'];
     margin: 0;
     padding: 0;
     border: 0;
+    min-width: 0;
   }
 
   .fcontact__chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .fchip { position: relative; display: inline-flex; }
-  .fchip input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-  .fchip .chip { min-height: 44px; cursor: pointer; }
-  .fchip .chip:hover { border-color: var(--f-on-surface); }
-  .fchip input:checked + .chip { border-color: transparent; background: var(--f-inverse); color: var(--f-on-inverse); }
-  .fchip input:focus-visible + .chip { outline: 2px solid var(--f-on-surface); outline-offset: 2px; }
-
   .fcontact__row { display: grid; gap: 18px; }
 
-  .ffield { display: grid; gap: 4px; }
+  .fcontact__selection input { font-size: 15px; font-weight: 600; }
 
-  .ffield__label {
-    color: var(--f-muted);
-    font-size: 15px;
-    font-weight: 500;
-  }
-
-  .ffield__opt { font-weight: 400; }
-
-  .ffield input,
-  .ffield textarea,
-  .ffield select {
-    width: 100%;
-    min-height: 52px;
-    padding: 12px 4px;
-    border: 0;
-    border-bottom: var(--f-hair) solid var(--f-line-strong);
-    border-radius: 0;
-    background: transparent;
-    color: inherit;
-    font-size: 17px;
-    transition: border-color var(--f-dur) var(--f-ease);
-  }
-
-  .ffield select { appearance: none; background: linear-gradient(45deg, transparent 50%, currentColor 50%) right 10px center / 6px 6px no-repeat, linear-gradient(-45deg, transparent 50%, currentColor 50%) right 4px center / 6px 6px no-repeat; cursor: pointer; }
-  .ffield textarea { resize: vertical; }
-  .ffield input:focus, .ffield textarea:focus, .ffield select:focus { border-color: var(--f-on-surface); }
-  .ffield input::placeholder, .ffield textarea::placeholder { color: var(--f-muted); opacity: 0.85; }
-
-  .fcontact__selection input {
-    border-bottom: 3px solid var(--f-yellow);
-    font-size: 15px;
-    font-weight: 600;
-  }
-
-  /* Consentimiento: casilla desmarcada + primera capa de información */
-  .fconsent {
-    display: grid;
-    gap: 10px;
-    padding-top: 6px;
-  }
-
-  .fconsent__check {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-
-  .fconsent__check input {
-    flex: none;
-    width: 22px;
-    height: 22px;
-    margin-top: 1px;
-    accent-color: #111111;
-  }
-
-  .fconsent__info {
-    color: var(--f-muted);
-    font-size: 13px;
-    line-height: 1.5;
-  }
-
-  .fconsent__info strong { color: var(--f-on-surface); font-weight: 600; }
-
-  .fcontact__submit {
-    justify-self: start;
-    min-height: 52px;
-    margin-top: 6px;
-    padding-inline: 26px;
-  }
-
-  .fcontact__submit svg { transition: transform var(--f-dur) var(--f-ease); }
-  .fcontact__submit:hover svg { transform: translateX(4px); }
+  .fcontact__submit { justify-self: start; }
 
   @media (min-width: 768px) {
     .fcontact__row { grid-template-columns: 1fr 1fr; }

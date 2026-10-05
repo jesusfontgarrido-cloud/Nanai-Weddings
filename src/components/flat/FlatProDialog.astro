@@ -1,0 +1,113 @@
+---
+/**
+ * Ventana emergente de Profesionales (wedding planners, fincas y proveedores). La página
+ * para profesionales se hará aparte, con acceso por enlace; aquí solo un formulario corto:
+ * profesión, forma de contacto, Instagram y qué os interesa de nosotros.
+ */
+import FlatEm from './FlatEm.astro';
+import FlatConsent from './FlatConsent.astro';
+import { proDialog } from '../../data/copy';
+import { site } from '../../data/site';
+---
+
+<dialog id="pro-dialog" class="fdialog" aria-labelledby="pro-dialog-title">
+  <form class="fdlg" action="https://api.web3forms.com/submit" method="POST" data-flat-form data-sent={proDialog.sent}>
+    <div class="fdlg__head">
+      <h2 id="pro-dialog-title" class="h2 fdlg__title"><FlatEm text={proDialog.title} /></h2>
+      <button class="fdlg__close" type="button" data-close-dialog aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+    <p class="fdlg__lead">{proDialog.lead}</p>
+
+    <input type="hidden" name="access_key" value={site.web3formsKey} />
+    <input type="hidden" name="subject" value="Contacto de un profesional · web de Nanai Weddings" />
+    <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" hidden />
+
+    <fieldset class="fdlg__chips">
+      <legend class="ffield__label">Profesión</legend>
+      <div class="fdlg__row-chips">
+        {
+          proDialog.professions.map((value, i) => (
+            <label class="fchip">
+              <input type="radio" name="profesion" value={value} required checked={i === 0} />
+              <span class="chip">{value}</span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+
+    <label class="ffield" for="pro-contacto">
+      <span class="ffield__label">Forma de contacto</span>
+      <input id="pro-contacto" type="text" name="contacto" autocomplete="email" placeholder="Email o teléfono" required />
+    </label>
+
+    <label class="ffield" for="pro-instagram">
+      <span class="ffield__label">Instagram <span class="ffield__opt">(opcional)</span></span>
+      <input id="pro-instagram" type="text" name="instagram" placeholder="@vuestra.cuenta" />
+    </label>
+
+    <label class="ffield" for="pro-interes">
+      <span class="ffield__label">¿Qué os interesa de nosotros?</span>
+      <textarea id="pro-interes" name="interes" rows="3" placeholder="Una boda concreta, colaborar a menudo, el dossier…" required></textarea>
+    </label>
+
+    <FlatConsent id="pro-consent" purpose="responder a vuestra consulta profesional" />
+
+    <div class="fdlg__actions">
+      <button class="btn" type="submit">
+        Enviar
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      </button>
+      <p class="note" role="status" data-flat-note></p>
+    </div>
+  </form>
+</dialog>
+
+<style>
+  /* Estilos compartidos por las dos ventanas (esta y la de la calculadora) */
+  :global(.flat .fdlg) {
+    display: grid;
+    gap: 18px;
+    padding: clamp(22px, 4vw, 36px);
+  }
+
+  :global(.flat .fdlg__head) {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 16px;
+  }
+
+  :global(.flat .fdlg__title) { font-size: clamp(28px, 3.4vw, 40px); }
+
+  :global(.flat .fdlg__close) {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 42px;
+    height: 42px;
+    border: var(--f-hair) solid var(--f-line-strong);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    color: inherit;
+    cursor: pointer;
+    transition: background-color var(--f-dur) var(--f-ease);
+  }
+
+  :global(.flat .fdlg__close:hover) { background: #FFFFFF; }
+  :global(.flat .fdlg__close svg) { width: 18px; height: 18px; }
+
+  :global(.flat .fdlg__lead) { max-width: 46ch; color: var(--f-muted); font-size: 16px; line-height: 1.5; }
+
+  :global(.flat .fdlg__chips) { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; }
+  :global(.flat .fdlg__row-chips) { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  :global(.flat .fdlg__actions) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 18px;
+  }
+</style>

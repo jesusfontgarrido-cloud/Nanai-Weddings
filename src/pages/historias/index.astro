@@ -1,37 +1,24 @@
 ---
 /**
- * Historias: todas las bodas, cada una con su página. De momento, huecos con portadas
- * provisionales (fotogramas del dossier) hasta tener el material y los datos reales.
+ * Historias: galería de muestra. Todos los trabajos con el mismo peso: la portada en el
+ * centro, fotogramas alrededor, y al pulsar, el tráiler o la galería. Sin página por boda.
  */
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import FlatMotion from '../../components/flat/FlatMotion.astro';
-import FlatNav from '../../components/flat/FlatNav.astro';
+import SiteLayout from '../../layouts/SiteLayout.astro';
 import FlatPageHeader from '../../components/flat/FlatPageHeader.astro';
-import FlatStories from '../../components/flat/FlatStories.astro';
+import FlatShowcase from '../../components/flat/FlatShowcase.astro';
 import FlatContact from '../../components/flat/FlatContact.astro';
-import FlatFooter from '../../components/flat/FlatFooter.astro';
 ---
 
-<BaseLayout
+<SiteLayout
   title="Historias | Nanai Weddings · Bodas en Sevilla contadas en foto y vídeo"
-  description="Bodas reales en Sevilla y Andalucía contadas de principio a fin: preparativos, ceremonia, retratos y fiesta, en fotografía y vídeo."
+  description="Tráilers y galerías de bodas reales en Sevilla y Andalucía, en fotografía y vídeo."
   path="/historias"
 >
-  <div class="flat">
-    <FlatMotion />
-    <FlatNav />
-
-    <main id="contenido">
-      <FlatPageHeader
-        num="01"
-        label="Historias"
-        title={['Bodas que', 'hemos *contado*']}
-        deck="Cada boda, entera y en orden: de los preparativos a la pista. Sin mosaicos de fotos sueltas, para que veáis cómo cuidamos un día completo."
-      />
-      <FlatStories heading={false} more={false} title="Historias" />
-      <FlatContact />
-    </main>
-
-    <FlatFooter />
-  </div>
-</BaseLayout>
+  <FlatPageHeader
+    label="Historias"
+    title={['Bodas que', 'hemos *contado*']}
+    deck="Tráilers y galerías de bodas reales. Pulsad en cualquiera para verla."
+  />
+  <FlatShowcase />
+  <FlatContact />
+</SiteLayout>

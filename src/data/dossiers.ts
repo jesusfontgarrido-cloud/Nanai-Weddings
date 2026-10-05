@@ -1,18 +1,20 @@
 /**
- * Dossieres en PDF. Se generan desde las hojas imprimibles de /dossier/* con
- * `npm run dossieres` (scripts/dossieres.mjs), así que siempre dicen lo mismo que la web.
+ * Dossieres en PDF, uno por servicio (como los dossieres originales para parejas). Se
+ * generan desde las hojas imprimibles de /dossier/* con `npm run dossieres`, así que dicen
+ * siempre lo mismo que la web. En la calculadora de /tarifas sale el de lo que se elige:
+ * foto → fotografía; vídeo → vídeo; foto + vídeo → los dos.
  */
 export const dossiers = {
-  couples: {
-    href: '/dossieres/nanai-weddings-dossier-parejas.pdf',
-    who: 'Para parejas',
-    title: 'Dossier de fotografía y vídeo',
-    contents: 'Estilo, tarifas, extras, cómo trabajamos y todas las condiciones. PDF apaisado, para leer en pantalla o imprimir.',
+  foto: {
+    href: '/dossieres/nanai-weddings-dossier-fotografia.pdf',
+    title: 'Dossier de fotografía',
+    contents: 'Tarifa, extras y condiciones',
   },
-  pros: {
-    href: '/dossieres/nanai-weddings-dossier-profesionales.pdf',
-    who: 'Para wedding planners y fincas',
-    title: 'Dossier para profesionales',
-    contents: 'Tarifas con vuestra comisión incluida, extras, Same Day Edit, seguridad técnica, protocolo y condiciones.',
+  video: {
+    href: '/dossieres/nanai-weddings-dossier-video.pdf',
+    title: 'Dossier de vídeo',
+    contents: 'Tarifa, extras, Same Day Edit y condiciones',
   },
-};
+} as const;
+
+export type DossierId = keyof typeof dossiers;

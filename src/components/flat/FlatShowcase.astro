@@ -1,0 +1,212 @@
+---
+/**
+ * /historias: galería de muestra. Todos los trabajos pesan lo mismo: la portada en el
+ * centro y, alrededor, cuatro fotogramas del propio trabajo. Debajo, una línea (pareja,
+ * lugar, fecha). Al pulsar se abre el tráiler o la galería (FlatWorkViewer); con
+ * /historias#<id> se abre al cargar (así enlazan las tarjetas de la home).
+ */
+import { Picture } from 'astro:assets';
+import FlatPh from './FlatPh.astro';
+import FlatWorkViewer from './FlatWorkViewer.astro';
+import { kindNames, works } from '../../data/stories';
+---
+
+<section class="sec fshow" aria-label="Trabajos">
+  <div class="wrap">
+    <ul class="fshow__list" role="list">
+      {
+        works.map((work) => (
+          <li id={work.id} class="fwork">
+            <div class="fwork__stage">
+              {work.frames.map((frame, i) => (
+                <span class={`fwork__frame fwork__frame--${i}`} data-reveal style={`--i: ${i + 1}`}>
+                  {frame ? (
+                    <Picture src={frame.src} formats={['avif', 'webp']} widths={[320, 640]} sizes="(min-width: 900px) 20vw, 24vw" alt={frame.alt} loading="lazy" style={frame.focus ? `object-position: ${frame.focus}` : undefined} />
+                  ) : (
+                    <FlatPh what="Fotograma" format={work.kind === 'video' ? 'DEL TRÁILER · 3:2' : 'FOTO · 3:2'} ratio="auto" />
+                  )}
+                </span>
+              ))}
+
+              <a class="fwork__cover" href={`#${work.id}`} data-open-dialog={`ver-${work.id}`} data-reveal="focus" aria-label={`${work.kind === 'video' ? 'Ver el tráiler' : 'Ver la galería'}: ${work.couple}, ${work.place}`}>
+                <Picture src={work.cover.src} formats={['avif', 'webp']} widths={[640, 1000, 1400]} sizes="(min-width: 900px) 52vw, 92vw" alt="" loading="lazy" style={work.cover.focus ? `object-position: ${work.cover.focus}` : undefined} />
+                <span class="fwork__open" aria-hidden="true">
+                  {work.kind === 'video' ? (
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z" /></svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" /><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" /><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" /><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" /></svg>
+                  )}
+                  {work.kind === 'video' ? 'Ver tráiler' : 'Ver galería'}
+                </span>
+              </a>
+            </div>
+
+            <p class="fwork__caption">
+              <span class="fwork__couple" data-pending={work.pending ? 'text' : undefined}>{work.couple}</span>
+              <span class="label">{work.place} · {work.date}</span>
+              <span class="tag tag--soft">{kindNames[work.kind]}</span>
+            </p>
+
+            <FlatWorkViewer work={work} />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<script>
+  // /historias#<id>: se abre ese trabajo directamente (desde las tarjetas de la home).
+  const open = () => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (!id) return;
+    const dialog = document.querySelector<HTMLDialogElement>(`dialog[data-viewer="${CSS.escape(id)}"]`);
+    if (dialog && !dialog.open && typeof dialog.showModal === 'function') {
+      document.getElementById(id)?.scrollIntoView({ block: 'center' });
+      dialog.showModal();
+    }
+  };
+  open();
+  window.addEventListener('hashchange', open);
+</script>
+
+<style>
+  .fshow { padding-top: 0; }
+
+  .fshow__list {
+    display: grid;
+    gap: clamp(64px, 8vw, 128px);
+  }
+
+  .fwork { display: grid; gap: 18px; scroll-margin-top: 96px; }
+
+  /* Portada en el centro, fotogramas alrededor */
+  .fwork__stage {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .fwork__cover {
+    position: relative;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    display: block;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: var(--f-r-media);
+    background: var(--f-surface-3);
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+
+  .fwork__cover :global(picture),
+  .fwork__cover :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .fwork__cover :global(img) { transition: transform 1400ms var(--f-ease-out); }
+
+  .fwork__cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(10, 10, 10, 0.4), rgba(10, 10, 10, 0) 50%);
+    pointer-events: none;
+  }
+
+  .fwork__open {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 50px;
+    padding-inline: 20px 24px;
+    border: var(--f-hair) solid rgba(255, 255, 255, 0.5);
+    border-radius: var(--f-r);
+    background: rgba(255, 255, 255, 0.82);
+    color: #111111;
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    transform: translate(-50%, -50%);
+    -webkit-backdrop-filter: var(--f-blur);
+    backdrop-filter: var(--f-blur);
+    transition: background-color var(--f-dur) var(--f-ease), transform 520ms var(--f-ease-out);
+  }
+
+  .fwork__open svg { width: 16px; height: 16px; }
+
+  .fwork__frame {
+    position: relative;
+    display: block;
+    grid-row: 2;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    border-radius: 12px;
+    background: var(--f-surface-3);
+  }
+
+  .fwork__frame :global(picture),
+  .fwork__frame :global(img),
+  .fwork__frame :global(.ph) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: auto;
+    border-radius: 0;
+  }
+
+  .fwork__frame :global(.ph__label) { padding: 6px; font-size: 9px; }
+  .fwork__frame :global(img) { transition: transform 1400ms var(--f-ease-out), filter 700ms var(--f-ease-out); }
+
+  @media (hover: hover) {
+    .fwork__cover:hover :global(img) { transform: scale(1.03); }
+    .fwork__cover:hover .fwork__open { background: #FFFFFF; transform: translate(-50%, -50%) scale(1.04); }
+    .fwork:has(.fwork__cover:hover) .fwork__frame :global(img) { transform: scale(1.06); }
+  }
+
+  .fwork__caption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 16px;
+  }
+
+  .fwork__couple {
+    font-family: var(--font-serif);
+    font-size: clamp(24px, 2.2vw, 32px);
+    font-size-adjust: ex-height 0.48;
+    font-style: italic;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  .fwork__caption .label { color: var(--f-muted); }
+
+  /* Escritorio: dos fotogramas a cada lado de la portada */
+  @media (min-width: 900px) {
+    .fwork__stage {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2.6fr) minmax(0, 1fr);
+      grid-template-rows: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .fwork__cover { grid-column: 2; grid-row: 1 / span 2; aspect-ratio: 16 / 9; }
+    .fwork__frame { aspect-ratio: auto; }
+    .fwork__frame--0 { grid-column: 1; grid-row: 1; }
+    .fwork__frame--1 { grid-column: 3; grid-row: 1; }
+    .fwork__frame--2 { grid-column: 1; grid-row: 2; }
+    .fwork__frame--3 { grid-column: 3; grid-row: 2; }
+    .fwork__caption { justify-content: center; text-align: center; }
+  }
+</style>

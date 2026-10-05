@@ -3,6 +3,7 @@
  * Vídeo de Vimeo, sin cookies y sin cargar nada hasta que se pulsa (fachada): póster,
  * botón de reproducir y, al pulsar, el reproductor con dnt=1 (Vimeo no guarda cookies
  * ni sigue la sesión). Así no hace falta banner de cookies y la página pesa poco.
+ * Dentro de una ventana emergente, al cerrarla se para (vuelve el póster).
  *
  * Vimeo y no YouTube en la web: reproductor limpio, sin anuncios ni vídeos de la
  * competencia al acabar, y mejor compresión (ver docs/decisiones.md).
@@ -22,9 +23,11 @@ interface Props {
   ratio?: string;
   /** Qué falta, para el hueco: «Tráiler de una boda». */
   pendingWhat?: string;
+  /** Sin título encima del póster (cuando ya va al lado). */
+  bare?: boolean;
 }
 
-const { vimeoId, title, poster, posterAlt = '', ratio = '16 / 9', pendingWhat = 'Tráiler de una boda' } = Astro.props;
+const { vimeoId, title, poster, posterAlt = '', ratio = '16 / 9', pendingWhat = 'Tráiler de una boda', bare = false } = Astro.props;
 ---
 
 {
@@ -41,10 +44,10 @@ const { vimeoId, title, poster, posterAlt = '', ratio = '16 / 9', pendingWhat = 
       ) : (
         <span class="ffilm__pending">
           <strong>{pendingWhat}</strong>
-          <span>VÍDEO · Vimeo · pendiente</span>
+          <span>Vídeo de Vimeo · pendiente</span>
         </span>
       )}
-      <span class="ffilm__title">{title}</span>
+      <span class:list={['ffilm__title', { 'visually-hidden': bare }]}>{title}</span>
     </div>
   )
 }
@@ -54,14 +57,25 @@ const { vimeoId, title, poster, posterAlt = '', ratio = '16 / 9', pendingWhat = 
     const id = film.dataset.film;
     const button = film.querySelector<HTMLButtonElement>('[data-film-play]');
     if (!id || !button) return;
-    button.addEventListener('click', () => {
+    const poster = [...film.childNodes];
+
+    const play = () => {
       const frame = document.createElement('iframe');
-      frame.src = `https://player.vimeo.com/video/${encodeURIComponent(id)}?autoplay=1&dnt=1&title=0&byline=0&portrait=0&color=FFCA00`;
+      frame.src = `https://player.vimeo.com/video/${encodeURIComponent(id)}?autoplay=1&dnt=1&title=0&byline=0&portrait=0&color=FFFFFF`;
       frame.title = film.querySelector('.ffilm__title')?.textContent ?? 'Vídeo';
       frame.allow = 'autoplay; fullscreen; picture-in-picture';
       frame.allowFullscreen = true;
       film.replaceChildren(frame);
       film.classList.add('is-playing');
+    };
+
+    button.addEventListener('click', play);
+
+    // Al cerrar la ventana emergente, el vídeo se para y vuelve el póster.
+    film.closest('dialog')?.addEventListener('close', () => {
+      if (!film.classList.contains('is-playing')) return;
+      film.replaceChildren(...poster);
+      film.classList.remove('is-playing');
     });
   });
 </script>
@@ -71,7 +85,8 @@ const { vimeoId, title, poster, posterAlt = '', ratio = '16 / 9', pendingWhat = 
     position: relative;
     aspect-ratio: var(--ratio);
     overflow: hidden;
-    background: #0D0D0D;
+    border-radius: var(--f-r-media);
+    background: #121315;
     color: #FFFFFF;
   }
 
@@ -90,46 +105,58 @@ const { vimeoId, title, poster, posterAlt = '', ratio = '16 / 9', pendingWhat = 
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(10, 10, 10, 0.55), rgba(10, 10, 10, 0) 55%);
+    background: linear-gradient(to top, rgba(10, 10, 10, 0.5), rgba(10, 10, 10, 0) 55%);
     pointer-events: none;
   }
 
   .ffilm__play,
   .ffilm__pending {
     position: absolute;
-    left: clamp(16px, 2vw, 28px);
-    bottom: clamp(16px, 2vw, 28px);
+    left: clamp(14px, 2vw, 26px);
+    bottom: clamp(14px, 2vw, 26px);
     z-index: 2;
   }
 
+  /* Botón de cristal claro: se lee sobre cualquier imagen */
   .ffilm__play {
     display: inline-flex;
     align-items: center;
     gap: 10px;
     min-height: 48px;
-    padding-inline: 18px;
-    border: 0;
-    background: var(--f-yellow);
+    padding-inline: 20px 22px;
+    border: var(--f-hair) solid rgba(255, 255, 255, 0.5);
+    border-radius: var(--f-r);
+    background: rgba(255, 255, 255, 0.86);
     color: #111111;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
+    -webkit-backdrop-filter: var(--f-blur);
+    backdrop-filter: var(--f-blur);
+    transition: background-color var(--f-dur) var(--f-ease), transform var(--f-dur) var(--f-ease);
   }
 
+  .ffilm__play:hover { background: #FFFFFF; transform: translateY(-1px); }
   .ffilm__play svg { width: 14px; height: 14px; }
 
   .ffilm__pending {
     display: grid;
     gap: 2px;
-    padding: 8px 12px;
-    background: rgba(10, 10, 10, 0.75);
+    padding: 9px 16px;
+    border: var(--f-hair) solid rgba(255, 255, 255, 0.24);
+    border-radius: 16px;
+    background: rgba(17, 17, 17, 0.42);
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
+    -webkit-backdrop-filter: var(--f-blur);
+    backdrop-filter: var(--f-blur);
   }
 
-  .ffilm__title {
+  .ffilm__pending span { color: rgba(255, 255, 255, 0.7); }
+
+  .ffilm__title:not(.visually-hidden) {
     position: absolute;
     top: clamp(14px, 1.6vw, 22px);
     left: clamp(16px, 2vw, 28px);

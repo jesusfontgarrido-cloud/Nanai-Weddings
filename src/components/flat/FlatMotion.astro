@@ -38,8 +38,6 @@
     const targets = [
       ...document.querySelectorAll<HTMLElement>('[data-reveal]'),
       ...document.querySelectorAll<HTMLElement>('[data-stagger] > *'),
-      // El subrayado amarillo se dibuja al llegar a pantalla
-      ...document.querySelectorAll<HTMLElement>('.mark'),
     ];
 
     const observer = new IntersectionObserver(

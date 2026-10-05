@@ -2,21 +2,20 @@
 /**
  * Cabecera de las páginas interiores, como las páginas del dossier («Estilo» y debajo
  * «cinematográfico y dinámico»): la primera parte del titular en League Spartan y la
- * segunda, debajo, en Playfair cursiva. Entradilla y, si hace falta, un botón.
+ * segunda, debajo, en Playfair cursiva y en tono medio (del mismo tamaño aparente).
+ * Entradilla y, si hace falta, un botón.
  */
 import type { ImageMetadata } from 'astro';
 import { Picture } from 'astro:assets';
 import FlatEm from './FlatEm.astro';
 
 interface Props {
-  num: string;
   /** Nombre de la sección para los lectores de pantalla (no se muestra). */
   label: string;
   /** Titular en dos partes: la segunda, debajo y en cursiva. */
   title: [string, string];
   deck?: string | string[];
   cta?: { href: string; label: string };
-  readout?: string;
   /** Foto a lo ancho bajo el titular. */
   image?: { src: ImageMetadata; alt: string; credit?: string };
 }
@@ -29,7 +28,7 @@ const decks = deck ? (Array.isArray(deck) ? deck : [deck]) : [];
   <div class="wrap fpage">
     <h1 class="display fpage__title" data-reveal="lines">
       <span><FlatEm text={title[0]} /></span>
-      <span class="fpage__title-2"><FlatEm text={title[1].replace(/\*/g, '')} /></span>
+      <span class="accent tone-2 fpage__title-2">{title[1].replace(/\*/g, '')}</span>
     </h1>
 
     {
@@ -75,19 +74,13 @@ const decks = deck ? (Array.isArray(deck) ? deck : [deck]) : [];
   .fpage__title { font-size: clamp(46px, 7.4vw, 132px); }
   .fpage__title > span { display: block; }
 
-  .fpage__title-2 {
-    font-family: var(--font-serif);
-    font-size-adjust: ex-height 0.46;
-    font-style: italic;
-    font-weight: 450;
-    letter-spacing: -0.01em;
-    line-height: 1.02;
-  }
+  .fpage__title-2 { line-height: 1.02; }
 
   .fpage__photo {
     position: relative;
     margin: clamp(24px, 3vw, 48px) 0 0;
     overflow: hidden;
+    border-radius: var(--f-r-card);
     aspect-ratio: 21 / 9;
     background: var(--f-surface-3);
   }

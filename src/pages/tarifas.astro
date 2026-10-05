@@ -1,54 +1,33 @@
 ---
 /**
- * Tarifas: la calculadora completa (servicio, invitados y extras), el servicio destacado,
- * nuestra recomendación, la seguridad técnica, el dossier y todas las condiciones en
+ * Tarifas: la calculadora completa en carpetas (servicio, invitados y extras; el dossier
+ * del servicio elegido dentro de su carpeta), el Same Day Edit y todas las condiciones en
  * preguntas. Con ?servicio=foto|video|pack llega preseleccionada desde la home.
  */
-import BaseLayout from '../layouts/BaseLayout.astro';
-import FlatMotion from '../components/flat/FlatMotion.astro';
-import FlatNav from '../components/flat/FlatNav.astro';
+import SiteLayout from '../layouts/SiteLayout.astro';
 import FlatPageHeader from '../components/flat/FlatPageHeader.astro';
 import FlatPricing from '../components/flat/FlatPricing.astro';
 import FlatFeature from '../components/flat/FlatFeature.astro';
-import FlatAdvice from '../components/flat/FlatAdvice.astro';
-import FlatSecurity from '../components/flat/FlatSecurity.astro';
-import FlatDossiers from '../components/flat/FlatDossiers.astro';
 import FlatFaq from '../components/flat/FlatFaq.astro';
 import FlatContact from '../components/flat/FlatContact.astro';
-import FlatFooter from '../components/flat/FlatFooter.astro';
 import { faqGroups } from '../data/faq';
-import { security } from '../data/copy';
-import { dossiers } from '../data/dossiers';
 import { euros, services } from '../data/pricing';
 
 const list = services.map((service) => `${service.name.toLowerCase()} ${euros(service.price)} €`).join(', ');
 ---
 
-<BaseLayout
+<SiteLayout
   title="Tarifas | Nanai Weddings · Fotografía y vídeo de bodas en Sevilla"
   description={`Precios cerrados de fotografía y vídeo de boda en Sevilla: ${list}. Calculad vuestra boda con extras como dron, álbum o Same Day Edit.`}
   path="/tarifas"
 >
-  <div class="flat">
-    <FlatMotion />
-    <FlatNav />
-
-    <main id="contenido">
-      <FlatPageHeader
-        num="01"
-        label="Tarifas"
-        title={['Precios cerrados,', 'sin *sorpresas*']}
-        deck="No encontraréis muchos fotógrafos y videógrafos de boda que desglosen tanto el presupuesto. Preferimos daros a escoger: elegid el servicio, sumad lo que queráis y veréis el total al momento."
-      />
-      <FlatPricing mode="full" id="calculadora" heading={false} />
-      <FlatAdvice />
-      <FlatFeature />
-      <FlatSecurity quote={security.quote} deck={security.deck} items={security.items} />
-      <FlatDossiers items={[dossiers.couples]} />
-      <FlatFaq groups={faqGroups} title={['Las condiciones,', 'en preguntas']} deck="Reserva, pagos, horas, entrega y desplazamiento: todo lo que conviene saber antes de reservar." />
-      <FlatContact />
-    </main>
-
-    <FlatFooter />
-  </div>
-</BaseLayout>
+  <FlatPageHeader
+    label="Tarifas"
+    title={['Precios cerrados,', 'sin *sorpresas*']}
+    deck="Elegid el servicio, sumad lo que queráis y veréis el total al momento. Dentro de cada carpeta tenéis su dossier, para leerlo con calma."
+  />
+  <FlatPricing mode="full" id="calculadora" heading={false} />
+  <FlatFeature />
+  <FlatFaq groups={faqGroups} title={['Las condiciones,', 'en preguntas']} deck="Reserva, pagos, horas, entrega y desplazamiento: todo lo que conviene saber antes de reservar." />
+  <FlatContact />
+</SiteLayout>

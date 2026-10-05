@@ -1,9 +1,10 @@
 ---
 /**
- * Hero, como la portada del dossier para planners: la imagen a toda la pantalla y el
- * titular abajo a la izquierda, en blanco sobre una sombra que solo oscurece esa esquina.
- * Primera línea en League Spartan; la segunda, en Playfair cursiva, con «contamos»
- * subrayado en amarillo. Abajo a la derecha, la puerta para los profesionales.
+ * Hero: la imagen a toda la pantalla y el titular centrado, en blanco sobre una sombra
+ * suave que se concentra en el centro. Abajo, la imagen se funde en blanco con un degradado
+ * largo, así se pasa a la primera sección sin corte.
+ * Primera línea en League Spartan; la segunda, en Playfair cursiva (del mismo tamaño
+ * aparente), con un filete fino que se dibuja bajo «contamos».
  *
  * PROVISIONAL: fotograma del dossier para planners (2880 × 1226). Lo ideal es un bucle de
  * vídeo sin sonido de 8–15 s (≤ 6 MB, con póster): ver docs/recursos-pendientes.md. Si se
@@ -66,24 +67,19 @@ const wideSizes = '(max-aspect-ratio: 3/2) 150vh, 100vw';
     <h1 id="hero-title" class="fhero__h1">
       <span class="label fhero__label" data-reveal>{hero.label}</span>
       <span class="display fhero__title" data-reveal="lines" style="--i: 1">
-        <span>Vosotros la vivís,</span>
+        <span>{hero.claim[0]}</span>
         <span class="accent">nosotros la <span class="fhero__line">contamos</span></span>
       </span>
     </h1>
 
     <div class="fhero__actions" data-reveal style="--i: 4">
-      <a class="btn btn--white" href="#tarifas">
+      <a class="btn btn--light" href="#tarifas">
         Ver tarifas
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
       </a>
-      <a class="btn btn--ghost" href={site.whatsapp}>WhatsApp</a>
+      <a class="btn btn--glass" href={site.whatsapp}>WhatsApp</a>
     </div>
   </div>
-
-  <a class="fhero__pro" href="/profesionales" data-reveal style="--i: 6">
-    <span>{hero.pro.lead}</span>
-    <strong>{hero.pro.link} →</strong>
-  </a>
 </section>
 
 <style>
@@ -91,11 +87,11 @@ const wideSizes = '(max-aspect-ratio: 3/2) 150vh, 100vw';
     position: relative;
     isolation: isolate;
     display: grid;
-    align-items: end;
+    place-items: center;
     min-height: 100vh;
     min-height: 100svh;
     overflow: hidden;
-    background: #0D0D0D;
+    background: #FFFFFF;
     color: #FFFFFF;
   }
 
@@ -104,6 +100,7 @@ const wideSizes = '(max-aspect-ratio: 3/2) 150vh, 100vw';
     inset: 0;
     z-index: -2;
     margin: 0;
+    background: #1A1B1D;
   }
 
   .fhero__photo :global(picture),
@@ -117,89 +114,72 @@ const wideSizes = '(max-aspect-ratio: 3/2) 150vh, 100vw';
     object-position: 44% 30%;
   }
 
-  /* Sombra solo en la esquina del texto */
+  /*
+   * Sombra centrada (para que el blanco se lea) y, abajo, el fundido a blanco: la imagen
+   * se disuelve en la primera sección.
+   */
   .fhero__shade {
     position: absolute;
     inset: 0;
     z-index: -1;
     background:
-      linear-gradient(to top, rgba(8, 8, 8, 0.72) 0%, rgba(8, 8, 8, 0.38) 34%, rgba(8, 8, 8, 0) 62%),
-      linear-gradient(to right, rgba(8, 8, 8, 0.32), rgba(8, 8, 8, 0) 60%);
+      linear-gradient(to bottom, rgba(255, 255, 255, 0) 70%, rgba(255, 255, 255, 0.55) 88%, #FFFFFF 100%),
+      radial-gradient(60% 46% at 50% 50%, rgba(10, 10, 10, 0.5), rgba(10, 10, 10, 0.18) 70%, rgba(10, 10, 10, 0) 100%),
+      linear-gradient(to bottom, rgba(10, 10, 10, 0.28), rgba(10, 10, 10, 0) 30%);
   }
 
   .fhero__content {
     --f-on-surface: #FFFFFF;
     display: grid;
-    justify-items: start;
-    gap: 22px;
+    justify-items: center;
+    gap: 26px;
     padding-top: 120px;
-    padding-bottom: clamp(96px, 13vh, 140px);
+    padding-bottom: clamp(120px, 18vh, 200px);
+    text-align: center;
   }
 
   .fhero__h1 {
     display: grid;
-    gap: 16px;
+    justify-items: center;
+    gap: 18px;
     font-weight: inherit;
   }
 
-  .fhero__label { color: #FFFFFF; }
+  .fhero__label { color: rgba(255, 255, 255, 0.86); }
 
   .fhero__title {
-    font-size: clamp(46px, 6.6vw, 118px);
+    font-size: clamp(44px, 7vw, 124px);
     color: #FFFFFF;
+    text-shadow: 0 2px 30px rgba(0, 0, 0, 0.18);
   }
 
   .fhero__title > span { display: block; }
+  .fhero__title .accent { line-height: 1.04; }
 
-  /* La segunda línea, en cursiva: es la que se recuerda */
-  .fhero__title .accent { line-height: 1.02; }
-
-  /* «contamos»: subrayado amarillo por debajo de la letra (el blanco no se lee sobre amarillo) */
+  /* «contamos»: un filete fino que se dibuja de izquierda a derecha */
   .fhero__line {
-    padding-bottom: 0.06em;
-    background: linear-gradient(var(--f-yellow), var(--f-yellow)) 0 100% / 100% 0.075em no-repeat;
+    padding-bottom: 0.04em;
+    background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)) 0 100% / 100% 0.035em no-repeat;
   }
 
   html.motion .fhero__line {
-    background-size: 0 0.075em;
-    transition: background-size 1200ms var(--f-ease-out) 900ms;
+    background-size: 0 0.035em;
+    transition: background-size 1400ms var(--f-ease-out) 1000ms;
   }
 
-  html.motion .is-in .fhero__line { background-size: 100% 0.075em; }
+  html.motion .is-in .fhero__line { background-size: 100% 0.035em; }
 
   .fhero__actions {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 10px;
-    margin-top: 8px;
+    margin-top: 6px;
   }
-
-  /* La puerta para los profesionales: amarilla, abajo a la derecha */
-  .fhero__pro {
-    position: absolute;
-    right: var(--f-gutter);
-    bottom: clamp(24px, 4vh, 40px);
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 2px 10px;
-    align-items: center;
-    max-width: calc(100% - 2 * var(--f-gutter));
-    min-height: 44px;
-    padding: 9px 16px;
-    background: var(--f-yellow);
-    color: #111111;
-    font-size: 15px;
-    text-decoration: none;
-    transition: background-color var(--f-dur) var(--f-ease), color var(--f-dur) var(--f-ease);
-  }
-
-  .fhero__pro strong { font-weight: 700; }
-  .fhero__pro:hover { background: #FFFFFF; }
 
   @media (max-width: 699px) {
     .fhero__photo :global(img) { object-position: 50% 30%; }
-    .fhero__content { padding-bottom: 116px; }
     .fhero__title { font-size: clamp(40px, 11.4vw, 60px); }
-    .fhero__pro { left: var(--f-gutter); right: var(--f-gutter); justify-content: space-between; }
+    .fhero__content { padding-bottom: 140px; }
   }
 </style>

@@ -1,78 +1,54 @@
 ---
 /**
- * Historias: banda negra a sangre, como las páginas de vídeo del dossier. Arriba,
- * un tráiler a lo ancho; debajo, bodas completas en formato vertical, editorial, con
- * pareja, lugar y fecha. Cada una lleva a su página. El wireframe de referencia pide
- * 3–4 bodas reales completas, no un mosaico de fotos sueltas.
+ * Bodas que hemos contado (home): banda oscura en tarjeta redondeada. Arriba, un tráiler
+ * a lo ancho; debajo, tres trabajos en vertical, con pareja, lugar y fecha. Al pulsar uno
+ * se abre su tráiler o su galería aquí mismo (FlatWorkViewer); sin JS, lleva a
+ * /historias#<id>. No hay página por boda.
  */
 import { Picture } from 'astro:assets';
 import FlatFilm from './FlatFilm.astro';
-import FlatPh from './FlatPh.astro';
-import { stories } from '../../data/stories';
+import FlatWorkViewer from './FlatWorkViewer.astro';
+import { kindNames, works } from '../../data/stories';
 import { storiesIntro } from '../../data/copy';
 import trailerPoster from '../../assets/media/provisional/fotograma-chaqueta-bordada.jpg';
 
-interface Props {
-  /** En la home: tráiler + tres historias y enlace a todas. */
-  more?: boolean;
-  title?: string;
-  deck?: string;
-  trailer?: boolean;
-  /** Sin titular propio (la página de historias ya lo tiene en el H1). */
-  heading?: boolean;
-}
-
-const { more = true, title = storiesIntro.title, deck = storiesIntro.deck, trailer = true, heading = true } = Astro.props;
+const shown = works.slice(0, 3);
 ---
 
-<section id="historias" class="sec tone-dark fstories" aria-labelledby="stories-title">
+<section id="historias" class="sec sec--card tone-dark fstories" aria-labelledby="stories-title">
   <div class="wrap">
-    {
-      heading ? (
-        <div class="fstories__head">
-          <div class="fstories__titles">
-            <h2 id="stories-title" class="h2" data-reveal="lines"><span>{title}</span></h2>
-            {deck && <p class="fstories__deck" data-reveal style="--i: 2">{deck}</p>}
-          </div>
-          {more && <a class="link" href="/historias" data-reveal>Ver todas las historias →</a>}
-        </div>
-      ) : (
-        <h2 id="stories-title" class="visually-hidden">{title}</h2>
-      )
-    }
+    <div class="fstories__head">
+      <div class="fstories__titles">
+        <h2 id="stories-title" class="h2" data-reveal="lines"><span>{storiesIntro.title}</span></h2>
+        <p class="fstories__deck" data-reveal style="--i: 2">{storiesIntro.deck}</p>
+      </div>
+      <a class="btn btn--glass btn--small" href="/historias" data-reveal>Ver todas las historias</a>
+    </div>
 
-    {
-      trailer && (
-        <div class="fstories__trailer" data-reveal="focus">
-          <FlatFilm title="Tráiler · [Nombres de la pareja]" poster={trailerPoster} posterAlt="Fotograma: detalle de la chaqueta charra bordada en oro del novio" ratio="2.39 / 1" pendingWhat="Tráiler de una boda" />
-        </div>
-      )
-    }
+    <div class="fstories__trailer" data-reveal="focus">
+      <FlatFilm title="Tráiler · [Nombres de la pareja]" poster={trailerPoster} posterAlt="Fotograma: detalle de la chaqueta charra bordada en oro del novio" ratio="2.39 / 1" pendingWhat="Tráiler de una boda" />
+    </div>
 
     <ul class="fstories__grid" role="list" data-stagger>
       {
-        stories.map((story) => (
+        shown.map((work) => (
           <li>
-            <a class="fstory" href={`/historias/${story.slug}`}>
+            <a class="fstory" href={`/historias#${work.id}`} data-open-dialog={`ver-${work.id}`}>
               <span class="fstory__media">
-                {story.cover ? (
-                  <Picture
-                    src={story.cover.src}
-                    formats={['avif', 'webp']}
-                    widths={[480, 800, 1100]}
-                    sizes="(min-width: 900px) 31vw, 92vw"
-                    alt={story.cover.alt}
-                    loading="lazy"
-                    style={story.cover.focus ? `object-position: ${story.cover.focus}` : undefined}
-                  />
-                ) : (
-                  <FlatPh what="Portada de la historia" format="FOTO · 4:5" ratio="4 / 5" dark />
-                )}
+                <Picture
+                  src={work.cover.src}
+                  formats={['avif', 'webp']}
+                  widths={[480, 800, 1100]}
+                  sizes="(min-width: 900px) 31vw, 92vw"
+                  alt={work.cover.alt}
+                  loading="lazy"
+                  style={work.cover.focus ? `object-position: ${work.cover.focus}` : undefined}
+                />
+                <span class="fstory__kind">{kindNames[work.kind]}</span>
               </span>
               <span class="fstory__caption">
-                <span class="fstory__couple" data-pending={story.pending ? 'text' : undefined}>{story.couple}</span>
-                <span class="label fstory__meta">{story.place} · {story.date}</span>
-                <span class="label fstory__services">{story.services}</span>
+                <span class="fstory__couple" data-pending={work.pending ? 'text' : undefined}>{work.couple}</span>
+                <span class="label fstory__meta">{work.place} · {work.date}</span>
               </span>
             </a>
           </li>
@@ -80,6 +56,8 @@ const { more = true, title = storiesIntro.title, deck = storiesIntro.deck, trail
       }
     </ul>
   </div>
+
+  {shown.map((work) => <FlatWorkViewer work={work} />)}
 </section>
 
 <style>
@@ -87,8 +65,8 @@ const { more = true, title = storiesIntro.title, deck = storiesIntro.deck, trail
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    align-items: baseline;
-    gap: 12px 32px;
+    align-items: end;
+    gap: 16px 32px;
     margin-bottom: clamp(28px, 3.6vw, 48px);
   }
 
@@ -114,6 +92,7 @@ const { more = true, title = storiesIntro.title, deck = storiesIntro.deck, trail
     display: block;
     aspect-ratio: 4 / 5;
     overflow: hidden;
+    border-radius: var(--f-r-media);
     background: var(--f-surface-2);
   }
 
@@ -126,10 +105,30 @@ const { more = true, title = storiesIntro.title, deck = storiesIntro.deck, trail
     transition: transform 1200ms var(--f-ease-out), filter 700ms var(--f-ease-out);
   }
 
-  /* Rack focus: al pasar por una historia, las demás se desenfocan */
+  .fstory__kind {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding-inline: 12px;
+    border: var(--f-hair) solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--f-r);
+    background: rgba(17, 17, 17, 0.36);
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    -webkit-backdrop-filter: var(--f-blur);
+    backdrop-filter: var(--f-blur);
+  }
+
+  /* Al pasar por un trabajo, los demás se apagan un poco */
   @media (hover: hover) {
     .fstory:hover .fstory__media :global(img) { transform: scale(1.03); }
-    .fstories__grid:has(.fstory:hover) .fstory:not(:hover) .fstory__media :global(img) { filter: brightness(0.55) grayscale(0.4); }
+    .fstories__grid:has(.fstory:hover) .fstory:not(:hover) .fstory__media :global(img) { filter: brightness(0.6) grayscale(0.3); }
   }
 
   .fstory__caption { display: grid; gap: 4px; }
@@ -137,14 +136,15 @@ const { more = true, title = storiesIntro.title, deck = storiesIntro.deck, trail
   .fstory__couple {
     font-family: var(--font-serif);
     font-size: clamp(24px, 2vw, 30px);
+    font-size-adjust: ex-height 0.48;
     font-style: italic;
-    font-weight: 450;
+    font-weight: 500;
     line-height: 1.1;
   }
 
-  .fstory__meta { color: var(--f-on-surface); }
+  .fstory__meta { color: var(--f-muted); }
 
   @media (min-width: 700px) {
-    .fstories__grid { grid-template-columns: repeat(3, 1fr); }
+    .fstories__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
 </style>

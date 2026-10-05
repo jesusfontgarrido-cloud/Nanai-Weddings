@@ -4,17 +4,19 @@
  * (el visor reserva los nombres que empiezan por «_»), la página principal sin esqueleto de
  * documento (lo pone el visor) y html[data-preview] para que el formulario no envíe nada.
  *
- * Uso: npm run build && node scripts/vista-previa.mjs dist <carpeta-de-salida>
+ * Uso: npm run build && node scripts/vista-previa.mjs dist <carpeta-de-salida> [completa]
+ * Con «completa», la página principal conserva su esqueleto: la carpeta se abre tal cual en
+ * el navegador (index.html), sin servidor. Es la copia para llevarse el HTML.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 
-const [dist, out] = process.argv.slice(2);
+const [dist, out, mode] = process.argv.slice(2);
+const standalone = mode === 'completa';
 fs.mkdirSync(out, { recursive: true });
 
 const pages = [
-  'index.html', '404.html', 'tarifas/index.html', 'profesionales/index.html', 'historias/index.html',
-  'historias/historia-01/index.html', 'historias/historia-02/index.html', 'historias/historia-03/index.html',
+  'index.html', '404.html', 'tarifas/index.html', 'historias/index.html',
   'aviso-legal/index.html', 'privacidad/index.html', 'cookies/index.html',
 ];
 
@@ -53,7 +55,7 @@ for (const page of pages) {
   const depth = page.split('/').length - 1;
   let html = fs.readFileSync(path.join(dist, page), 'utf8');
   html = rewriteHtml(html, depth);
-  if (page === 'index.html') {
+  if (page === 'index.html' && !standalone) {
     html = html.replace(/<title>[^<]*<\/title>/, '<title>Nanai Weddings</title>');
     // El visor pone su propio esqueleto: se publica el contenido de head y body.
     const head = html.match(/<head>([\s\S]*)<\/head>/)[1];

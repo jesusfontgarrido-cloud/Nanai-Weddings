@@ -1,0 +1,93 @@
+---
+/**
+ * Ventana emergente de la calculadora: «Consultar fecha». Tres datos —nombre, fecha y
+ * forma de contacto— y la selección que se ha hecho, para responder según lo elegido sin
+ * mandar a nadie al formulario de abajo. La selección llega con el evento nanai:selection.
+ */
+import FlatEm from './FlatEm.astro';
+import FlatConsent from './FlatConsent.astro';
+import { dateDialog } from '../../data/copy';
+import { site } from '../../data/site';
+---
+
+<dialog id="date-dialog" class="fdialog" aria-labelledby="date-dialog-title">
+  <form class="fdlg" action="https://api.web3forms.com/submit" method="POST" data-flat-form data-sent={dateDialog.sent}>
+    <div class="fdlg__head">
+      <h2 id="date-dialog-title" class="h2 fdlg__title"><FlatEm text={dateDialog.title} /></h2>
+      <button class="fdlg__close" type="button" data-close-dialog aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+    <p class="fdlg__lead">{dateDialog.lead}</p>
+
+    <input type="hidden" name="access_key" value={site.web3formsKey} />
+    <input type="hidden" name="subject" value="Consulta de fecha desde la calculadora · web de Nanai Weddings" />
+    <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" hidden />
+    <input type="hidden" name="seleccion" data-date-selection-input />
+
+    <div class="fdate__selection" data-date-selection>
+      <span class="label">Vuestra selección</span>
+      <p class="fdate__summary" data-date-summary>Foto + vídeo</p>
+    </div>
+
+    <label class="ffield" for="date-nombre">
+      <span class="ffield__label">Vuestros nombres</span>
+      <input id="date-nombre" type="text" name="nombres" autocomplete="name" required />
+    </label>
+
+    <div class="fdate__row">
+      <label class="ffield" for="date-fecha">
+        <span class="ffield__label">Fecha de la boda</span>
+        <input id="date-fecha" type="text" name="fecha" placeholder="p. ej. 12/09/2027" required />
+      </label>
+      <label class="ffield" for="date-contacto">
+        <span class="ffield__label">Forma de contacto</span>
+        <input id="date-contacto" type="text" name="contacto" autocomplete="email" placeholder="Email o teléfono" required />
+      </label>
+    </div>
+
+    <FlatConsent id="date-consent" />
+
+    <div class="fdlg__actions">
+      <button class="btn" type="submit">
+        Consultar fecha
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      </button>
+      <p class="note" role="status" data-flat-note></p>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  // La última selección de la calculadora, para enseñarla y mandarla con la consulta.
+  let latest = '';
+  document.addEventListener('nanai:selection', (event) => {
+    latest = (event as CustomEvent<{ summary: string }>).detail.summary;
+  });
+
+  const dialog = document.getElementById('date-dialog');
+  dialog?.addEventListener('nanai:open', () => {
+    const summary = dialog.querySelector<HTMLElement>('[data-date-summary]');
+    const input = dialog.querySelector<HTMLInputElement>('[data-date-selection-input]');
+    if (summary && latest) summary.textContent = latest;
+    if (input) input.value = latest;
+  });
+</script>
+
+<style>
+  .fdate__selection {
+    display: grid;
+    gap: 4px;
+    padding: 14px 18px;
+    border-radius: var(--f-r-field);
+    background: linear-gradient(135deg, rgba(17, 17, 17, 0.05), rgba(17, 17, 17, 0.02));
+  }
+
+  .fdate__summary { font-weight: 600; font-size: 16px; line-height: 1.45; }
+
+  .fdate__row { display: grid; gap: 18px; }
+
+  @media (min-width: 560px) {
+    .fdate__row { grid-template-columns: 1fr 1fr; }
+  }
+</style>

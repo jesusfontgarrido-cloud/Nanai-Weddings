@@ -1,0 +1,35 @@
+---
+/**
+ * Plantilla de las páginas públicas: barra, contenido, pie, la ventana de Profesionales y
+ * el código compartido (formularios y ventanas emergentes). Cada página solo pone sus
+ * secciones dentro.
+ */
+import BaseLayout from './BaseLayout.astro';
+import FlatMotion from '../components/flat/FlatMotion.astro';
+import FlatNav from '../components/flat/FlatNav.astro';
+import FlatFooter from '../components/flat/FlatFooter.astro';
+import FlatProDialog from '../components/flat/FlatProDialog.astro';
+import FlatScripts from '../components/flat/FlatScripts.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  path?: string;
+  noindex?: boolean;
+}
+
+const props = Astro.props;
+---
+
+<BaseLayout {...props}>
+  <div class="flat">
+    <FlatMotion />
+    <FlatNav />
+    <main id="contenido">
+      <slot />
+    </main>
+    <FlatFooter />
+    <FlatProDialog />
+    <FlatScripts />
+  </div>
+</BaseLayout>

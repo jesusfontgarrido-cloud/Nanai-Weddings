@@ -1,0 +1,77 @@
+---
+/**
+ * Código compartido de todas las páginas:
+ * · Ventanas emergentes: cualquier elemento con data-open-dialog="id" abre el <dialog> con
+ *   ese id; data-close-dialog lo cierra; un clic fuera también. Sin JS, el enlace lleva a
+ *   su destino normal (#contacto).
+ * · Formularios [data-flat-form]: se envían a Web3Forms sin salir de la página. En
+ *   desarrollo y en vistas previas (html[data-preview]) no envían nada.
+ */
+---
+
+<script>
+  const isPreview = () => import.meta.env.DEV || document.documentElement.hasAttribute('data-preview');
+
+  // Ventanas emergentes
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    const opener = target?.closest<HTMLElement>('[data-open-dialog]');
+    if (opener) {
+      const dialog = document.getElementById(opener.dataset.openDialog ?? '') as HTMLDialogElement | null;
+      if (dialog && typeof dialog.showModal === 'function') {
+        event.preventDefault();
+        dialog.dispatchEvent(new CustomEvent('nanai:open', { detail: { opener } }));
+        dialog.showModal();
+      }
+      return;
+    }
+    const closer = target?.closest('[data-close-dialog]');
+    if (closer) closer.closest('dialog')?.close();
+  });
+
+  // Un clic en el fondo (fuera de la caja) cierra
+  document.querySelectorAll<HTMLDialogElement>('dialog.fdialog').forEach((dialog) => {
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+  });
+
+  // Formularios
+  document.querySelectorAll<HTMLFormElement>('[data-flat-form]').forEach((form) => {
+    const note = form.querySelector<HTMLElement>('[data-flat-note]');
+    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+    const sentText = form.dataset.sent ?? '¡Recibido! Os respondemos en cuanto podamos. Si os corre prisa, escribidnos por WhatsApp.';
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (isPreview()) {
+        if (note) note.textContent = 'Vista previa: el formulario funciona, pero aquí no envía nada.';
+        return;
+      }
+
+      const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
+      const contact = data.email ?? data.contacto ?? '';
+      if (contact.includes('@')) data.replyto = contact;
+      data.from_name = `${data.nombres ?? data.nombre ?? data.profesion ?? 'Web'} · web de Nanai Weddings`;
+
+      if (button) button.disabled = true;
+      if (note) note.textContent = 'Enviando…';
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message);
+        form.reset();
+        if (note) note.textContent = sentText;
+      } catch {
+        if (note) note.textContent = 'No se ha podido enviar. Probad otra vez o escribidnos por WhatsApp o por correo.';
+      } finally {
+        if (button) button.disabled = false;
+      }
+    });
+  });
+</script>

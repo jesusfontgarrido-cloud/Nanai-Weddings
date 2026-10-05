@@ -14,8 +14,8 @@ const root = resolve(import.meta.dirname, '..');
 const out = join(root, 'public', 'dossieres');
 const port = 4391;
 const sheets = [
-  { path: '/dossier/parejas/', file: 'nanai-weddings-dossier-parejas.pdf' },
-  { path: '/dossier/profesionales/', file: 'nanai-weddings-dossier-profesionales.pdf' },
+  { path: '/dossier/fotografia/', file: 'nanai-weddings-dossier-fotografia.pdf' },
+  { path: '/dossier/video/', file: 'nanai-weddings-dossier-video.pdf' },
 ];
 
 const candidates = [

@@ -2,41 +2,46 @@
 /**
  * Dossier imprimible (A4 apaisado), generado desde los mismos datos que la web. Sustituye
  * a los PDF hechos a mano: un precio cambia en pricing.ts y cambia en la web y en el PDF.
- * `npm run dossieres` imprime /dossier/parejas y /dossier/profesionales en public/dossieres.
+ * `npm run dossieres` imprime /dossier/fotografia y /dossier/video en public/dossieres.
  *
- * Misma piel que la web (blanco, League Spartan, Playfair cursiva, el amarillo para lo destacado) y la
- * estructura del dossier para planners de 2026: portada con fotograma, «Qué ofrecemos»,
- * tarifas, extras, Same Day Edit, seguridad, condiciones y cierre.
+ * Uno por servicio, como los dossieres originales para parejas: en /tarifas, la carpeta de
+ * Fotografía ofrece el de fotografía; la de Vídeo, el de vídeo; la de Foto + vídeo, los dos.
+ * Misma piel que la web: blanco, negro y grises, League Spartan, Playfair cursiva.
+ * Hojas: portada, qué ofrecemos, tarifa, extras, Same Day Edit (solo vídeo),
+ * condiciones y cierre.
  */
 import { getImage } from 'astro:assets';
 import FlatWordmark from '../flat/FlatWordmark.astro';
 import FlatEm from '../flat/FlatEm.astro';
-import { commission, crewRule, euros, extras, groupNames, services, terms, type Group } from '../../data/pricing';
+import { crewRule, euros, extras, services, terms, type Group } from '../../data/pricing';
 import { conditions } from '../../data/faq';
-import { manifesto, method, pro, sameDayEdit, security } from '../../data/copy';
+import { manifesto, sameDayEdit } from '../../data/copy';
 import { site } from '../../data/site';
-import coverSrc from '../../assets/media/provisional/fotograma-beso-chaqueta-charra.jpg';
-import styleSrc from '../../assets/media/provisional/fotograma-preboda-rio.jpg';
+import coverFoto from '../../assets/media/provisional/fotograma-novia-buganvilla.jpg';
+import coverVideo from '../../assets/media/provisional/fotograma-beso-chaqueta-charra.jpg';
 import sdeSrc from '../../assets/media/provisional/fotograma-novia-sonrisa.jpg';
 import detailSrc from '../../assets/media/provisional/fotograma-chaqueta-bordada.jpg';
 
 interface Props {
-  audience: 'couples' | 'pros';
+  audience: Group;
 }
 
 const { audience } = Astro.props;
-const forPros = audience === 'pros';
+const isVideo = audience === 'video';
 const year = new Date().getFullYear();
 
-const cover = await getImage({ src: coverSrc, format: 'jpg', width: 2200, quality: 78 });
-const style = await getImage({ src: styleSrc, format: 'jpg', width: 1000, quality: 80 });
+const cover = await getImage({ src: isVideo ? coverVideo : coverFoto, format: 'jpg', width: 2200, quality: 78 });
 const sde = await getImage({ src: sdeSrc, format: 'jpg', width: 1200, quality: 80 });
 const detail = await getImage({ src: detailSrc, format: 'jpg', width: 1600, quality: 78 });
-const groups: Group[] = ['video', 'foto'];
 
-const pages = forPros
-  ? ['Qué ofrecemos', 'Estilo', 'Tarifas', 'Vuestra comisión', 'Extras', 'Same Day Edit', 'Seguridad técnica', 'Protocolo', 'Condiciones']
-  : ['Qué ofrecemos', 'Tarifas', 'Extras', 'Same Day Edit', 'Seguridad técnica', 'Condiciones'];
+const service = services.find((s) => s.id === audience)!;
+const pack = services.find((s) => s.id === 'pack')!;
+const ownExtras = extras.filter((extra) => extra.group === audience);
+const half = Math.ceil(ownExtras.length / 2);
+const extraCols = [ownExtras.slice(0, half), ownExtras.slice(half)];
+const sdePrice = extras.find((extra) => extra.id === 'same-day-edit')?.price ?? 0;
+
+const pages = ['Qué ofrecemos', 'Tarifa', 'Extras', ...(isVideo ? ['Same Day Edit'] : []), 'Condiciones'];
 const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
 ---
 
@@ -47,8 +52,8 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
     <div class="cover__band">
       <FlatWordmark tone="paper" />
       <div class="cover__meta">
-        <p class="cover__label">{forPros ? 'Dossier para wedding planners' : 'Dossier para parejas'} · {year}</p>
-        <p class="cover__title">Fotografía y vídeo de bodas</p>
+        <p class="cover__label">{isVideo ? 'Dossier de vídeo' : 'Dossier de fotografía'} · {year}</p>
+        <p class="cover__title">{isVideo ? 'Vídeo de bodas' : 'Fotografía de bodas'}</p>
       </div>
     </div>
   </section>
@@ -59,20 +64,13 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
     <div class="split">
       <h2 class="big">Qué<br />ofrecemos</h2>
       <div class="stack">
-        <p class="lead">
-          {forPros
-            ? <>Cubrimos la fotografía y el vídeo de vuestras bodas con un mismo equipo y <em>un mismo criterio</em>. Vosotros diseñáis la boda; nosotros la contamos.</>
-            : <>Nos gusta plantear cada boda como un nuevo intento de emocionar: contarla <em>como una película</em>, con un mismo equipo para la foto y el vídeo.</>}
-        </p>
+        <p class="lead">Nos gusta plantear cada boda como un nuevo intento de emocionar: contarla <em>como una película</em>, con un mismo criterio para la foto y el vídeo.</p>
         <ul class="rows">
-          {(forPros
-            ? pro.pillars
-            : [
-                { name: 'Os conocemos antes', text: 'Un café, vuestro cronograma y vuestras películas, series y artistas favoritos, para darle un toque único a las fotos y al vídeo.' },
-                { name: 'Precios cerrados', text: 'Tarifas, extras y condiciones por escrito. Preferimos daros a escoger cómo se cuenta vuestra boda.' },
-                { name: 'Un mismo equipo', text: 'Foto y vídeo coordinados entre sí y con vuestro cronograma. Una sola conversación para los dos servicios.' },
-              ]
-          ).map((item) => (
+          {[
+            { name: 'Os conocemos antes', text: 'Un café, vuestro cronograma y vuestras películas, series y artistas favoritos, para darle un toque único a las fotos y al vídeo.' },
+            { name: 'Precios cerrados', text: 'Tarifas, extras y condiciones por escrito. Preferimos daros a escoger cómo se cuenta vuestra boda.' },
+            { name: 'Toda la jornada', text: 'De los preparativos en las casas de los dos a una hora después del inicio de la barra libre.' },
+          ].map((item) => (
             <li><strong>{item.name}</strong><span>{item.text}</span></li>
           ))}
         </ul>
@@ -81,67 +79,36 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
     <footer class="sheet__foot"><span>{site.phone}</span><span>{site.email}</span><span>{site.instagramHandle}</span><span>{site.base}</span></footer>
   </section>
 
-  <!-- Estilo (profesionales) o cómo trabajamos (parejas, más abajo) -->
-  {
-    forPros && (
-      <section class="sheet sheet--split">
-        <div class="half">
-          <header class="sheet__head"><span>Estilo</span><span>{n('Estilo')}</span></header>
-          <h2 class="big">Estilo</h2>
-          <p class="script">cinematográfico y dinámico</p>
-          <p class="lead">{method.deck}</p>
-          <p class="body">Antes de la boda preguntamos a los novios por sus películas, series y artistas favoritos, para dar un toque único a las fotos y al vídeo.</p>
-        </div>
-        <img class="half__img" src={style.src} alt="" />
-      </section>
-    )
-  }
-
-  <!-- Tarifas -->
+  <!-- Tarifa -->
   <section class="sheet">
-    <header class="sheet__head"><span>Tarifas</span><span>{n('Tarifas')}</span></header>
+    <header class="sheet__head"><span>Tarifa</span><span>{n('Tarifa')}</span></header>
     <div class="title-row">
-      <h2 class="big">Tarifas</h2>
-      <p class="body">{forPros ? <>Precio final para los novios. <strong>Ya incluye vuestra comisión</strong> y es el mismo que publica nuestra web.</> : <>Precios cerrados. Reserva: {terms.booking} € por servicio.</>}</p>
+      <h2 class="big">Tarifa</h2>
+      <p class="body">Precio cerrado. Lo que se suma, en la hoja de extras.</p>
     </div>
-    <div class="cols3">
-      {services.map((service) => (
-        <div class:list={['plan', { 'plan--key': service.featured }]}>
-          <p class="mono">{service.name}</p>
-          <p class="price">{euros(service.price)} €</p>
-          <p class="body">{service.summary}</p>
-          <div class="plan__deliver">
-            <p class="mono">Entrega</p>
-            {service.deliver.map((item) => <p>{item}</p>)}
-          </div>
+    <div class="cols-plan">
+      <div class="plan plan--main">
+        <p class="mono">{service.name}</p>
+        <p class="price">{euros(service.price)} €</p>
+        <p class="body">{service.summary}</p>
+        <div class="plan__deliver">
+          <p class="mono">Incluye</p>
+          <p>{service.crew} toda la jornada</p>
+          {service.deliver.map((item) => <p>{item}</p>)}
+          <p>Entrega en {terms.deliveryMonths} meses como máximo</p>
         </div>
-      ))}
+      </div>
+      <div class="plan plan__alt">
+        <div class="stack">
+          <p class="mono">¿Foto y vídeo?</p>
+          <p class="price">{euros(pack.price)} €</p>
+          <p class="body">{pack.summary}</p>
+        </div>
+        <p class="body">{isVideo ? 'La parte de fotografía, con sus extras, en el dossier de fotografía.' : 'La parte de vídeo, con sus extras y el Same Day Edit, en el dossier de vídeo.'}</p>
+      </div>
     </div>
-    <p class="small">Jornada de {terms.hours}. Plazo máximo de entrega: {terms.deliveryMonths} meses. La barra libre empieza cuando el DJ inicia su servicio y los invitados se acercan a la pista. Desplazamiento, dietas y alojamiento según condiciones.</p>
+    <p class="small">Jornada de {terms.hours}. Con {crewRule.requiredFrom} invitados o más es obligatorio un segundo {isVideo ? 'operador/a' : 'fotógrafo/a'} (+{crewRule.price} €); a partir de {crewRule.recommendedFrom}, recomendable. Reserva, pagos y desplazamiento, en la hoja de condiciones.</p>
   </section>
-
-  <!-- Comisión (profesionales) -->
-  {
-    forPros && (
-      <section class="sheet sheet--yellow">
-        <header class="sheet__head"><span>Vuestra comisión</span><span>{n('Vuestra comisión')}</span></header>
-        <div class="split split--end">
-          <div>
-            <p class="giant">{commission.foto} €</p>
-            <p class="script script--lg">por cada servicio contratado a través de vuestra agencia, {commission.pack} € por el pack</p>
-          </div>
-          <div class="stack">
-            <ul class="rows rows--price">
-              {services.map((service) => (
-                <li><strong>{service.name}</strong><b>{commission[service.id]} €</b></li>
-              ))}
-            </ul>
-            <p class="body">Vosotros cerráis la boda con los novios y os lleváis {commission.foto} € por cada servicio, o {commission.pack} € por el pack de foto y vídeo. Los extras mantienen su precio y no generan comisión.</p>
-          </div>
-        </div>
-      </section>
-    )
-  }
 
   <!-- Extras -->
   <section class="sheet">
@@ -151,91 +118,38 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
       <p class="body">Se suman a la tarifa base.</p>
     </div>
     <div class="cols2">
-      {groups.map((group) => (
-        <div>
-          <h3 class="mid">{groupNames[group]}</h3>
-          <ul class="rows rows--price">
-            {extras.filter((extra) => extra.group === group).map((extra) => (
-              <li>
-                <strong>{extra.name}</strong>
-                <b>{euros(extra.price)} €{extra.unit && <small> {extra.unit}</small>}</b>
-                <span>{extra.text}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+      {extraCols.map((col) => (
+        <ul class="rows rows--price">
+          {col.map((extra) => (
+            <li>
+              <strong>{extra.name}</strong>
+              <b>{euros(extra.price)} €{extra.unit && <small> {extra.unit}</small>}</b>
+              <span>{extra.text}</span>
+            </li>
+          ))}
+        </ul>
       ))}
     </div>
     <p class="small">Sobre el dron: lo opera una empresa especializada. Sujeto a normativa y permisos vigentes: si no puede volarse, no se contrata.</p>
   </section>
 
-  <!-- Same Day Edit -->
-  <section class="sheet sheet--split sheet--dark">
-    <div class="half">
-      <header class="sheet__head"><span>{sameDayEdit.label}</span><span>{n('Same Day Edit')}</span></header>
-      <h2 class="big">Same Day<br />Edit</h2>
-      <p class="script script--lg"><FlatEm text={sameDayEdit.quote} /></p>
-      <p class="body">{sameDayEdit.text}</p>
-      <p class="price">{euros(extras.find((extra) => extra.id === 'same-day-edit')?.price ?? 0)} €</p>
-    </div>
-    <img class="half__img" src={sde.src} alt="" style="object-position: 28% 40%" />
-  </section>
-
-  <!-- Seguridad técnica (parejas) -->
+  <!-- Same Day Edit (vídeo) -->
   {
-    !forPros && (
-      <section class="sheet">
-        <header class="sheet__head"><span>Seguridad técnica</span><span>{n('Seguridad técnica')}</span></header>
-        <div class="split">
-          <div class="stack">
-            <h2 class="big">Una boda<br />no se repite</h2>
-            <p class="lead">{security.deck}</p>
-          </div>
-          <ul class="rows">
-            {security.items.map((item) => (
-              <li><strong>{item.name}</strong><span>{item.text}</span></li>
+    isVideo && (
+      <section class="sheet sheet--split sheet--dark">
+        <div class="half">
+          <header class="sheet__head"><span>{sameDayEdit.label}</span><span>{n('Same Day Edit')}</span></header>
+          <h2 class="big">Same Day<br />Edit</h2>
+          <p class="script script--lg"><FlatEm text={sameDayEdit.quote} /></p>
+          <ol class="steps">
+            {sameDayEdit.steps.map((step) => (
+              <li><strong>{step.name}</strong><span>{step.text}</span></li>
             ))}
-          </ul>
+          </ol>
+          <p class="price">{euros(sdePrice)} €</p>
+          <p class="small">{sameDayEdit.note}</p>
         </div>
-      </section>
-    )
-  }
-
-  <!-- Seguridad técnica y protocolo (profesionales) -->
-  {
-    forPros && (
-      <section class="sheet">
-        <header class="sheet__head"><span>Seguridad técnica</span><span>{n('Seguridad técnica')}</span></header>
-        <div class="split">
-          <div class="stack stack--between">
-            <h2 class="big">Seguridad<br />técnica</h2>
-            <p class="script script--lg">Una boda no se repite. Nuestro equipo está pensado para no perder ni un archivo ni una palabra.</p>
-          </div>
-          <ul class="rows">
-            {security.items.map((item) => (
-              <li><strong>{item.name}</strong><span>{item.text}</span></li>
-            ))}
-            <li><strong>Dimensión del equipo</strong><span>La tarifa incluye un fotógrafo/a o un operador/a por servicio. El segundo ({crewRule.price} €) es recomendable a partir de {crewRule.recommendedFrom} invitados y obligatorio a partir de {crewRule.requiredFrom}.</span></li>
-          </ul>
-        </div>
-      </section>
-    )
-  }
-  {
-    forPros && (
-      <section class="sheet">
-        <header class="sheet__head"><span>Protocolo</span><span>{n('Protocolo')}</span></header>
-        <div class="split">
-          <div class="stack stack--between">
-            <h2 class="big">Protocolo</h2>
-            <p class="script script--lg"><FlatEm text={pro.protocolQuote} /></p>
-          </div>
-          <ul class="rows">
-            {pro.protocol.map((item) => (
-              <li><strong>{item.name}</strong><span>{item.text}</span></li>
-            ))}
-          </ul>
-        </div>
+        <img class="half__img" src={sde.src} alt="" style="object-position: 28% 40%" />
       </section>
     )
   }
@@ -245,7 +159,7 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
     <header class="sheet__head"><span>Condiciones</span><span>{n('Condiciones')}</span></header>
     <h2 class="big">Condiciones</h2>
     <div class="grid5">
-      {conditions.map((item) => (
+      {conditions.filter((item) => !item.only || item.only === audience).map((item) => (
         <div><strong>{item.name}</strong><span>{item.text}</span></div>
       ))}
     </div>
@@ -292,8 +206,7 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
     break-after: page;
   }
 
-  .sheet--dark { background: #0D0D0D; color: #FFFFFF; }
-  .sheet--yellow { background: #FFCA00; color: #111111; }
+  .sheet--dark { background: #121315; color: #FFFFFF; }
 
   .sheet__head {
     display: flex;
@@ -348,15 +261,6 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
     letter-spacing: -0.035em;
   }
 
-  .giant {
-    white-space: nowrap;
-    font-family: var(--font-display);
-    font-size: 132pt;
-    font-weight: 660;
-    line-height: 0.85;
-    letter-spacing: -0.05em;
-  }
-
   .split {
     display: grid;
     grid-template-columns: 1fr 1.2fr;
@@ -365,9 +269,7 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
     align-items: start;
   }
 
-  .split--end { align-items: end; }
   .stack { display: grid; gap: 6mm; }
-  .stack--between { align-content: space-between; height: 100%; }
 
   .title-row { display: flex; align-items: baseline; gap: 10mm; }
 
@@ -388,21 +290,23 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
   .rows b { font-family: var(--font-display); font-size: 14pt; font-weight: 640; }
   .rows small { font-family: var(--font-sans); font-size: 7.5pt; font-weight: 400; }
 
-  .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12mm; }
+  .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12mm; }
   .cols2 .rows li { padding: 2.4mm 0; }
-
-  .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; }
 
   .plan {
     display: grid;
     align-content: start;
     gap: 3.5mm;
-    padding: 6mm;
-    border-top: 0.6mm solid #111111;
-    background: #F5F5F4;
+    padding: 7mm;
+    border-radius: 5mm;
+    background: #F4F4F3;
   }
 
-  .plan--key { border-top-color: #111111; background: #FFCA00; }
+  .plan--main { background: #17191C; color: #FFFFFF; }
+  .plan--main .plan__deliver { border-top-color: rgba(255, 255, 255, 0.2); }
+
+  .cols-plan { display: grid; grid-template-columns: 1.5fr 1fr; gap: 6mm; align-items: stretch; }
+  .plan__alt { align-content: space-between; }
   .plan__deliver { display: grid; gap: 1mm; padding-top: 3mm; border-top: 0.2mm solid rgba(20, 20, 18, 0.2); font-size: 10pt; }
 
   .grid5 {
@@ -417,7 +321,7 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
   .grid5 span { opacity: 0.85; }
 
   /* Portada */
-  .sheet--cover { padding: 0; gap: 0; background: #0D0D0D; color: #FFFFFF; }
+  .sheet--cover { padding: 0; gap: 0; background: #121315; color: #FFFFFF; }
   .cover__img { width: 100%; height: 150mm; object-fit: cover; object-position: 44% 30%; }
 
   .cover__band {
@@ -435,12 +339,16 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
 
   /* Media hoja con imagen */
   .sheet--split { display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding: 0; }
+  .steps { display: grid; gap: 3mm; padding: 0; list-style: none; }
+  .steps li { display: grid; gap: 1mm; padding: 3mm 4mm; border-radius: 3mm; background: rgba(255, 255, 255, 0.07); font-size: 9.5pt; line-height: 1.4; }
+  .steps strong { font-family: var(--font-display); font-size: 12pt; font-weight: 640; }
+  .steps span { opacity: 0.8; }
   .half { display: flex; flex-direction: column; gap: 6mm; padding: 14mm 14mm 14mm 16mm; }
   .half .price { margin-top: auto; }
   .half__img { width: 100%; height: 100%; object-fit: cover; }
 
   /* Cierre */
-  .sheet--close { display: grid; grid-template-columns: 1fr 1fr; padding: 0; gap: 0; background: #0D0D0D; color: #FFFFFF; }
+  .sheet--close { display: grid; grid-template-columns: 1fr 1fr; padding: 0; gap: 0; background: #121315; color: #FFFFFF; }
   .close__img { width: 100%; height: 100%; object-fit: cover; }
   .close__text { display: grid; align-content: center; gap: 10mm; padding: 16mm; }
   .close__text :global(.wordmark) { font-size: 28pt; }

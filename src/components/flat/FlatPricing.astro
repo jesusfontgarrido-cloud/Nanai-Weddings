@@ -1,34 +1,33 @@
 ---
 /**
- * Calculadora de tarifas. Elegir un servicio es como montar la línea de tiempo del día:
- * cada servicio y cada extra es una pista sobre los momentos de la boda (preparativos,
- * ceremonia, cóctel, banquete, barra libre) y el total corre como un contador.
+ * Tarifas como carpetas apiladas (referencia: details.so, tarjetas que asoman unas detrás
+ * de otras). Cada servicio es una carpeta con su pestaña: Fotografía delante, Vídeo y
+ * Foto + vídeo detrás. Al pulsar una pestaña, esa carpeta pasa al frente y las demás se
+ * quedan detrás, asomando.
  *
- * Al elegir:
- * · el bloque amarillo (el destacado del dossier) se desliza bajo el servicio elegido;
- * · el precio rueda como un contador;
- * · la pantalla cambia con un fundido (hoja de contactos para foto, fotograma 2.39:1 para
- *   vídeo, las dos cosas para el pack);
- * · las pistas entran en la línea de tiempo y el cabezal la recorre.
+ * Dentro de cada carpeta: el servicio y su precio (en dos tonos), lo que incluye y, a la
+ * derecha, las imágenes de ejemplo (home) o el dossier de ese servicio (/tarifas; con
+ * foto + vídeo, los dos).
  *
- * Dos modos: «compact» (home: servicio y precio, con enlace a la completa) y «full»
- * (/tarifas: invitados y extras). Sin JS: radios y casillas normales y el precio de
- * partida a la vista. Con movimiento reducido: todo cambia al instante.
+ * Dos modos:
+ * · «compact» (home): «Consultar fecha» (ventana emergente) y «Calcular con extras».
+ * · «full» (/tarifas): debajo, invitados y extras, y un resumen con el total que abre la
+ *   misma ventana emergente con la selección.
  *
- * Los precios salen de src/data/pricing.ts. La selección se manda al formulario de
- * contacto de la página (evento «nanai:selection»).
+ * Sin JS: las pestañas son radios y la carpeta elegida se ve delante igualmente.
+ * Los precios salen de src/data/pricing.ts.
  */
 import { Picture } from 'astro:assets';
 import FlatEm from './FlatEm.astro';
-import { crewRule, euros, extras, groupNames, guestOptions, services, stages, terms, type Group } from '../../data/pricing';
+import FlatDateDialog from './FlatDateDialog.astro';
+import { crewRule, euros, extras, groupNames, guestOptions, services, terms, type Group } from '../../data/pricing';
+import { dossiers } from '../../data/dossiers';
 import { pricingIntro } from '../../data/copy';
 import still from '../../assets/media/provisional/fotograma-novia-buganvilla.jpg';
 import sheet1 from '../../assets/media/provisional/hoja/foto-01.jpg';
 import sheet2 from '../../assets/media/provisional/hoja/foto-02.jpg';
 import sheet3 from '../../assets/media/provisional/hoja/foto-03.jpg';
 import sheet4 from '../../assets/media/provisional/hoja/foto-04.jpg';
-import sheet5 from '../../assets/media/provisional/hoja/foto-05.jpg';
-import sheet6 from '../../assets/media/provisional/hoja/foto-06.jpg';
 
 interface Props {
   mode?: 'compact' | 'full';
@@ -39,33 +38,19 @@ interface Props {
 
 const { mode = 'compact', id = 'tarifas', heading = true } = Astro.props;
 const full = mode === 'full';
-const start = services.find((service) => service.featured) ?? services[0];
-const sheet = [sheet1, sheet2, sheet3, sheet4, sheet5, sheet6];
+const start = services[0];
+const sheet = [sheet1, sheet2, sheet3, sheet4];
 const groups: Group[] = ['video', 'foto'];
-const dayExtras = extras.filter((extra) => extra.slot.kind === 'day');
-
-const trackCode: Record<string, string> = {
-  'operador-extra': 'V2',
-  'camara-extra': 'V3',
-  'dron-video': 'V4',
-  'same-day-edit': 'SDE',
-  podcast: 'A2',
-  'fotografo-extra': 'F2',
-  'dron-foto': 'F3',
-};
 
 const data = {
   services: services.map(({ id, name, price, groups }) => ({ id, name, price, groups })),
-  extras: extras.map(({ id, group, name, price, crew, slot }) => ({ id, group, name, price, crew: Boolean(crew), slot: slot.kind })),
+  extras: extras.map(({ id, group, name, price, crew }) => ({ id, group, name, price, crew: Boolean(crew) })),
   crewRule,
-  booking: terms.booking,
-  freeKm: terms.freeKm,
 };
 
-const startPrice = euros(start.price);
-/** En móvil la regla no cabe entera: nombres cortos. */
-const shortStages = ['Prep.', 'Ceremonia', 'Cóctel', 'Banquete', 'Fiesta'];
 const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`;
+const serviceDossiers = (serviceId: string) =>
+  serviceId === 'foto' ? [dossiers.foto] : serviceId === 'video' ? [dossiers.video] : [dossiers.foto, dossiers.video];
 ---
 
 <section id={id} class:list={['sec', 'fprice', `fprice--${mode}`]} aria-labelledby={`${id}-title`}>
@@ -82,234 +67,187 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
       )
     }
 
-    <form class="fprice__grid" data-pricing data-mode={mode} action={full ? '#contacto' : '/tarifas'} method="get">
+    <form class="fprice__form" data-pricing data-mode={mode} action="#" method="get">
       <script type="application/json" data-pricing-data set:html={JSON.stringify(data)} />
 
-      <div class="fprice__controls">
-        <fieldset class="fprice__packs" data-packs>
-          <legend class="fprice__legend"><span class="fprice__step">01</span> Qué queréis contar</legend>
-          <div class="fprice__packlist" data-packlist>
-            <span class="fprice__af" aria-hidden="true" data-af></span>
-            {
-              services.map((service) => (
-                <label class="fpack">
-                  <input type="radio" name="servicio" value={service.id} checked={service.id === start.id} />
-                  <span class="fpack__name">{service.name}</span>
-                  <span class="fpack__price">{euros(service.price)} €</span>
-                  <span class="fpack__crew">{service.crew}</span>
-                </label>
-              ))
-            }
-          </div>
-        </fieldset>
-
+      <!-- Las carpetas -->
+      <fieldset class="ffolders" data-folders>
+        <legend class="visually-hidden">Servicio</legend>
         {
-          !full && (
-            <div class="fprice__includes">
-              {services.map((service) => (
-                <ul class="fincludes" role="list" data-for={service.id} hidden={service.id !== start.id}>
-                  <li>{service.crew}, {service.id === 'pack' ? 'coordinados' : 'toda la jornada'}</li>
-                  {service.deliver.map((item) => (
-                    <li>{item}</li>
-                  ))}
-                  <li>Entrega en {terms.deliveryMonths} meses como máximo</li>
-                </ul>
-              ))}
+          services.map((service, i) => (
+            <div class="ffolder" data-folder={service.id} data-depth={i === 0 ? 0 : i} style={`--i: ${i}`}>
+              <label class="ffolder__tab">
+                <input type="radio" name="servicio" value={service.id} checked={service.id === start.id} />
+                <span>{service.name}</span>
+              </label>
+
+              <div class="ffolder__body" data-folder-body>
+                <div class="ffolder__info">
+                  <p class="label ffolder__label">Tarifa</p>
+                  <h3 class="ffolder__name">
+                    <span>{service.name}</span>
+                    <span class="ffolder__price">{euros(service.price)} €</span>
+                  </h3>
+                  <ul class="ffolder__list" role="list">
+                    <li>{service.crew} toda la jornada</li>
+                    {service.deliver.map((item) => (
+                      <li>{item}</li>
+                    ))}
+                    <li>Entrega en {terms.deliveryMonths} meses como máximo</li>
+                  </ul>
+                  {!full && (
+                    <div class="ffolder__actions">
+                      <button class="btn btn--light" type="button" data-open-dialog="date-dialog">
+                        Consultar fecha
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                      </button>
+                      <a class="btn ffolder__ghost" href={fullHref(service.id)}>Calcular con extras</a>
+                    </div>
+                  )}
+                </div>
+
+                <div class:list={['ffolder__media', `ffolder__media--${service.id}`]}>
+                  {full ? (
+                    <ul class="ffolder__dossiers" role="list">
+                      {serviceDossiers(service.id).map((dossier) => (
+                        <li>
+                          <a class="fdoc" href={dossier.href} download>
+                            <span class="fdoc__sheet" aria-hidden="true">
+                              <span>PDF</span>
+                              <i /><i /><i />
+                            </span>
+                            <span class="fdoc__text">
+                              <strong>{dossier.title}</strong>
+                              <span>{dossier.contents}</span>
+                            </span>
+                            <span class="fdoc__cta">
+                              Descargar
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6 10l6 6 6-6M5 20h14" /></svg>
+                            </span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <>
+                      {service.id !== 'video' && (
+                        <div class="ffolder__sheet">
+                          {sheet.map((src) => (
+                            <Picture src={src} formats={['avif', 'webp']} widths={[240, 480]} sizes="(min-width: 1024px) 14vw, 40vw" alt="" loading="lazy" />
+                          ))}
+                        </div>
+                      )}
+                      {service.id !== 'foto' && (
+                        <div class="ffolder__film">
+                          <Picture src={still} formats={['avif', 'webp']} widths={[640, 1000, 1400]} sizes="(min-width: 1024px) 40vw, 90vw" alt="" loading="lazy" />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
-          )
+          ))
         }
+      </fieldset>
 
-        {
-          full && (
-            <fieldset class="fprice__guests">
-              <legend class="fprice__legend"><span class="fprice__step">02</span> Cuántos invitados</legend>
-              <div class="fprice__chips">
-                {guestOptions.map((option, i) => (
-                  <label class="fchip">
-                    <input type="radio" name="invitados" value={option.id} checked={i === 0} data-crew={option.crew} />
-                    <span class="chip">{option.label}</span>
-                  </label>
+      {
+        full && (
+          <div class="fcustom">
+            <div class="fcustom__controls">
+              <fieldset class="fcustom__guests">
+                <legend class="fcustom__legend">¿Cuántos invitados?</legend>
+                <div class="fcustom__chips">
+                  {guestOptions.map((option) => (
+                    <label class="fchip">
+                      <input type="radio" name="invitados" value={option.id} data-crew={option.crew} />
+                      <span class="chip">{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+                <p class="note fcustom__crew" data-crew-note hidden />
+              </fieldset>
+
+              <div class="fcustom__extras">
+                <p class="fcustom__legend">Extras</p>
+                {groups.map((group) => (
+                  <fieldset class="fextras" data-group={group}>
+                    <legend class="label fextras__title">{groupNames[group]}</legend>
+                    {extras
+                      .filter((extra) => extra.group === group)
+                      .map((extra) => (
+                        <label class="fextra">
+                          <input type="checkbox" name="extras" value={extra.id} data-extra={extra.id} />
+                          <span class="fextra__box" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                          </span>
+                          <span class="fextra__name">
+                            {extra.name}
+                            {extra.crew && <span class="tag fextra__badge" data-crew-badge hidden />}
+                            {extra.featured && <span class="tag tag--soft">Destacado</span>}
+                          </span>
+                          <span class="fextra__price">+{euros(extra.price)} €</span>
+                          <span class="fextra__text">{extra.text}</span>
+                        </label>
+                      ))}
+                  </fieldset>
                 ))}
               </div>
-              <p class="note fprice__crew-note" data-crew-note aria-live="polite">
-                Con más de {crewRule.recommendedFrom} invitados os recomendamos un segundo fotógrafo/a u operador/a; desde {crewRule.requiredFrom}, es obligatorio.
+            </div>
+
+            <aside class="fsummary" aria-label="Vuestra estimación">
+              <p class="label">Vuestra estimación</p>
+              <p class="price fsummary__price" aria-hidden="true">
+                <span class="odo" data-odo>{euros(start.price)}</span><span class="price__eur">€</span>
               </p>
-            </fieldset>
-          )
-        }
-
-        {
-          full && (
-            <div class="fprice__extras">
-              <p class="fprice__legend"><span class="fprice__step">03</span> Extras</p>
-              {groups.map((group) => (
-                <fieldset class="fextras" data-group={group}>
-                  <legend class="label fextras__title">{groupNames[group]}</legend>
-                  {extras
-                    .filter((extra) => extra.group === group)
-                    .map((extra) => (
-                      <label class:list={['fextra', { 'fextra--featured': extra.featured }]} data-extra-row={extra.id}>
-                        <input type="checkbox" name="extras" value={extra.id} data-extra={extra.id} />
-                        <span class="fextra__box" aria-hidden="true">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-                        </span>
-                        <span class="fextra__name">
-                          {extra.name}
-                          {extra.crew && <span class="tag fextra__badge" data-crew-badge hidden />}
-                          {extra.featured && <span class="tag">Destacado</span>}
-                        </span>
-                        <span class="fextra__price">
-                          +{euros(extra.price)} €{extra.unit && <span class="fextra__unit"> {extra.unit}</span>}
-                        </span>
-                        <span class="fextra__text">{extra.text}</span>
-                      </label>
-                    ))}
-                </fieldset>
-              ))}
-            </div>
-          )
-        }
-
-        {
-          !full && (
-            <p class="fprice__more" data-reveal>
-              <span class="muted">Dron, álbum, Same Day Edit, preboda…</span>
-              <a class="link" href={fullHref(start.id)} data-full-link>Añadir extras y calcular →</a>
-            </p>
-          )
-        }
-      </div>
-
-      <div class="fprice__result tone-gray">
-        <!-- Pantalla: lo que os llevaríais, con un rack focus al cambiar -->
-        <div class="fscreen" data-screen={start.id} aria-hidden="true">
-          <div class="fscreen__layer fscreen__sheet">
-            {
-              sheet.map((src, i) => (
-                <figure class="fscreen__cell">
-                  <Picture src={src} formats={['avif', 'webp']} widths={[200, 400]} sizes="160px" alt="" loading="lazy" />
-                </figure>
-              ))
-            }
-          </div>
-          <div class="fscreen__layer fscreen__film">
-            <Picture src={still} formats={['avif', 'webp']} widths={[640, 1000, 1300]} sizes="(min-width: 1024px) 40vw, 92vw" alt="" loading="lazy" />
-          </div>
-          <span class="fscreen__caption" data-screen-caption>{start.crew}</span>
-        </div>
-
-        <div class="fprice__total">
-          <p class="label fprice__total-label">{full ? 'Vuestra estimación' : 'Desde'}</p>
-          <p class="price fprice__price" aria-hidden="true">
-            <span class="odo" data-odo>{startPrice}</span><span class="price__eur">€</span>
-          </p>
-          <p class="visually-hidden" aria-live="polite" data-total-text>Total: {startPrice} euros</p>
-          <p class="note fprice__reserve" data-reserve>
-            Reserva: {euros(terms.booking * 2)} € · Hasta {terms.freeKm} km de Dos Hermanas, sin desplazamiento
-          </p>
-        </div>
-
-        <!-- Línea de tiempo: la jornada y sus pistas (orientativo) -->
-        <div class="ftl" data-tl>
-          <div class="ftl__ruler" aria-hidden="true">
-            {stages.map((stage, i) => <span data-short={shortStages[i]}><span>{stage}</span></span>)}
-          </div>
-          <div class="ftl__tracks">
-            <span class="ftl__head" aria-hidden="true" data-head></span>
-            <div class="ftl__track is-on" data-track="foto" style="--from: 0; --to: 4" data-for="foto pack">
-              <span class="ftl__clip ftl__clip--main"><b>F1</b> Fotógrafo/a</span>
-            </div>
-            <div class="ftl__track is-on" data-track="video" style="--from: 0; --to: 4" data-for="video pack">
-              <span class="ftl__clip ftl__clip--main"><b>V1</b> Operador/a</span>
-            </div>
-            {
-              dayExtras.map((extra) =>
-                extra.slot.kind === 'day' ? (
-                  <div class="ftl__track" data-track={extra.id} style={`--from: ${extra.slot.from}; --to: ${extra.slot.to}`}>
-                    <span class:list={['ftl__clip', { 'ftl__clip--key': extra.featured }]}>
-                      <b>{trackCode[extra.id]}</b> {extra.name}
-                    </span>
-                  </div>
-                ) : null,
-              )
-            }
-          </div>
-          <p class="ftl__aside" data-aside hidden></p>
-          <p class="visually-hidden" data-tl-text>Cobertura: toda la jornada, de los preparativos a una hora después del inicio de la barra libre.</p>
-        </div>
-
-        <!-- Lo que incluye cada servicio (en la completa, aquí; en la de la home, bajo los servicios) -->
-        {
-          full && (
-            <div class="fprice__includes">
-              {services.map((service) => (
-                <ul class="fincludes" role="list" data-for={service.id} hidden={service.id !== start.id}>
-                  <li>{service.crew}, {service.id === 'pack' ? 'coordinados' : 'toda la jornada'}</li>
-                  {service.deliver.map((item) => (
-                    <li>{item}</li>
-                  ))}
-                  <li>Entrega en {terms.deliveryMonths} meses como máximo</li>
-                </ul>
-              ))}
-            </div>
-          )
-        }
-
-        <div class="fprice__actions">
-          {
-            full ? (
-              <a class="btn btn--accent fprice__cta" href="#contacto" data-to-contact>
+              <p class="visually-hidden" aria-live="polite" data-total-text>Total estimado: {euros(start.price)} euros</p>
+              <ul class="fsummary__list" role="list" data-summary-list>
+                <li><span>{start.name}</span><span>{euros(start.price)} €</span></li>
+              </ul>
+              <p class="note fsummary__warning" data-summary-warning hidden>
+                Con {crewRule.requiredFrom} invitados o más es obligatorio un segundo fotógrafo/a u operador/a: si no, no se llega a todo como se merece.
+              </p>
+              <button class="btn fsummary__cta" type="button" data-open-dialog="date-dialog">
                 Consultar fecha con esta selección
-              </a>
-            ) : (
-              <>
-                <a class="btn fprice__cta" href={fullHref(start.id)} data-full-link>
-                  Calcular con extras
-                </a>
-                <a class="link" href="#contacto" data-to-contact>Consultar fecha →</a>
-              </>
-            )
-          }
-        </div>
-      </div>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </button>
+            </aside>
+          </div>
+        )
+      }
 
       {
         full && (
           <div class="fprice__dock" data-dock aria-hidden="true">
             <span class="fprice__dock-total">
               <span class="label">Estimación</span>
-              <strong data-dock-total>{startPrice} €</strong>
+              <strong data-dock-total>{euros(start.price)} €</strong>
             </span>
-            <a class="btn btn--accent" href="#contacto" tabindex="-1" data-to-contact>Consultar fecha</a>
+            <button class="btn btn--small" type="button" tabindex="-1" data-open-dialog="date-dialog">Consultar fecha</button>
           </div>
         )
       }
     </form>
   </div>
+
+  <FlatDateDialog />
 </section>
 
 <script>
   type Data = {
     services: { id: string; name: string; price: number; groups: string[] }[];
-    extras: { id: string; group: string; name: string; price: number; crew: boolean; slot: 'day' | 'other' | 'delivery' }[];
+    extras: { id: string; group: string; name: string; price: number; crew: boolean }[];
     crewRule: { recommendedFrom: number; requiredFrom: number; price: number };
-    booking: number;
-    freeKm: number;
   };
 
   const euros = (value: number) => String(value).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /**
-   * Contador: cada cifra es una tira 0–9 que rueda hasta su número. Con `hold`, monta las
-   * tiras en cero y espera (la primera vez rueda al entrar la calculadora en pantalla).
-   */
-  const odometer = (node: HTMLElement, value: number, hold = false) => {
-    const text = euros(value);
-    const chars = [...text];
+  /** Contador: cada cifra es una tira 0–9 que rueda hasta su número. */
+  const odometer = (node: HTMLElement, value: number) => {
+    const chars = [...euros(value)];
     const current = [...node.children].map((child) => (child as HTMLElement).dataset.char ?? '');
     const sameShape = current.length === chars.length && current.every((char, i) => (char === '.') === (chars[i] === '.'));
-
     if (!sameShape) {
       node.replaceChildren(
         ...chars.map((char, i) => {
@@ -330,14 +268,11 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
           return col;
         }),
       );
-      // Un fotograma después, para que la tira arranque desde 0 y ruede.
       void node.offsetWidth;
     }
-
-    if (hold) return;
     chars.forEach((char, i) => {
-      const col = node.children[i] as HTMLElement;
       if (char === '.') return;
+      const col = node.children[i] as HTMLElement;
       col.dataset.char = char;
       col.style.setProperty('--d', char);
     });
@@ -348,173 +283,115 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
     if (!raw) return;
     const data = JSON.parse(raw) as Data;
     const full = form.dataset.mode === 'full';
-
-    const packs = form.querySelector<HTMLElement>('[data-packlist]');
-    const af = form.querySelector<HTMLElement>('[data-af]');
+    const folders = [...form.querySelectorAll<HTMLElement>('[data-folder]')];
     const odo = form.querySelector<HTMLElement>('[data-odo]');
     const totalText = form.querySelector<HTMLElement>('[data-total-text]');
-    const reserve = form.querySelector<HTMLElement>('[data-reserve]');
-    const screen = form.querySelector<HTMLElement>('[data-screen]');
-    const caption = form.querySelector<HTMLElement>('[data-screen-caption]');
-    const head = form.querySelector<HTMLElement>('[data-head]');
-    const aside = form.querySelector<HTMLElement>('[data-aside]');
     const dockTotal = form.querySelector<HTMLElement>('[data-dock-total]');
+    const list = form.querySelector<HTMLElement>('[data-summary-list]');
+    const warning = form.querySelector<HTMLElement>('[data-summary-warning]');
     const crewNote = form.querySelector<HTMLElement>('[data-crew-note]');
-    const fullLinks = form.querySelectorAll<HTMLAnchorElement>('[data-full-link]');
 
     form.classList.add('is-live');
     form.addEventListener('submit', (event) => event.preventDefault());
 
-    // Preselección desde la URL (?servicio=video) al venir de la home.
+    // Preselección desde la URL (?servicio=video), al venir de la home.
     const wanted = new URLSearchParams(location.search).get('servicio');
     const wantedInput = wanted ? form.querySelector<HTMLInputElement>(`input[name="servicio"][value="${CSS.escape(wanted)}"]`) : null;
     if (wantedInput) wantedInput.checked = true;
 
-    let lastService = '';
-    // El contador espera a que la calculadora se vea para rodar por primera vez.
-    let seen = reduceMotion || !('IntersectionObserver' in window);
+    const label = (extra: Data['extras'][number], service: Data['services'][number]) =>
+      `${extra.name}${service.groups.length > 1 ? ` (${extra.group === 'video' ? 'vídeo' : 'foto'})` : ''}`;
 
-    const moveAf = () => {
-      const checked = packs?.querySelector<HTMLInputElement>('input:checked')?.closest('label');
-      if (!packs || !af || !checked) return;
-      const box = checked.getBoundingClientRect();
-      const origin = packs.getBoundingClientRect();
-      af.style.setProperty('--x', `${box.left - origin.left}px`);
-      af.style.setProperty('--y', `${box.top - origin.top}px`);
-      af.style.setProperty('--w', `${box.width}px`);
-      af.style.setProperty('--h', `${box.height}px`);
-    };
-
-    const update = (animate = true) => {
+    const update = () => {
       const serviceId = form.querySelector<HTMLInputElement>('input[name="servicio"]:checked')?.value ?? data.services[0].id;
       const service = data.services.find((s) => s.id === serviceId) ?? data.services[0];
-      const serviceChanged = serviceId !== lastService;
-      lastService = serviceId;
 
-      // Invitados → segundo fotógrafo/operador recomendado u obligatorio.
-      const crewLevel = form.querySelector<HTMLInputElement>('input[name="invitados"]:checked')?.dataset.crew ?? 'none';
+      // Carpetas: la elegida delante; las demás detrás, en su orden.
+      const order = [serviceId, ...folders.map((f) => f.dataset.folder ?? '').filter((id) => id !== serviceId)];
+      folders.forEach((folder) => {
+        const depth = order.indexOf(folder.dataset.folder ?? '');
+        folder.dataset.depth = String(depth);
+        const body = folder.querySelector<HTMLElement>('[data-folder-body]');
+        if (body) body.inert = depth !== 0;
+      });
 
-      // Grupos de extras que admite el servicio.
+      // Invitados: se informa, nunca se marca nada por la persona.
+      const guestInput = form.querySelector<HTMLInputElement>('input[name="invitados"]:checked');
+      const crewLevel = guestInput?.dataset.crew ?? 'none';
+
       form.querySelectorAll<HTMLElement>('[data-group]').forEach((group) => {
-        const on = service.groups.includes(group.dataset.group ?? '');
-        group.hidden = !on;
+        group.hidden = !service.groups.includes(group.dataset.group ?? '');
       });
 
       const chosen: Data['extras'] = [];
+      let crewMissing = false;
       data.extras.forEach((extra) => {
         const input = form.querySelector<HTMLInputElement>(`input[data-extra="${extra.id}"]`);
         if (!input) return;
         const available = service.groups.includes(extra.group);
-        const badge = input.closest('label')?.querySelector<HTMLElement>('[data-crew-badge]');
-
         if (extra.crew) {
-          const required = available && crewLevel === 'required';
-          if (required) input.checked = true;
-          if (input.disabled && !required) input.checked = false;
-          input.disabled = required;
+          const badge = input.closest('label')?.querySelector<HTMLElement>('[data-crew-badge]');
           if (badge) {
             badge.hidden = !available || crewLevel === 'none';
             badge.textContent = crewLevel === 'required' ? 'Obligatorio' : 'Recomendado';
+            badge.classList.toggle('tag--soft', crewLevel !== 'required');
           }
+          if (available && crewLevel === 'required' && !input.checked) crewMissing = true;
         }
         if (available && input.checked) chosen.push(extra);
       });
 
+      if (crewNote) {
+        crewNote.hidden = crewLevel === 'none';
+        crewNote.textContent =
+          crewLevel === 'required'
+            ? `Con ${data.crewRule.requiredFrom} invitados o más es obligatorio un segundo fotógrafo/a u operador/a (+${data.crewRule.price} €): si no, no se llega a todo como se merece. Lo añadís vosotros abajo.`
+            : `A partir de ${data.crewRule.recommendedFrom} invitados os recomendamos un segundo fotógrafo/a u operador/a (+${data.crewRule.price} €).`;
+      }
+      if (warning) warning.hidden = !crewMissing;
+
       const total = service.price + chosen.reduce((sum, extra) => sum + extra.price, 0);
-      const reservation = data.booking * service.groups.length;
 
-      if (odo) odometer(odo, total, !seen);
-      if (totalText) totalText.textContent = `Total ${full ? 'estimado' : 'desde'}: ${euros(total)} euros`;
-      if (dockTotal) dockTotal.textContent = `${euros(total)} €`;
-      if (reserve) reserve.textContent = `Reserva: ${euros(reservation)} € · Hasta ${data.freeKm} km de Dos Hermanas, sin desplazamiento`;
-      if (crewNote) crewNote.classList.toggle('is-strong', crewLevel !== 'none');
-
-      // Pantalla: rack focus entre la hoja de contactos, el fotograma o los dos.
-      if (screen && serviceChanged) {
-        screen.dataset.screen = serviceId;
-        if (animate && !reduceMotion) {
-          screen.classList.remove('is-racking');
-          void screen.offsetWidth;
-          screen.classList.add('is-racking');
+      if (full) {
+        if (odo) odometer(odo, total);
+        if (totalText) totalText.textContent = `Total estimado: ${euros(total)} euros`;
+        if (dockTotal) dockTotal.textContent = `${euros(total)} €`;
+        if (list) {
+          list.replaceChildren(
+            ...[{ name: service.name, price: service.price }, ...chosen.map((extra) => ({ name: label(extra, service), price: extra.price }))].map((row) => {
+              const li = document.createElement('li');
+              const a = document.createElement('span');
+              const b = document.createElement('span');
+              a.textContent = row.name;
+              b.textContent = `${euros(row.price)} €`;
+              li.append(a, b);
+              return li;
+            }),
+          );
         }
       }
-      if (caption) {
-        const crew = { foto: 'Un fotógrafo/a', video: 'Un operador/a', pack: 'Fotógrafo/a + operador/a' } as Record<string, string>;
-        const extraCrew = chosen.filter((extra) => extra.crew).length;
-        caption.textContent = `${crew[serviceId] ?? ''}${extraCrew ? ` + ${extraCrew} más` : ''}`;
-      }
 
-      // Pistas de la línea de tiempo.
-      form.querySelectorAll<HTMLElement>('[data-track]').forEach((track) => {
-        const key = track.dataset.track ?? '';
-        const forList = track.dataset.for?.split(' ');
-        const on = forList ? forList.includes(serviceId) : chosen.some((extra) => extra.id === key);
-        track.classList.toggle('is-on', on);
-      });
-
-      const otherDay = chosen.filter((extra) => extra.slot === 'other').map((extra) => `${extra.name}${service.groups.length > 1 ? ` (${extra.group === 'video' ? 'vídeo' : 'foto'})` : ''}`);
-      const delivery = chosen.filter((extra) => extra.slot === 'delivery').map((extra) => extra.name);
-      if (aside) {
-        const parts = [otherDay.length ? `Otro día: ${otherDay.join(', ')}` : '', delivery.length ? `Con la entrega: ${delivery.join(', ')}` : ''].filter(Boolean);
-        aside.textContent = parts.join(' · ');
-        aside.hidden = parts.length === 0;
-      }
-
-      // El cabezal rojo recorre la jornada.
-      if (head && animate && !reduceMotion) {
-        head.classList.remove('is-playing');
-        void head.offsetWidth;
-        head.classList.add('is-playing');
-      }
-
-      // Lo que incluye.
-      form.querySelectorAll<HTMLElement>('ul[data-for]').forEach((list) => {
-        const on = list.dataset.for === serviceId;
-        if (on && list.hidden && animate && !reduceMotion) {
-          list.classList.remove('is-in');
-          requestAnimationFrame(() => list.classList.add('is-in'));
-        }
-        list.hidden = !on;
-      });
-
-      // Se cambia solo el servicio del enlace, sin rehacer la ruta (vale también en vistas previas).
-      fullLinks.forEach((link) => link.setAttribute('href', (link.getAttribute('href') ?? '').replace(/servicio=[^#&]*/, `servicio=${serviceId}`)));
-      moveAf();
-
-      // La selección viaja al formulario de contacto de la página.
-      const names = chosen.map((extra) => `${extra.name}${service.groups.length > 1 ? ` (${extra.group === 'video' ? 'vídeo' : 'foto'})` : ''}`);
-      const summary = `${service.name}${names.length ? ` + ${names.join(', ')}` : ''} · ${euros(total)} € (${full ? 'estimación' : 'desde'})`;
-      const guests = form.querySelector<HTMLInputElement>('input[name="invitados"]:checked')?.value;
-      document.dispatchEvent(new CustomEvent('nanai:selection', { detail: { service: serviceId, summary, guests, detailed: full } }));
+      // La selección viaja a la ventana emergente y al formulario de contacto.
+      const names = chosen.map((extra) => label(extra, service));
+      const guestsLabel = guestInput ? guestInput.closest('label')?.textContent?.trim() : '';
+      const summary = full
+        ? `${service.name}${names.length ? ` + ${names.join(', ')}` : ''} · ${euros(total)} € (estimación)${guestsLabel ? ` · ${guestsLabel} invitados` : ''}`
+        : `${service.name} · ${euros(service.price)} €`;
+      document.dispatchEvent(new CustomEvent('nanai:selection', { detail: { service: serviceId, summary, guests: guestInput?.value, detailed: full } }));
     };
 
-    form.addEventListener('change', () => update());
-    window.addEventListener('resize', moveAf);
-    if (document.fonts) void document.fonts.ready.then(moveAf);
-    update(false);
+    form.addEventListener('change', update);
+    update();
     requestAnimationFrame(() => form.classList.add('is-ready'));
 
-    if (!seen) {
-      const result = form.querySelector('.fprice__price');
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (!entry.isIntersecting) return;
-          observer.disconnect();
-          seen = true;
-          update(false);
-        },
-        { threshold: 0.6 },
-      );
-      if (result) observer.observe(result);
+    // Barra fija de móvil (tarifas): solo mientras se ven los extras.
+    const dock = form.querySelector<HTMLElement>('[data-dock]');
+    const extrasBox = form.querySelector('.fcustom__extras');
+    if (dock && extrasBox && 'IntersectionObserver' in window) {
+      new IntersectionObserver(([entry]) => dock.classList.toggle('is-shown', entry.isIntersecting), { threshold: 0 }).observe(extrasBox);
     }
 
-    // Barra fija de móvil: solo mientras la calculadora está en pantalla.
-    const dock = form.querySelector<HTMLElement>('[data-dock]');
-    if (dock && 'IntersectionObserver' in window) {
-      const observer = new IntersectionObserver(([entry]) => dock.classList.toggle('is-shown', entry.isIntersecting), { threshold: 0 });
-      const controls = form.querySelector('.fprice__extras');
-      if (controls) observer.observe(controls);
-    }
+    if (reduceMotion) form.classList.add('is-still');
   });
 </script>
 
@@ -528,162 +405,249 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
   .fprice__head h2 > span { display: block; }
   .fprice__deck { max-width: 46ch; color: var(--f-muted); }
 
-  .fprice__grid {
-    position: relative;
-    display: grid;
-    gap: clamp(28px, 3.4vw, 56px);
-  }
+  .fprice__form { display: grid; gap: clamp(32px, 4vw, 56px); }
 
-  .fprice__controls {
+  /* ── Carpetas ───────────────────────────────────────────────── */
+  .ffolders {
+    --tab-h: 50px;
+    --peek: 14px;
+    --tab-step: clamp(104px, 21vw, 220px);
     display: grid;
-    align-content: start;
-    gap: clamp(28px, 3vw, 44px);
-  }
-
-  .fprice__packs,
-  .fprice__guests,
-  .fextras {
+    grid-template-columns: minmax(0, 1fr);
     margin: 0;
-    padding: 0;
+    padding: calc(var(--tab-h) + 2 * var(--peek)) 0 0;
     border: 0;
     min-width: 0;
   }
 
-  .fprice__legend {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    padding: 0;
-    margin-bottom: 14px;
+  .ffolder {
+    --folder: #17191C;
+    grid-area: 1 / 1;
+    position: relative;
+    z-index: 3;
+    color: #FFFFFF;
+    transform-origin: 50% 0;
+    transition:
+      transform 760ms var(--f-ease-out),
+      filter 760ms var(--f-ease-out);
+  }
+
+  /* Detrás: un tono medio más claro, asomando por arriba y un poco más estrecha */
+  .ffolder[data-depth='1'] { --folder: #2E3136; z-index: 2; transform: translateY(calc(var(--peek) * -1)) scale(0.975); }
+  .ffolder[data-depth='2'] { --folder: #464A50; z-index: 1; transform: translateY(calc(var(--peek) * -2)) scale(0.95); }
+
+  /* Sin JS: la elegida delante (las demás, detrás a la misma altura) */
+  .ffolders:not(.is-live *) .ffolder:has(input:checked) { z-index: 4; }
+
+  .ffolder__tab {
+    position: absolute;
+    bottom: 100%;
+    left: calc(24px + var(--i) * var(--tab-step));
+    display: inline-flex;
+    align-items: center;
+    height: var(--tab-h);
+    padding-inline: 22px;
+    border-radius: 18px 18px 0 0;
+    background: var(--folder);
+    color: inherit;
     font-size: 15px;
     font-weight: 600;
-  }
-
-  .fprice__step {
-    display: inline-grid;
-    place-items: center;
-    width: 24px;
-    height: 24px;
-    background: var(--f-on-surface);
-    color: var(--f-bg);
-    font-size: 12px;
-    font-weight: 700;
-  }
-
-  /* ── Servicios: tres filas; el recuadro de enfoque salta a la elegida ── */
-  .fprice__packlist {
-    position: relative;
-    display: grid;
-  }
-
-  .fpack {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: baseline;
-    gap: 2px 16px;
-    padding: 18px 18px 16px;
-    border-top: var(--f-hair) solid var(--f-line);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
     cursor: pointer;
-    transition: color 420ms var(--f-ease-out);
+    transition: background-color 760ms var(--f-ease-out), color var(--f-dur) var(--f-ease);
   }
 
-  .fpack:last-of-type { border-bottom: var(--f-hair) solid var(--f-line); }
+  .ffolder[data-depth='1'] .ffolder__tab,
+  .ffolder[data-depth='2'] .ffolder__tab { color: rgba(255, 255, 255, 0.78); }
+  .ffolder[data-depth='1'] .ffolder__tab:hover,
+  .ffolder[data-depth='2'] .ffolder__tab:hover { color: #FFFFFF; }
 
-  .fprice--compact .fprice__includes { padding-inline: 4px; }
+  .ffolder__tab input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .ffolder__tab:has(input:focus-visible) { outline: 2px solid #111111; outline-offset: 3px; }
 
-  .fpack input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
+  .ffolder__body {
+    display: grid;
+    gap: clamp(28px, 3vw, 48px);
+    height: 100%;
+    padding: clamp(24px, 3.4vw, 48px);
+    border-radius: var(--f-r-card);
+    background:
+      linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 45%),
+      var(--folder);
+    box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.06) inset, var(--f-shadow);
+    transition: background-color 760ms var(--f-ease-out);
   }
 
-  .fpack__name {
+  /* Las carpetas de detrás no ocupan sitio: la altura la marca la de delante */
+  .ffolder:not([data-depth='0']) .ffolder__body { position: absolute; inset: 0; overflow: hidden; }
+
+  /* El contenido de las carpetas de detrás no se ve; el de la de delante entra con un fundido */
+  .ffolder__body > * { transition: opacity 520ms var(--f-ease-out) 160ms, transform 700ms var(--f-ease-out) 120ms; }
+  .ffolder:not([data-depth='0']) .ffolder__body > * { opacity: 0; transform: translateY(10px); transition-delay: 0ms; }
+  .ffolders:not(.is-live *) .ffolder:not(:has(input:checked)) .ffolder__body > * { opacity: 0; }
+
+  .ffolder__info { display: grid; align-content: start; gap: 18px; }
+  .ffolder__label { color: rgba(255, 255, 255, 0.62); }
+
+  /* Servicio y precio en dos tonos, como la referencia */
+  .ffolder__name {
+    display: grid;
     font-family: var(--font-display);
-    font-size: clamp(26px, 2.5vw, 38px);
-    font-weight: 620;
-    line-height: 1.05;
-    letter-spacing: -0.03em;
+    font-size: clamp(40px, 5vw, 76px);
+    font-weight: 700;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
   }
 
-  .fpack__price {
+  .ffolder__price { color: #9A9A96; }
+
+  .ffolder__list { display: grid; }
+
+  .ffolder__list li {
+    padding-block: 11px;
+    border-top: var(--f-hair) solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .ffolder__actions { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 6px; }
+
+  .ffolder__ghost {
+    border-color: rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.06);
+    color: #FFFFFF;
+  }
+
+  .ffolder__ghost:hover { background: rgba(255, 255, 255, 0.14); }
+
+  /* Imágenes de ejemplo */
+  .ffolder__media { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-content: center; min-width: 0; }
+
+  .ffolder__sheet {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .ffolder__sheet :global(picture),
+  .ffolder__sheet :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+
+  .ffolder__film :global(picture),
+  .ffolder__film :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 2.39 / 1;
+    object-fit: cover;
+    border-radius: 14px;
+  }
+
+  /* Dossieres (en /tarifas, en lugar de las imágenes) */
+  .ffolder__dossiers { display: grid; gap: 12px; }
+
+  .fdoc {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 18px;
+    padding: 16px 18px;
+    border: var(--f-hair) solid rgba(255, 255, 255, 0.16);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #FFFFFF;
+    text-decoration: none;
+    transition: background-color var(--f-dur) var(--f-ease), border-color var(--f-dur) var(--f-ease);
+  }
+
+  .fdoc:hover { border-color: rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.1); }
+
+  .fdoc__sheet {
+    display: grid;
+    align-content: space-between;
+    gap: 3px;
+    width: 72px;
+    aspect-ratio: 297 / 210;
+    padding: 7px 8px;
+    border-radius: 6px;
+    background: #FFFFFF;
+    color: #111111;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    transition: transform 520ms var(--f-ease-out);
+  }
+
+  .fdoc:hover .fdoc__sheet { transform: rotate(-3deg) translateY(-2px); }
+  .fdoc__sheet i { display: block; height: 2px; border-radius: 2px; background: rgba(17, 17, 17, 0.3); }
+  .fdoc__sheet i:first-of-type { width: 70%; height: 4px; background: #111111; }
+
+  .fdoc__text { display: grid; gap: 2px; min-width: 0; }
+  .fdoc__text strong { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+  .fdoc__text span { color: rgba(255, 255, 255, 0.66); font-size: 14px; }
+
+  .fdoc__cta { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+  .fdoc__cta svg { width: 17px; height: 17px; }
+
+  @media (min-width: 900px) {
+    .ffolder__body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: center; }
+  }
+
+  @media (max-width: 559px) {
+    .ffolders { --tab-h: 44px; --peek: 10px; --tab-step: 30%; }
+    .ffolder__tab { left: calc(12px + var(--i) * var(--tab-step)); padding-inline: 13px; font-size: 13.5px; border-radius: 14px 14px 0 0; }
+    .ffolder__sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .fdoc { grid-template-columns: auto 1fr; }
+    .fdoc__cta { grid-column: 1 / -1; }
+  }
+
+  /* ── Personalizar (tarifas) ─────────────────────────────────── */
+  .fcustom { display: grid; gap: clamp(28px, 3.4vw, 56px); }
+  .fcustom__controls { display: grid; gap: clamp(28px, 3vw, 44px); }
+
+  .fcustom__guests,
+  .fextras { margin: 0; padding: 0; border: 0; min-width: 0; }
+
+  .fcustom__legend {
+    margin-bottom: 14px;
+    padding: 0;
     font-family: var(--font-display);
-    font-size: clamp(20px, 1.8vw, 26px);
-    font-weight: 600;
+    font-size: clamp(22px, 2vw, 28px);
+    font-weight: 700;
     letter-spacing: -0.02em;
   }
 
-  .fpack__crew {
-    grid-column: 1 / -1;
-    color: var(--f-muted);
-    font-size: 14px;
-  }
+  .fcustom__chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fcustom__crew { margin-top: 12px; max-width: 56ch; color: var(--f-on-surface); }
 
-  .fpack:has(input:checked) .fpack__crew { color: var(--f-on-surface); }
-  .fpack:has(input:focus-visible) { outline: 2px solid var(--f-on-surface); outline-offset: 2px; }
-
-  /* Sin JS: la opción elegida, en amarillo fijo */
-  .fpack:has(input:checked) { background: var(--f-yellow); }
-
-  /* Con JS: el bloque amarillo se desliza por detrás */
-  .is-live .fpack:has(input:checked) { background: transparent; }
-  .is-live .fpack:not(:has(input:checked)):hover { background: var(--f-surface-2); }
-
-  .fprice__af {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 0;
-    width: var(--w, 0);
-    height: var(--h, 0);
-    background: var(--f-yellow);
-    transform: translate(var(--x, 0), var(--y, 0));
-    transform-origin: left center;
-    pointer-events: none;
-    opacity: 0;
-  }
-
-  .is-live .fprice__af { opacity: 1; }
-
-  .is-ready .fprice__af {
-    transition:
-      transform 700ms var(--f-ease-out),
-      width 700ms var(--f-ease-out),
-      height 700ms var(--f-ease-out);
-  }
-
-  /* ── Invitados ── */
-  .fprice__chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .fchip { position: relative; display: inline-flex; }
-  .fchip input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-  .fchip .chip { min-height: 44px; cursor: pointer; }
-  .fchip .chip:hover { border-color: var(--f-on-surface); }
-  .fchip input:checked + .chip { border-color: transparent; background: var(--f-inverse); color: var(--f-on-inverse); }
-  .fchip input:focus-visible + .chip { outline: 2px solid var(--f-on-surface); outline-offset: 2px; }
-
-  .fprice__crew-note { margin-top: 12px; max-width: 52ch; }
-  .fprice__crew-note.is-strong { color: var(--f-on-surface); }
-
-  /* ── Extras ── */
-  .fprice__extras { display: grid; gap: 28px; }
-  .fprice__extras .fprice__legend { margin-bottom: 0; }
-  .fextras { display: grid; }
+  .fcustom__extras { display: grid; gap: 24px; }
+  .fcustom__extras .fcustom__legend { margin-bottom: 0; }
+  .fextras { display: grid; gap: 6px; }
   .fextras__title { margin-bottom: 4px; padding: 0; }
 
   .fextra {
     position: relative;
     display: grid;
-    grid-template-columns: 26px 1fr auto;
+    grid-template-columns: 24px 1fr auto;
     align-items: baseline;
     gap: 2px 14px;
-    padding: 14px 4px;
-    border-top: var(--f-hair) solid var(--f-line);
+    padding: 14px 16px;
+    border: var(--f-hair) solid var(--f-line);
+    border-radius: 18px;
     cursor: pointer;
+    transition: background-color var(--f-dur) var(--f-ease), border-color var(--f-dur) var(--f-ease);
   }
 
-  .fextra:last-child { border-bottom: var(--f-hair) solid var(--f-line); }
+  .fextra:hover { border-color: var(--f-line-strong); }
+  .fextra:has(input:checked) { border-color: transparent; background: var(--f-surface-2); }
 
   .fextra input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 
@@ -694,168 +658,61 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
     height: 22px;
     align-self: center;
     border: var(--f-hair) solid var(--f-line-strong);
-    border-radius: var(--f-r);
+    border-radius: 7px;
+    background: #FFFFFF;
     transition: background-color var(--f-dur) var(--f-ease), border-color var(--f-dur) var(--f-ease);
   }
 
   .fextra__box svg { width: 14px; height: 14px; opacity: 0; transform: scale(0.6); transition: opacity var(--f-dur) var(--f-ease), transform var(--f-dur) var(--f-ease); }
-  .fextra input:checked ~ .fextra__box { border-color: var(--f-on-surface); background: var(--f-on-surface); color: var(--f-bg); }
+  .fextra input:checked ~ .fextra__box { border-color: #111111; background: #111111; color: #FFFFFF; }
   .fextra input:checked ~ .fextra__box svg { opacity: 1; transform: none; }
-  .fextra input:focus-visible ~ .fextra__box { outline: 2px solid var(--f-on-surface); outline-offset: 2px; }
-  .fextra input:disabled ~ .fextra__box { border-color: var(--f-on-surface); background: var(--f-yellow); color: #111111; }
-  .fextra:has(input:disabled) { cursor: default; }
+  .fextra input:focus-visible ~ .fextra__box { outline: 2px solid #111111; outline-offset: 2px; }
 
-  .fextra__name {
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 4px 10px;
-    font-weight: 600;
-  }
-
+  .fextra__name { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-weight: 600; }
 
   .fextra__price {
     font-family: var(--font-display);
     font-size: 19px;
-    font-weight: 620;
+    font-weight: 700;
     letter-spacing: -0.015em;
     white-space: nowrap;
     text-align: right;
   }
 
-  .fextra__unit {
-    color: var(--f-muted);
-    font-size: 12px;
-    font-weight: 400;
-    letter-spacing: 0;
-  }
+  .fextra__text { grid-column: 2 / -1; color: var(--f-muted); font-size: 15px; line-height: 1.45; }
 
-  .fextra__text {
-    grid-column: 2 / -1;
-    color: var(--f-muted);
-    font-size: 15px;
-    line-height: 1.45;
-  }
-
-
-  .fprice__more {
-    display: grid;
-    gap: 4px;
-    font-size: 16px;
-  }
-
-  .fprice__more .link { justify-self: start; }
-
-  /* ── Resultado ── */
-  .fprice__result {
+  /* Resumen: cristal, fijo al bajar en escritorio */
+  .fsummary {
     display: grid;
     align-content: start;
-    gap: 22px;
-    padding: clamp(16px, 2vw, 28px);
+    gap: 16px;
+    padding: clamp(22px, 2.6vw, 32px);
+    border: var(--f-hair) solid var(--f-line);
     border-radius: var(--f-r-card);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(244, 244, 243, 0.9));
+    box-shadow: var(--f-shadow);
   }
 
-  /* Pantalla */
-  .fscreen {
-    position: relative;
-    aspect-ratio: 16 / 10;
-    overflow: hidden;
-    border-radius: var(--f-r-media);
-    background: #0D0D0D;
-    color: #FFFFFF;
-  }
+  .fsummary__price { display: flex; align-items: baseline; font-size: clamp(56px, 6vw, 96px); }
 
-  .fscreen__layer {
-    position: absolute;
-    inset: 0;
-    transition: opacity 700ms var(--f-ease-out), filter 700ms var(--f-ease-out), clip-path 900ms var(--f-ease-out);
-  }
+  .fsummary__list { display: grid; }
 
-  .fscreen__sheet {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    padding: 6px;
-    background: #FFFFFF;
-  }
-
-  .fscreen__cell {
-    position: relative;
-    margin: 0;
-    overflow: hidden;
-  }
-
-  .fscreen__cell :global(picture),
-  .fscreen__cell :global(img) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-
-  /* Fotograma 2.39:1 con su letterbox */
-  .fscreen__film { background: #0E0E0D; }
-
-  .fscreen__film :global(picture) {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 100%;
-    aspect-ratio: 2.39 / 1;
-    transform: translateY(-50%);
-  }
-
-  .fscreen__film :global(img) { width: 100%; height: 100%; object-fit: cover; }
-
-
-  .fscreen__caption {
-    position: absolute;
-    left: 14px;
-    bottom: 12px;
-    z-index: 2;
-    padding: 3px 8px;
-    border-radius: 4px;
-    background: #111111;
-    color: #FFFFFF;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-  }
-
-  /* Qué capa se ve según el servicio */
-  .fscreen[data-screen='foto'] .fscreen__film { opacity: 0; }
-  .fscreen[data-screen='video'] .fscreen__sheet { opacity: 0; }
-  /* Pack: pantalla partida, la hoja de contactos a la izquierda y el fotograma a la derecha */
-  .fscreen[data-screen='pack'] .fscreen__film { clip-path: inset(0 0 0 50%); }
-  .fscreen[data-screen='pack'] .fscreen__sheet { right: 50%; grid-template-columns: repeat(2, 1fr); }
-  .fscreen[data-screen='pack'] .fscreen__cell:nth-child(n + 5) { display: none; }
-  .fscreen:not([data-screen='pack']) .fscreen__layer { clip-path: inset(0 0 0 0); }
-
-  /* Fundido a blanco al cambiar */
-  .fscreen.is-racking .fscreen__layer { animation: fprice-fade 800ms var(--f-ease-out); }
-
-  @keyframes fprice-fade {
-    0% { opacity: 1; }
-    35% { opacity: 0.15; }
-    100% { opacity: 1; }
-  }
-
-  /* Total */
-  .fprice__total { display: grid; gap: 6px; }
-  .fprice__total-label { color: var(--f-muted); }
-
-  .fprice__price {
+  /* Las filas las crea el script: sin el atributo de ámbito, de ahí :global */
+  .fsummary__list :global(li) {
     display: flex;
-    align-items: baseline;
-    font-size: clamp(64px, 7.4vw, 124px);
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 9px;
+    border-top: var(--f-hair) solid var(--f-line);
+    font-size: 15px;
   }
 
-  .odo {
-    display: inline-flex;
-    height: 1.02em;
-    overflow: hidden;
-    line-height: 1.02;
-  }
+  .fsummary__list :global(li span:last-child) { font-weight: 600; white-space: nowrap; }
+  .fsummary__warning { color: var(--f-on-surface); }
+  .fsummary__cta { width: 100%; white-space: normal; text-align: center; }
+
+  /* Contador */
+  .odo { display: inline-flex; height: 1.02em; overflow: hidden; line-height: 1.02; }
 
   .odo :global(.odo__col) {
     display: inline-block;
@@ -877,226 +734,38 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
 
   .odo :global(.odo__strip span) { display: block; height: 1.02em; }
 
-  .fprice__reserve { font-size: 14px; }
-
-  /* ── Línea de tiempo ── */
-  .ftl { display: grid; gap: 8px; }
-
-  .ftl__ruler,
-  .ftl__track {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-
-  .ftl__ruler {
-    padding-bottom: 6px;
-    border-bottom: var(--f-hair) solid var(--f-line-strong);
-    background-image: linear-gradient(to right, var(--f-line-strong) 1px, transparent 1px);
-    background-size: 20% 6px;
-    background-position: bottom left;
-    background-repeat: repeat-x;
-    color: var(--f-muted);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .ftl__ruler > span {
-    padding-left: 4px;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  .ftl__tracks {
-    position: relative;
-    display: grid;
-  }
-
-  .ftl__track {
-    display: grid;
-    grid-template-rows: 0fr;
-    opacity: 0;
-    transition: grid-template-rows 520ms var(--f-ease-out), opacity 420ms var(--f-ease-out);
-  }
-
-  .ftl__track.is-on { grid-template-rows: 1fr; opacity: 1; }
-
-  .ftl__clip {
-    grid-column: calc(var(--from) + 1) / calc(var(--to) + 2);
-    min-height: 0;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-block: 3px;
-    padding-inline: 8px;
-    background: var(--f-on-surface);
-    color: var(--f-bg);
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 26px;
-    white-space: nowrap;
-    transform-origin: left center;
-    transform: scaleX(0.04);
-    transition: transform 720ms var(--f-ease-out);
-  }
-
-  .ftl__track.is-on .ftl__clip { transform: none; }
-  .ftl__track:not(.is-on) .ftl__clip { margin-block: 0; }
-  .ftl__clip b { font-weight: 700; }
-
-  /* Los extras, en hueco: se distinguen de los servicios base */
-  .ftl__clip:not(.ftl__clip--main) {
-    background: transparent;
-    box-shadow: inset 0 0 0 1px var(--f-on-surface);
-    color: var(--f-on-surface);
-  }
-
-  /* Lo destacado (Same Day Edit), en amarillo */
-  .ftl__clip--key:not(.ftl__clip--main) { background: var(--f-yellow); box-shadow: none; color: #111111; }
-
-  /* Cabezal: recorre la jornada al cambiar */
-  .ftl__head {
-    position: absolute;
-    top: -8px;
-    bottom: 0;
-    left: 0;
-    z-index: 2;
-    width: 2px;
-    background: var(--f-on-surface);
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .ftl__head::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -4px;
-    width: 10px;
-    height: 8px;
-    background: var(--f-on-surface);
-    clip-path: polygon(0 0, 100% 0, 50% 100%);
-  }
-
-  .ftl__head.is-playing { animation: fprice-head 1300ms cubic-bezier(0.45, 0, 0.2, 1) both; }
-
-  @keyframes fprice-head {
-    0% { left: 0; opacity: 1; }
-    88% { left: calc(100% - 2px); opacity: 1; }
-    100% { left: calc(100% - 2px); opacity: 0; }
-  }
-
-  .ftl__aside {
-    color: var(--f-muted);
-    font-size: 14px;
-  }
-
-  /* Lo que incluye */
-  .fincludes {
-    display: grid;
-    gap: 8px;
-  }
-
-  .fincludes li {
-    position: relative;
-    padding-left: 22px;
-    font-size: 16px;
-    line-height: 1.4;
-  }
-
-  .fincludes li::before {
-    content: '';
-    position: absolute;
-    top: 0.62em;
-    left: 2px;
-    width: 10px;
-    height: 1px;
-    background: var(--f-on-surface);
-  }
-
-  html.motion .fincludes.is-in li { animation: fprice-li 620ms var(--f-ease-out) both; }
-  html.motion .fincludes.is-in li:nth-child(2) { animation-delay: 60ms; }
-  html.motion .fincludes.is-in li:nth-child(3) { animation-delay: 120ms; }
-  html.motion .fincludes.is-in li:nth-child(4) { animation-delay: 180ms; }
-  html.motion .fincludes.is-in li:nth-child(5) { animation-delay: 240ms; }
-
-  @keyframes fprice-li {
-    from { opacity: 0; transform: translateY(10px); }
-  }
-
-  .fprice__actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 12px 22px;
-    padding-top: 4px;
-  }
-
-  /* Barra fija en móvil (calculadora completa) */
+  /* Barra fija en móvil */
   .fprice__dock { display: none; }
 
   @media (max-width: 1023px) {
     .fprice__dock {
       position: sticky;
-      bottom: 0;
+      bottom: 12px;
       z-index: 5;
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 16px;
-      margin-inline: calc(var(--f-gutter) * -1);
-      padding: 10px var(--f-gutter);
-      border-top: var(--f-hair) solid var(--f-line);
-      background: rgba(255, 255, 255, 0.97);
-      transform: translateY(110%);
+      padding: 10px 10px 10px 22px;
+      border: var(--f-hair) solid rgba(255, 255, 255, 0.6);
+      border-radius: var(--f-r);
+      background: var(--f-glass);
+      box-shadow: var(--f-shadow);
+      -webkit-backdrop-filter: var(--f-blur);
+      backdrop-filter: var(--f-blur);
+      transform: translateY(140%);
       opacity: 0;
       pointer-events: none;
-      transition: transform 380ms var(--f-ease-out), opacity 380ms var(--f-ease-out);
+      transition: transform 420ms var(--f-ease-out), opacity 420ms var(--f-ease-out);
     }
 
     .fprice__dock.is-shown { transform: none; opacity: 1; pointer-events: auto; }
     .fprice__dock-total { display: grid; }
-    .fprice__dock-total strong { font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
-    .fprice__dock .btn { min-height: 48px; padding-inline: 18px; font-size: 15px; }
-
-    /* Móvil: servicio → resultado → invitados → extras → barra */
-    .fprice--full .fprice__controls { display: contents; }
-    .fprice--full .fprice__packs { order: 1; }
-    .fprice--full .fprice__result { order: 2; }
-    .fprice--full .fprice__guests { order: 3; }
-    .fprice--full .fprice__extras { order: 4; }
-    .fprice--full .fprice__dock { order: 5; }
-
-    /* Home: servicio → resultado → qué incluye → enlace a la completa */
-    .fprice--compact .fprice__controls { display: contents; }
-    .fprice--compact .fprice__packs { order: 1; }
-    .fprice--compact .fprice__result { order: 2; }
-    .fprice--compact .fprice__includes { order: 3; }
-    .fprice--compact .fprice__more { order: 4; }
+    .fprice__dock-total strong { font-family: var(--font-display); font-size: 24px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
   }
 
   @media (min-width: 1024px) {
-    .fprice__grid {
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-      align-items: start;
-    }
-
-    .fprice__controls { grid-column: 1 / span 5; }
-    .fprice__result { grid-column: 7 / span 6; position: sticky; top: 84px; }
-    .fprice--compact .fprice__includes { padding-top: 6px; }
-  }
-
-  @media (max-width: 559px) {
-    .ftl__ruler { letter-spacing: 0; text-transform: none; }
-    .ftl__ruler > span > span { display: none; }
-    .ftl__ruler > span::before { content: attr(data-short); }
-  }
-
-  @media (max-width: 419px) {
-    .ftl__ruler { font-size: 10px; }
-    .ftl__ruler > span { padding-left: 3px; }
-    .ftl__clip { font-size: 11px; padding-inline: 6px; gap: 5px; }
+    .fcustom { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: start; }
+    .fsummary { position: sticky; top: 96px; }
   }
 </style>

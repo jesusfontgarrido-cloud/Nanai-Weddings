@@ -1,0 +1,166 @@
+---
+/**
+ * Visor de un trabajo, en ventana emergente oscura: el tráiler (Vimeo con fachada) o la
+ * galería de fotos ordenada por momentos. Sin más información que la pareja y el lugar.
+ * Se abre con cualquier [data-open-dialog="ver-<id>"]; en /historias, también con #<id>.
+ */
+import { Picture } from 'astro:assets';
+import FlatFilm from './FlatFilm.astro';
+import FlatPh from './FlatPh.astro';
+import { kindNames, type Work } from '../../data/stories';
+
+interface Props {
+  work: Work;
+}
+
+const { work } = Astro.props;
+const title = `${kindNames[work.kind]} · ${work.couple}`;
+---
+
+<dialog id={`ver-${work.id}`} class="fdialog fviewer" aria-labelledby={`ver-${work.id}-title`} data-viewer={work.id}>
+  <div class="fviewer__head">
+    <p id={`ver-${work.id}-title`} class="fviewer__title">
+      <span class="fviewer__couple" data-pending={work.pending ? 'text' : undefined}>{work.couple}</span>
+      <span class="label">{kindNames[work.kind]} · {work.place}</span>
+    </p>
+    <button class="fviewer__close" type="button" data-close-dialog aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+    </button>
+  </div>
+
+  {
+    work.kind === 'video' ? (
+      <div class="fviewer__film">
+        <FlatFilm vimeoId={work.vimeoId} title={title} poster={work.cover.src} posterAlt={work.cover.alt} ratio="16 / 9" pendingWhat="Tráiler de la boda" bare />
+      </div>
+    ) : (
+      <div class="fviewer__gallery">
+        <nav class="fviewer__chapters" aria-label="Momentos">
+          {work.chapters?.map((chapter, i) => (
+            <a class="chip" href={`#ver-${work.id}-${i}`}>{chapter.name}</a>
+          ))}
+        </nav>
+        {work.chapters?.map((chapter, i) => (
+          <section class="fviewer__chapter" id={`ver-${work.id}-${i}`} aria-label={chapter.name}>
+            <h3 class="label fviewer__chapter-name">{chapter.name}</h3>
+            <div class="fviewer__grid">
+              {chapter.photos.map((photo) =>
+                photo ? (
+                  <Picture src={photo.src} formats={['avif', 'webp']} widths={[400, 800]} sizes="(min-width: 900px) 30vw, 46vw" alt={photo.alt} loading="lazy" />
+                ) : (
+                  <FlatPh what={`Foto · ${chapter.name.toLowerCase()}`} format="FOTO · 4:5" ratio="4 / 5" dark />
+                ),
+              )}
+            </div>
+          </section>
+        ))}
+      </div>
+    )
+  }
+</dialog>
+
+<style>
+  .fviewer {
+    width: min(1200px, calc(100% - 24px));
+    max-height: calc(100dvh - 24px);
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(18, 19, 21, 0.94);
+    color: #FFFFFF;
+  }
+
+  .fviewer::backdrop { background: rgba(10, 10, 10, 0.62); }
+
+  .fviewer__head {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 16px clamp(16px, 2.4vw, 28px);
+    background: linear-gradient(rgba(18, 19, 21, 0.96) 60%, rgba(18, 19, 21, 0));
+  }
+
+  .fviewer__title { display: grid; gap: 4px; }
+  .fviewer__title .label { color: rgba(255, 255, 255, 0.6); }
+
+  .fviewer__couple {
+    font-family: var(--font-serif);
+    font-size: clamp(22px, 2vw, 28px);
+    font-size-adjust: ex-height 0.48;
+    font-style: italic;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  .fviewer__close {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border: var(--f-hair) solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    color: #FFFFFF;
+    cursor: pointer;
+    transition: background-color var(--f-dur) var(--f-ease);
+  }
+
+  .fviewer__close:hover { background: rgba(255, 255, 255, 0.16); }
+  .fviewer__close svg { width: 20px; height: 20px; }
+
+  .fviewer__film { padding: 0 clamp(12px, 2.4vw, 28px) clamp(12px, 2.4vw, 28px); }
+
+  .fviewer__gallery {
+    display: grid;
+    gap: clamp(28px, 3vw, 44px);
+    padding: 0 clamp(12px, 2.4vw, 28px) clamp(20px, 3vw, 36px);
+  }
+
+  .fviewer__chapters {
+    position: sticky;
+    top: 76px;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .fviewer__chapters .chip {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(18, 19, 21, 0.7);
+    color: #FFFFFF;
+    text-decoration: none;
+    -webkit-backdrop-filter: var(--f-blur);
+    backdrop-filter: var(--f-blur);
+  }
+
+  .fviewer__chapters .chip:hover { border-color: rgba(255, 255, 255, 0.6); }
+
+  .fviewer__chapter { display: grid; gap: 14px; scroll-margin-top: 130px; }
+  .fviewer__chapter-name { color: rgba(255, 255, 255, 0.7); }
+
+  .fviewer__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .fviewer__grid :global(picture),
+  .fviewer__grid :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+
+  .fviewer__grid :global(.ph) { border-radius: 12px; }
+
+  @media (min-width: 900px) {
+    .fviewer__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+</style>

@@ -1,0 +1,27 @@
+---
+/**
+ * Consentimiento RGPD de todos los formularios: casilla desmarcada y obligatoria, y la
+ * primera capa de información junto al botón, con enlace a la política completa.
+ */
+import { site } from '../../data/site';
+
+interface Props {
+  id: string;
+  /** Para qué se usan los datos en este formulario. */
+  purpose?: string;
+}
+
+const { id, purpose = 'responder a vuestra consulta y, si la pedís, prepararos un presupuesto' } = Astro.props;
+---
+
+<div class="fconsent">
+  <label class="fconsent__check" for={id}>
+    <input id={id} type="checkbox" name="consentimiento" value="Acepta la política de privacidad" required />
+    <span>He leído y acepto la <a href="/privacidad">política de privacidad</a>.</span>
+  </label>
+  <p class="fconsent__info">
+    <strong>Responsable:</strong> {site.name} ({site.legal.holder}). <strong>Finalidad:</strong> {purpose}.
+    <strong>Legitimación:</strong> vuestro consentimiento. <strong>Destinatarios:</strong> no se ceden datos a terceros salvo obligación legal; el formulario se envía a través de Web3Forms.
+    <strong>Derechos:</strong> acceso, rectificación, supresión y los demás que explica la <a href="/privacidad">política de privacidad</a>, escribiendo a {site.email}.
+  </p>
+</div>

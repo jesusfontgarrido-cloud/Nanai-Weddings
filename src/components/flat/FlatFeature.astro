@@ -1,8 +1,9 @@
 ---
 /**
- * Servicio destacado: Same Day Edit (dossier para planners). Cápsula negra, la sala de
- * proyección: a la izquierda el nombre, la frase en Playfair y el precio; a la derecha,
- * el fotograma. Es el extra que más diferencia: el vídeo de la boda, en la propia boda.
+ * Same Day Edit (dossier para planners, «Servicio destacado»), maquetado para la web y no
+ * como la diapositiva: qué es (titular y frase), cómo funciona (tres pasos), cuánto cuesta
+ * y qué no incluye. La imagen va «proyectada»: una pantalla con el halo de luz detrás,
+ * porque eso es el servicio, el vídeo de la boda proyectado en la propia boda.
  */
 import { Picture } from 'astro:assets';
 import FlatEm from './FlatEm.astro';
@@ -13,56 +14,140 @@ import frame from '../../assets/media/provisional/fotograma-novia-sonrisa.jpg';
 const price = extras.find((extra) => extra.id === 'same-day-edit')?.price ?? 0;
 ---
 
-<section class="sec tone-dark ffeature" aria-labelledby="sde-title">
-  <div class="wrap ffeature__grid">
-    <div class="ffeature__text">
-      <p class="label ffeature__label" data-reveal>{sameDayEdit.label}</p>
-      <h2 id="sde-title" class="display ffeature__title" data-reveal="lines"><span>{sameDayEdit.title}</span></h2>
-      <p class="quote ffeature__quote" data-reveal style="--i: 2"><FlatEm text={sameDayEdit.quote} /></p>
-      <p class="ffeature__body" data-reveal style="--i: 3">{sameDayEdit.text}</p>
-      <p class="price ffeature__price" data-reveal style="--i: 4">{euros(price)}<span class="price__eur">€</span></p>
+<section id="same-day-edit" class="sec sec--card tone-dark ffeature" aria-labelledby="sde-title">
+  <div class="wrap ffeature__inner">
+    <div class="ffeature__head">
+      <div class="ffeature__titles">
+        <p class="label ffeature__label" data-reveal>{sameDayEdit.label} · vídeo</p>
+        <h2 id="sde-title" class="display ffeature__title" data-reveal="lines"><span>{sameDayEdit.title}</span></h2>
+        <p class="ffeature__quote" data-reveal style="--i: 2"><FlatEm text={sameDayEdit.quote} /></p>
+      </div>
+      <p class="ffeature__price" data-reveal style="--i: 3">
+        <span class="label">Extra</span>
+        <span class="price">+{euros(price)}<span class="price__eur">€</span></span>
+      </p>
     </div>
 
-    <figure class="ffeature__img" data-reveal="focus">
-      <Picture src={frame} formats={['avif', 'webp']} widths={[640, 1000, 1400]} sizes="(min-width: 1024px) 50vw, 92vw" alt="Fotograma: la novia sonríe a contraluz, con pendientes de corazón" loading="lazy" style="object-position: 28% 40%" />
+    <figure class="ffeature__screen" data-reveal="focus">
+      <span class="ffeature__glow" aria-hidden="true"></span>
+      <Picture src={frame} formats={['avif', 'webp']} widths={[800, 1280, 1800]} sizes="(min-width: 1200px) 1100px, 92vw" alt="Fotograma: la novia sonríe a contraluz, con pendientes de corazón" loading="lazy" style="object-position: 28% 40%" />
     </figure>
+
+    <ol class="ffeature__steps" role="list" data-stagger>
+      {
+        sameDayEdit.steps.map((step, i) => (
+          <li class="ffeature__step">
+            <span class="ffeature__num" aria-hidden="true">0{i + 1}</span>
+            <h3 class="ffeature__step-name">{step.name}</h3>
+            <p>{step.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+
+    <p class="note ffeature__note" data-reveal>{sameDayEdit.note}</p>
   </div>
 </section>
 
 <style>
-  .ffeature__grid {
+  .ffeature__inner { display: grid; gap: clamp(32px, 4vw, 56px); }
+
+  .ffeature__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: end;
+    gap: 24px 48px;
+  }
+
+  .ffeature__titles { display: grid; gap: 14px; }
+  .ffeature__label { color: var(--f-muted); }
+  .ffeature__title { font-size: clamp(50px, 7vw, 120px); }
+  .ffeature__title > span { display: block; }
+
+  .ffeature__quote {
+    max-width: 24ch;
+    color: var(--f-muted);
+    font-size: clamp(22px, 2vw, 30px);
+    line-height: 1.25;
+  }
+
+  .ffeature__quote :global(.accent) { color: #FFFFFF; }
+
+  .ffeature__price {
     display: grid;
-    gap: clamp(32px, 4vw, 64px);
-    align-items: center;
+    justify-items: end;
+    gap: 6px;
+    padding: 18px 26px;
+    border: var(--f-hair) solid rgba(255, 255, 255, 0.14);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.05);
   }
 
-  .ffeature__text { display: grid; gap: 18px; }
+  .ffeature__price .price { font-size: clamp(44px, 4.4vw, 68px); }
 
-  .ffeature__label { color: var(--f-signal); }
-
-  .ffeature__title { font-size: clamp(54px, 7vw, 120px); }
-  .ffeature__quote { max-width: 18ch; font-size: clamp(26px, 2.6vw, 40px); }
-  .ffeature__quote :global(.accent) { color: inherit; }
-  .ffeature__body { max-width: 46ch; color: var(--f-muted); }
-  .ffeature__price { font-size: clamp(44px, 4.6vw, 72px); color: var(--f-signal); }
-
-  .ffeature__img {
+  /* La pantalla: imagen ancha con el halo del proyector detrás */
+  .ffeature__screen {
     position: relative;
+    isolation: isolate;
     margin: 0;
-    aspect-ratio: 4 / 5;
-    overflow: hidden;
+    padding: clamp(16px, 3vw, 40px) 0;
   }
 
-  .ffeature__img :global(picture),
-  .ffeature__img :global(img) {
+  .ffeature__glow {
+    position: absolute;
+    inset: -10% -6%;
+    z-index: -1;
+    background: radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 70%);
+    filter: blur(20px);
+  }
+
+  .ffeature__screen :global(picture),
+  .ffeature__screen :global(img) {
     display: block;
     width: 100%;
-    height: 100%;
+    height: auto;
+    aspect-ratio: 2.39 / 1;
     object-fit: cover;
+    border-radius: var(--f-r-media);
   }
 
-  @media (min-width: 1024px) {
-    .ffeature__grid { grid-template-columns: 1fr 1fr; }
-    .ffeature__img { aspect-ratio: 5 / 6; }
+  .ffeature__screen :global(img) { box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5); }
+
+  .ffeature__steps {
+    display: grid;
+    gap: 10px;
+  }
+
+  .ffeature__step {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    padding: clamp(18px, 2vw, 26px);
+    border: var(--f-hair) solid rgba(255, 255, 255, 0.1);
+    border-radius: 22px;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  }
+
+  .ffeature__num { color: var(--f-mid); font-size: 13px; font-weight: 600; letter-spacing: 0.14em; }
+
+  .ffeature__step-name {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 1.8vw, 28px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .ffeature__step p { color: var(--f-muted); font-size: 16px; line-height: 1.5; }
+
+  .ffeature__note { color: var(--f-muted); }
+
+  @media (min-width: 800px) {
+    .ffeature__steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 699px) {
+    .ffeature__screen :global(img) { aspect-ratio: 16 / 10; }
+    .ffeature__price { justify-items: start; }
   }
 </style>

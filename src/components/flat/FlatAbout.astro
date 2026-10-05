@@ -1,0 +1,81 @@
+---
+/**
+ * Sobre nosotros: qué es Nanai Studio y quién es Jesús Font, contado desde las bodas.
+ * Retrato a la izquierda (el de la web de Studio), texto a la derecha con la firma y un
+ * enlace a nanaistudio.es. Textos en copy.ts (about).
+ */
+import { Picture } from 'astro:assets';
+import { about } from '../../data/copy';
+import { site } from '../../data/site';
+import portrait from '../../assets/media/jesus-font-4x5.jpg';
+---
+
+<section id="nosotros" class="sec fabout" aria-labelledby="about-title">
+  <div class="wrap fabout__grid">
+    <figure class="fabout__portrait" data-reveal="focus">
+      <Picture src={portrait} formats={['avif', 'webp']} widths={[480, 800, 1200]} sizes="(min-width: 900px) 38vw, 92vw" alt="Jesús Font con una cámara de cine, sobre fondo blanco" loading="lazy" />
+    </figure>
+
+    <div class="fabout__text">
+      <p class="label" data-reveal>{about.label}</p>
+      <h2 id="about-title" class="h2" data-reveal="lines">
+        <span>{about.title[0]}</span>
+        <span class="accent tone-2">{about.title[1]}</span>
+      </h2>
+      <p class="lead fabout__lead" data-reveal style="--i: 2">{about.lead}</p>
+      <div class="fabout__bio" data-reveal style="--i: 3">
+        {about.bio.map((paragraph) => <p>{paragraph}</p>)}
+      </div>
+      <p class="fabout__sign" data-reveal style="--i: 4">
+        <span class="accent">{about.signature.name}</span>
+        <span class="label">{about.signature.role}</span>
+      </p>
+      <a class="btn btn--line btn--small fabout__link" href={site.parent.url} data-reveal style="--i: 5">
+        {about.studioLink}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8" /></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .fabout__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(32px, 4vw, 72px);
+    align-items: center;
+  }
+
+  .fabout__portrait { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin: 0; overflow: hidden; }
+
+  .fabout__portrait :global(picture),
+  .fabout__portrait :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: var(--f-r-card);
+    background: var(--f-surface-2);
+  }
+
+  .fabout__text { display: grid; align-content: center; gap: 18px; }
+  .fabout__text h2 > span { display: block; }
+  .fabout__lead { max-width: 36ch; }
+  .fabout__bio { display: grid; gap: 14px; max-width: 54ch; color: var(--f-muted); }
+
+  .fabout__sign {
+    display: grid;
+    gap: 2px;
+    padding-top: 8px;
+  }
+
+  .fabout__sign .accent { font-size: clamp(26px, 2.2vw, 34px); line-height: 1.1; }
+  .fabout__sign .label { color: var(--f-muted); }
+  .fabout__link { justify-self: start; }
+
+  @media (min-width: 900px) {
+    .fabout__grid { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+    .fabout__portrait { max-width: 520px; }
+  }
+</style>

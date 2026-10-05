@@ -1,6 +1,7 @@
 /**
  * Textos de la web. Cada uno indica su origen:
  * · «dossier»: copiado o adaptado de los dossieres de 2026.
+ * · «Studio»: de la web de Nanai Studio (src/data/copy.ts de allí).
  * · «nuevo»: escrito para la web; se puede cambiar sin tocar nada más.
  * Lo que va entre asteriscos sale en Playfair cursiva (FlatEm).
  * Nada de reseñas, cifras ni clientes inventados.
@@ -11,8 +12,7 @@ export const plain = (text: string) => text.replace(/\*/g, '');
 /** Hero. Origen: dossier para planners («Vosotros diseñáis la boda; nosotros la contamos»), adaptado a las parejas. */
 export const hero = {
   label: 'Fotografía y vídeo de bodas en Sevilla',
-  claim: ['Vosotros la vivís,', 'nosotros la *contamos*'] as const,
-  pro: { lead: '¿Wedding planner, finca o proveedor?', link: 'Trabajemos juntos' },
+  claim: ['Vosotros la vivís,', 'nosotros la contamos'] as const,
 };
 
 /** Calculadora. Origen: dossier para parejas («Preferimos daros a escoger…»). */
@@ -43,36 +43,38 @@ export const method = {
   ],
 };
 
-/** Proceso. Origen: condiciones del dossier, ordenadas como un calendario. Redacción nueva. */
+/**
+ * Proceso. Origen: condiciones del dossier, ordenadas como un calendario. Redacción nueva.
+ * Las cifras (reserva, kilómetros) viven en las preguntas, no aquí.
+ */
 export const process = {
   label: 'Del primer mensaje a la entrega',
   title: 'Así es trabajar con nosotros',
-  deck: 'Sin letra pequeña: cada paso, con su condición.',
+  deck: 'Cinco pasos, de la primera consulta a la entrega.',
   steps: [
     { name: 'Hablamos', text: 'Nos contáis fecha y lugar, y os decimos si estamos libres.' },
-    { name: 'Reservamos', text: '100 € por servicio y la fecha es vuestra.' },
+    { name: 'Reservamos', text: 'Con la reserva, la fecha es vuestra.' },
     { name: 'Nos conocemos', text: 'Un café, vuestro cronograma y vuestras películas, series y artistas favoritos.' },
-    { name: 'El día', text: 'De 8 a 9 horas: de los preparativos a una hora después de la barra libre.', key: true },
+    { name: 'El día', text: 'De los preparativos a una hora después del inicio de la barra libre.' },
     { name: 'La entrega', text: 'Como mucho, cuatro meses después. En pendrive y con una revisión del vídeo.' },
   ],
 };
 
-/** Seguridad técnica. Origen: dossier para planners. */
-export const security = {
-  quote: 'Una boda no se *repite*.',
-  deck: 'Nuestro equipo está pensado para no perder ni un archivo ni una palabra.',
-  items: [
-    { name: 'Doble tarjeta', text: 'Todas las cámaras graban en dos tarjetas a la vez. Si una falla, la otra conserva el material.' },
-    { name: 'Copias 3-2-1', text: 'Tres copias de todo, en dos soportes distintos y una fuera del estudio.' },
-    { name: 'Sonido independiente', text: 'Grabadoras y micrófonos inalámbricos aparte de la cámara, en votos y discursos.' },
-    { name: 'Equipo de respaldo', text: 'Cuerpos de cámara y ópticas de reserva el día de la boda.' },
+/**
+ * Sobre nosotros. Origen: Studio («¿Quién hay detrás de Nanai?», bio de Jesús del 2-10-2026),
+ * adaptado a bodas. Nuevo: la frase que une Studio con las bodas; revisadla.
+ */
+export const about = {
+  label: 'Sobre nosotros',
+  title: ['Detrás de', 'Nanai Weddings'] as const,
+  lead: 'Nanai Weddings es la línea de bodas de Nanai Studio, la productora creativa que fundó Jesús Font en Sevilla.',
+  bio: [
+    'Soy Jesús Font, filmmaker creativo. En Nanai Studio rodamos campañas, eventos y contenido para marcas, y llevo cada producción de principio a fin.',
+    'Las bodas las contamos con el mismo oficio: una pieza no solo tiene que verse bien, tiene que contar algo. Por eso os preguntamos por vuestras películas, series y artistas favoritos antes de rodar.',
+    'Trabajamos con un equipo que se forma según lo que pide cada boda: fotógrafos/as y operadores/as con un mismo criterio para la foto y el vídeo.',
   ],
-};
-
-/** Reseñas: sitio reservado. Nunca se inventan. */
-export const reviews = {
-  title: 'Lo que dicen las parejas',
-  deck: 'Reseñas reales, de Google o de Bodas.net.',
+  signature: { name: 'Jesús Font', role: 'Director creativo y fundador' },
+  studioLink: 'Conoced Nanai Studio',
 };
 
 /** Contacto. Origen: nuevo. Los campos salen del wireframe de referencia (fecha, lugar, invitados). */
@@ -88,43 +90,39 @@ export const contact = {
   note: 'Os respondemos en uno o dos días laborables. Si os corre prisa, por WhatsApp.',
 };
 
-export const proContact = {
-  title: '¿Os *sumamos*?',
-  lead: 'Escribidnos y os mandamos disponibilidad, dossier y lo que necesitéis para vuestra propuesta.',
-  form: 'Si lo preferís por escrito',
-  note: 'Os respondemos en uno o dos días laborables.',
+/** Ventana emergente de la calculadora. Origen: nuevo (nombre, fecha y forma de contacto, como pidió el usuario). */
+export const dateDialog = {
+  title: 'Consultad vuestra *fecha*',
+  lead: 'Con vuestro nombre, la fecha y cómo contactaros, os respondemos con disponibilidad y presupuesto para esta selección.',
+  sent: '¡Recibido! Os respondemos en cuanto podamos con disponibilidad y presupuesto.',
 };
 
-/** Profesionales. Origen: dossier para planners. */
-export const pro = {
-  title: ['Vosotros diseñáis la boda,', 'nosotros la *contamos*'] as [string, string],
-  deck: 'Cubrimos la fotografía y el vídeo de las bodas que organizáis con un mismo equipo y un mismo criterio.',
-  pillars: [
-    { name: 'Un solo proveedor', text: 'Foto y vídeo coordinados entre sí y con vuestro cronograma. Una sola conversación para los dos servicios.' },
-    { name: 'Precios cerrados', text: 'Tarifas, extras y condiciones por escrito, iguales en la web y en vuestra propuesta.' },
-    { name: 'Vuestra comisión', text: '200 € por cada servicio contratado a través de vuestra agencia, y 300 € por el pack de foto y vídeo.' },
-  ],
-  protocolQuote: 'Venimos a sumar al equipo que ya habéis *montado*.',
-  protocol: [
-    { name: 'Vestimenta', text: 'Conjunto oscuro, acorde al servicio, para pasar desapercibidos y trabajar apropiadamente.' },
-    { name: 'Sin territorialidad', text: 'Trabajamos junto a fotógrafos, videógrafos y wedding content creators. Coordinamos posiciones para que cada uno haga su trabajo.' },
-    { name: 'Vuestro cronograma', text: 'Seguimos el guion y los tiempos que marca la wedding planner, y resolvemos con vosotros cualquier cambio durante el día.' },
-    { name: 'Uso en redes', text: 'Publicamos con el acuerdo de los novios, pasado un tiempo prudencial y etiquetando siempre a vuestra agencia.' },
-  ],
+/**
+ * Ventana emergente de Profesionales: la página para profesionales se hará aparte, con
+ * acceso por enlace. Aquí solo un formulario corto. Origen: nuevo.
+ */
+export const proDialog = {
+  trigger: 'Profesionales',
+  title: '¿Sois profesionales del *sector*?',
+  lead: 'Wedding planners, fincas y proveedores: contadnos quiénes sois y qué os interesa de nosotros, y os responderemos a la mayor brevedad posible.',
+  professions: ['Wedding planner', 'Finca o espacio', 'Otro proveedor'],
+  sent: '¡Gracias! Os responderemos a la mayor brevedad posible.',
 };
 
-/** Same Day Edit. Origen: dossier para planners («Servicio destacado»). */
+/**
+ * Same Day Edit. Origen: dossier para planners («Servicio destacado»), contado en los tres
+ * pasos que describe el propio dossier.
+ */
 export const sameDayEdit = {
   label: 'Servicio destacado',
   title: 'Same Day Edit',
   quote: 'El vídeo de la boda, proyectado en la propia *boda*.',
-  text: 'Montamos un resumen durante la jornada y lo proyectamos ante los invitados antes de que termine la celebración. El momento se acuerda dentro del cronograma; la pantalla y el proyector no van incluidos.',
-};
-
-/** Recomendación honesta. Origen: dossier para parejas («No nos entendáis mal…»). */
-export const advice = {
-  title: 'Nuestra recomendación',
-  text: 'No nos entendáis mal: os recomendamos contar siempre con un segundo fotógrafo u operador y una cámara extra en la ceremonia, para captar cada momento con la emoción que merece. Con muchos invitados, el segundo deja de ser opcional. Pero es vuestra boda: preferimos daros a elegir.',
+  steps: [
+    { name: 'Rodamos', text: 'El día entero, desde los preparativos, como en cualquier boda.' },
+    { name: 'Montamos', text: 'Un resumen montado durante la propia jornada, mientras sigue la celebración.' },
+    { name: 'Proyectamos', text: 'Ante los invitados, antes de que termine la fiesta y en el momento que acordemos en el cronograma.' },
+  ],
+  note: 'La pantalla y el proyector no van incluidos.',
 };
 
 /** Cierre emocional de los dossieres. */

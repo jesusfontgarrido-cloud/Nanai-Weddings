@@ -1,8 +1,11 @@
 ---
 /**
- * Proceso: del primer mensaje a la entrega, en cinco pasos. Una banda gris a sangre con
- * los pasos en columnas, numerados en grande y con filete arriba, como las condiciones
- * del dossier. El día de la boda va subrayado en amarillo. Sin interacción: se lee todo.
+ * Proceso: del primer mensaje a la entrega, en cinco pasos unidos por un hilo.
+ *
+ * Nada de efectos de cámara (eso es de Studio) ni de cosas escondidas tras un hover (en
+ * móvil no hay ratón): el hilo se va dibujando conforme se baja por la sección y cada paso
+ * pasa de gris a tinta cuando el hilo llega a él. Es un calendario que avanza, que es lo
+ * que cuenta la sección. Sin JS o con movimiento reducido, todo se ve encendido.
  */
 import { process } from '../../data/copy';
 ---
@@ -15,12 +18,14 @@ import { process } from '../../data/copy';
       <p class="fsteps__deck">{process.deck}</p>
     </div>
 
-    <ol class="fsteps__list" role="list" data-stagger>
+    <ol class="fsteps__list" role="list" data-steps>
+      <li class="fsteps__thread" aria-hidden="true"><span></span></li>
       {
         process.steps.map((step, i) => (
-          <li class:list={['fstep', { 'fstep--key': 'key' in step && step.key }]}>
-            <span class="fstep__num" aria-hidden="true">{i + 1}</span>
-            <h3 class="fstep__name"><span>{step.name}</span></h3>
+          <li class="fstep" data-step={i}>
+            <span class="fstep__dot" aria-hidden="true" />
+            <span class="fstep__num" aria-hidden="true">0{i + 1}</span>
+            <h3 class="fstep__name">{step.name}</h3>
             <p class="fstep__text">{step.text}</p>
           </li>
         ))
@@ -29,53 +34,131 @@ import { process } from '../../data/copy';
   </div>
 </section>
 
+<script>
+  const list = document.querySelector<HTMLElement>('[data-steps]');
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (list && !still) {
+    const steps = [...list.querySelectorAll<HTMLElement>('[data-step]')];
+    list.classList.add('is-live');
+    let frame = 0;
+
+    // Avance del hilo: empieza cuando la lista asoma por abajo y se completa en el centro.
+    const update = () => {
+      frame = 0;
+      const box = list.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const start = vh * 0.92;
+      const end = vh * 0.45;
+      const progress = Math.min(1, Math.max(0, (start - box.top) / (start - end + box.height * 0.5)));
+      list.style.setProperty('--p', progress.toFixed(3));
+      steps.forEach((step, i) => step.classList.toggle('is-on', progress >= i / (steps.length - 1) - 0.02));
+    };
+
+    const request = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener('scroll', request, { passive: true });
+    window.addEventListener('resize', request);
+  }
+</script>
+
 <style>
-  .fsteps { display: grid; gap: clamp(36px, 4vw, 56px); }
-  .fsteps__head { display: grid; gap: 12px; }
-  .fsteps__title { font-size: clamp(30px, 3vw, 46px); }
+  .fsteps { display: grid; gap: clamp(40px, 4.4vw, 64px); }
+  .fsteps__head { display: grid; justify-items: center; gap: 12px; text-align: center; }
+  .fsteps__title { font-size: clamp(30px, 3.2vw, 50px); }
   .fsteps__deck { max-width: 52ch; color: var(--f-muted); }
 
-  .fsteps__list { display: grid; gap: 28px var(--f-gap); }
+  .fsteps__list {
+    --p: 1;
+    position: relative;
+    display: grid;
+    gap: 34px;
+    padding-left: 34px;
+  }
+
+  /* El hilo: una línea fina en gris y, encima, la parte ya recorrida en tinta */
+  .fsteps__thread {
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    left: 7px;
+    width: 2px;
+    border-radius: 2px;
+    background: rgba(17, 17, 17, 0.1);
+  }
+
+  .fsteps__thread span {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: #111111;
+    transform: scaleY(var(--p));
+    transform-origin: 50% 0;
+  }
 
   .fstep {
+    position: relative;
     display: grid;
     align-content: start;
-    gap: 8px;
-    padding-top: 16px;
-    border-top: 2px solid var(--f-on-surface);
+    gap: 6px;
+  }
+
+  .fstep__dot {
+    position: absolute;
+    top: 4px;
+    left: -34px;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #111111;
+    border-radius: 50%;
+    background: #111111;
+    box-shadow: 0 0 0 6px #F4F4F3;
+    transition: background-color 600ms var(--f-ease-out), border-color 600ms var(--f-ease-out), transform 600ms var(--f-ease-out);
   }
 
   .fstep__num {
-    font-family: var(--font-serif);
-    font-size: clamp(44px, 4vw, 64px);
-    font-style: italic;
-    font-weight: 400;
-    line-height: 1;
+    color: var(--f-mid);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
   }
 
   .fstep__name {
     font-family: var(--font-display);
-    font-size: clamp(20px, 1.6vw, 24px);
+    font-size: clamp(22px, 1.8vw, 28px);
     font-weight: 700;
+    line-height: 1.1;
     letter-spacing: -0.02em;
   }
 
-  .fstep--key .fstep__name span {
-    background: linear-gradient(var(--f-yellow), var(--f-yellow)) 0 85% / 100% 0.4em no-repeat;
-  }
-
   .fstep__text {
-    max-width: 30ch;
+    max-width: 32ch;
     color: var(--f-muted);
     font-size: 16px;
     line-height: 1.5;
   }
 
-  @media (min-width: 700px) {
-    .fsteps__list { grid-template-columns: repeat(2, 1fr); }
-  }
+  .fstep__name,
+  .fstep__text { transition: color 600ms var(--f-ease-out), opacity 600ms var(--f-ease-out); }
 
-  @media (min-width: 1024px) {
-    .fsteps__list { grid-template-columns: repeat(5, 1fr); }
+  /* Con JS: los pasos a los que aún no ha llegado el hilo, apagados */
+  .fsteps__list.is-live .fstep:not(.is-on) .fstep__dot { background: #F4F4F3; border-color: rgba(17, 17, 17, 0.22); transform: scale(0.8); }
+  .fsteps__list.is-live .fstep:not(.is-on) .fstep__name { color: var(--f-mid); }
+  .fsteps__list.is-live .fstep:not(.is-on) .fstep__text { opacity: 0.45; }
+
+  @media (min-width: 900px) {
+    .fsteps__list {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: var(--f-gap);
+      padding: 34px 0 0;
+    }
+
+    .fsteps__thread { top: 7px; bottom: auto; left: 8px; right: calc(20% - 0.8 * var(--f-gap) - 8px); width: auto; height: 2px; }
+    .fsteps__thread span { transform: scaleX(var(--p)); transform-origin: 0 50%; }
+    .fstep__dot { top: -34px; left: 0; }
+    .fstep { grid-row: 1; }
   }
 </style>

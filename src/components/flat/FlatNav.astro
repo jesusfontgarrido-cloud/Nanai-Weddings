@@ -1,12 +1,15 @@
 ---
 /**
- * Barra superior. Blanca, con filete abajo: logotipo a la izquierda, las páginas en el
- * centro (la activa, subrayada en amarillo) y a la derecha dos botones: «Profesionales»
- * (contorno: la puerta para wedding planners, fincas y proveedores) y «Consultar fecha»
- * (negro; en móvil, «Hablemos»).
+ * Barra superior de cristal: una píldora blanca translúcida con desenfoque, flotando
+ * (sobre el hero, más transparente; al bajar, más opaca y con sombra).
+ * Logotipo a la izquierda, las páginas en el centro (la activa, con un punto debajo) y a
+ * la derecha dos botones redondeados: «Profesionales» (el único dorado de la web; abre un
+ * formulario corto, la página para profesionales va aparte, por enlace) y
+ * «Consultar fecha» (negro; en móvil, «Hablemos»).
  * En móvil: «Menú» abre una hoja a pantalla completa con WhatsApp a mano.
  */
 import { site } from '../../data/site';
+import { proDialog } from '../../data/copy';
 import FlatWordmark from './FlatWordmark.astro';
 
 const links = [
@@ -17,12 +20,10 @@ const links = [
 
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const current = (href: string) => (path === href || (href !== '/' && path.startsWith(`${href}/`)) ? ('page' as const) : undefined);
-const onPro = path.startsWith('/profesionales');
-// En la página de profesionales, el botón principal lleva a su propio contacto.
-const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === '/' ? '#contacto' : '/#contacto', label: 'Consultar fecha' };
+const cta = { href: path === '/' ? '#contacto' : '/#contacto', label: 'Consultar fecha' };
 ---
 
-<header class="fnav">
+<header class="fnav" data-nav>
   <div class="fnav__bar">
     <a class="fnav__logo" href="/" aria-label="Nanai Weddings, inicio">
       <FlatWordmark />
@@ -41,7 +42,7 @@ const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === 
     </nav>
 
     <div class="fnav__actions">
-      <a class="fnav__pro" href="/profesionales" aria-current={onPro ? 'page' : undefined}>Profesionales</a>
+      <button class="fnav__pro" type="button" data-open-dialog="pro-dialog" aria-haspopup="dialog">{proDialog.trigger}</button>
       <a class="fnav__cta" href={cta.href}>
         <span class="fnav__cta-long">{cta.label}</span><span class="fnav__cta-short" aria-hidden="true">Hablemos</span>
       </a>
@@ -70,27 +71,30 @@ const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === 
   </nav>
 
   <div class="fmenu__direct">
-    <a class="fmenu__pro" href="/profesionales">
-      <span>¿Wedding planner, finca o proveedor?</span>
-      <strong>Profesionales →</strong>
-    </a>
     <a class="fmenu__wa" href={site.whatsapp}>Escribidnos por WhatsApp</a>
+    <button class="fmenu__pro" type="button" data-open-dialog="pro-dialog" aria-haspopup="dialog">¿Sois profesionales del sector?</button>
     <a class="fmenu__mail" href={`mailto:${site.email}`}>{site.email}</a>
   </div>
 </div>
 
 <script>
-  // Un enlace de ancla no cierra el popover por sí solo.
-  const menu = document.getElementById('flat-menu');
-  menu?.querySelectorAll('a').forEach((link) => {
-    link.addEventListener('click', () => {
+  // Un enlace de ancla (o abrir el formulario de profesionales) no cierra el popover por sí solo.
+  const menu = document.getElementById('flat-menu') as (HTMLElement & { hidePopover(): void }) | null;
+  menu?.querySelectorAll('a, [data-open-dialog]').forEach((item) => {
+    item.addEventListener('click', () => {
       try {
-        (menu as HTMLElement & { hidePopover(): void }).hidePopover();
+        menu.hidePopover();
       } catch {
         // Navegador sin popover o menú ya cerrado.
       }
     });
   });
+
+  // Al bajar, el cristal se vuelve más opaco.
+  const nav = document.querySelector<HTMLElement>('[data-nav]');
+  const onScroll = () => nav?.classList.toggle('is-scrolled', window.scrollY > 24);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
 </script>
 
 <style>
@@ -100,6 +104,8 @@ const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === 
     left: 0;
     right: 0;
     z-index: 20;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) var(--f-inset) 0;
+    pointer-events: none;
   }
 
   .fnav__bar {
@@ -107,12 +113,28 @@ const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === 
     display: flex;
     align-items: center;
     gap: 24px;
-    min-height: 64px;
-    padding: calc(8px + env(safe-area-inset-top, 0px)) var(--f-gutter) 8px;
-    border-bottom: var(--f-hair) solid rgba(17, 17, 17, 0.1);
-    background: rgba(255, 255, 255, 0.96);
+    max-width: var(--f-maxw);
+    min-height: 62px;
+    margin-inline: auto;
+    padding: 8px 8px 8px calc(var(--f-gutter) - var(--f-inset));
+    border: var(--f-hair) solid rgba(255, 255, 255, 0.5);
+    border-radius: var(--f-r);
+    background: rgba(255, 255, 255, 0.58);
     color: #111111;
+    pointer-events: auto;
+    -webkit-backdrop-filter: var(--f-blur);
+    backdrop-filter: var(--f-blur);
+    transition:
+      background-color 420ms var(--f-ease-out),
+      border-color 420ms var(--f-ease-out),
+      box-shadow 420ms var(--f-ease-out);
     view-transition-name: fnav;
+  }
+
+  .fnav.is-scrolled .fnav__bar {
+    border-color: rgba(255, 255, 255, 0.7);
+    background: var(--f-glass);
+    box-shadow: 0 6px 24px rgba(17, 17, 17, 0.07);
   }
 
   .fnav__logo {
@@ -128,7 +150,7 @@ const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === 
   .fnav__links ul {
     display: flex;
     justify-content: center;
-    gap: 28px;
+    gap: 6px;
   }
 
   .fnav__links a,
@@ -140,39 +162,38 @@ const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === 
     font-weight: 500;
   }
 
-  /* Enlaces: la página activa, subrayada en amarillo, como con rotulador */
+  /* Enlaces: pastilla translúcida al pasar; la activa, con un punto debajo */
   .fnav__links a {
     position: relative;
-    isolation: isolate;
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    color: #444444;
+    padding-inline: 16px;
+    border-radius: var(--f-r);
+    color: #555555;
     text-decoration: none;
-    transition: color var(--f-dur) var(--f-ease);
+    transition: color var(--f-dur) var(--f-ease), background-color var(--f-dur) var(--f-ease);
   }
+
+  .fnav__links a:hover { background: rgba(17, 17, 17, 0.05); color: #111111; }
 
   .fnav__links a::after {
     content: '';
     position: absolute;
-    left: -2px;
-    right: -2px;
-    bottom: 12px;
-    z-index: -1;
-    height: 7px;
-    background: var(--f-yellow);
-    transform: scaleX(0);
-    transform-origin: left center;
-    transition: transform 420ms var(--f-ease-out);
+    left: 50%;
+    bottom: 6px;
+    width: 4px;
+    height: 4px;
+    margin-left: -2px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0;
+    transform: scale(0);
+    transition: transform 420ms var(--f-ease-out), opacity 420ms var(--f-ease-out);
   }
 
-  .fnav__links a:hover,
-  .fnav__links a[aria-current='page'] { color: #111111; }
-
-  .fnav__links a:hover::after,
-  .fnav__links a[aria-current='page']::after { transform: scaleX(1); }
-
-  .fnav__links a[aria-current='page'] { font-weight: 600; }
+  .fnav__links a[aria-current='page'] { color: #111111; font-weight: 600; }
+  .fnav__links a[aria-current='page']::after { opacity: 1; transform: none; }
 
   .fnav__actions {
     display: flex;
@@ -180,45 +201,53 @@ const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === 
     gap: 8px;
   }
 
+  /* El único toque dorado de la web */
   .fnav__pro {
     display: inline-flex;
     align-items: center;
-    min-height: 42px;
-    padding-inline: 16px;
-    border: var(--f-hair) solid rgba(17, 17, 17, 0.3);
+    min-height: 44px;
+    padding-inline: 18px;
+    border: var(--f-hair) solid rgba(191, 160, 106, 0.55);
+    border-radius: var(--f-r);
+    background: linear-gradient(135deg, rgba(217, 195, 148, 0.34), rgba(191, 160, 106, 0.22));
     color: #111111;
-    text-decoration: none;
     white-space: nowrap;
-    transition: border-color var(--f-dur) var(--f-ease), background-color var(--f-dur) var(--f-ease);
+    cursor: pointer;
+    transition: background-color var(--f-dur) var(--f-ease), border-color var(--f-dur) var(--f-ease), box-shadow var(--f-dur) var(--f-ease);
   }
 
-  .fnav__pro:hover { border-color: #111111; }
-  .fnav__pro[aria-current='page'] { border-color: #111111; background: var(--f-yellow); }
+  .fnav__pro:hover {
+    border-color: var(--f-gold);
+    background: linear-gradient(135deg, var(--f-gold-light), var(--f-gold));
+    box-shadow: 0 6px 18px rgba(191, 160, 106, 0.3);
+  }
 
   /* El único botón relleno de la barra */
   .fnav__cta {
     display: inline-flex;
     align-items: center;
-    min-height: 42px;
-    padding-inline: 18px;
+    min-height: 44px;
+    padding-inline: 20px;
+    border-radius: var(--f-r);
     background: #111111;
     color: #FFFFFF;
     font-weight: 600;
     text-decoration: none;
     white-space: nowrap;
-    transition: background-color var(--f-dur) var(--f-ease), color var(--f-dur) var(--f-ease);
+    transition: background-color var(--f-dur) var(--f-ease), box-shadow var(--f-dur) var(--f-ease);
   }
 
-  .fnav__cta:hover { background: var(--f-yellow); color: #111111; }
+  .fnav__cta:hover { background: #2A2C30; box-shadow: 0 6px 18px rgba(17, 17, 17, 0.18); }
   .fnav__cta-short { display: none; }
 
   .fnav__menu {
     display: none;
     align-items: center;
-    min-height: 42px;
-    padding-inline: 14px;
-    border: var(--f-hair) solid rgba(17, 17, 17, 0.3);
-    background: transparent;
+    min-height: 44px;
+    padding-inline: 16px;
+    border: var(--f-hair) solid rgba(17, 17, 17, 0.18);
+    border-radius: var(--f-r);
+    background: rgba(255, 255, 255, 0.6);
     color: #111111;
     cursor: pointer;
   }
@@ -235,7 +264,7 @@ const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === 
     margin: 0;
     padding: 12px max(16px, var(--f-gutter)) 28px;
     border: 0;
-    background: #FFFFFF;
+    background: linear-gradient(#FFFFFF 60%, #F4F4F3);
     color: #111111;
   }
 
@@ -255,8 +284,9 @@ const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === 
 
   .fmenu__close {
     min-height: 44px;
-    padding-inline: 16px;
-    border: var(--f-hair) solid rgba(17, 17, 17, 0.3);
+    padding-inline: 18px;
+    border: var(--f-hair) solid rgba(17, 17, 17, 0.18);
+    border-radius: var(--f-r);
     background: transparent;
     color: inherit;
     font-size: 14px;
@@ -266,15 +296,15 @@ const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === 
   .fmenu__list {
     display: grid;
     align-content: center;
-    border-top: var(--f-hair) solid rgba(17, 17, 17, 0.12);
   }
 
   .fmenu__list a {
     display: flex;
     align-items: center;
+    gap: 14px;
     min-height: 72px;
     padding: 14px 4px;
-    border-bottom: var(--f-hair) solid rgba(17, 17, 17, 0.12);
+    border-bottom: var(--f-hair) solid rgba(17, 17, 17, 0.08);
     font-family: var(--font-display);
     font-size: 36px;
     font-weight: 700;
@@ -282,37 +312,35 @@ const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === 
     text-decoration: none;
   }
 
-  .fmenu__list a[aria-current='page'] {
-    background: linear-gradient(var(--f-yellow), var(--f-yellow)) 4px 70% / 40px 8px no-repeat;
-    padding-left: 56px;
+  .fmenu__list a[aria-current='page']::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
   }
 
-  .fmenu__direct { display: grid; gap: 12px; }
+  .fmenu__direct { display: grid; gap: 10px; }
 
+  .fmenu__wa,
   .fmenu__pro {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 6px 16px;
-    min-height: 56px;
-    padding: 12px 16px;
-    background: var(--f-yellow);
-    color: #111111;
-    font-size: 15px;
-    text-decoration: none;
-  }
-
-  .fmenu__wa {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-height: 56px;
-    background: #111111;
-    color: #FFFFFF;
-    font-size: 17px;
+    border-radius: var(--f-r);
+    font-size: 16px;
     font-weight: 600;
     text-decoration: none;
+  }
+
+  .fmenu__wa { background: #111111; color: #FFFFFF; }
+
+  .fmenu__pro {
+    border: var(--f-hair) solid rgba(191, 160, 106, 0.55);
+    background: linear-gradient(135deg, rgba(217, 195, 148, 0.34), rgba(191, 160, 106, 0.22));
+    color: #111111;
+    cursor: pointer;
   }
 
   .fmenu__mail {
@@ -333,7 +361,7 @@ const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === 
   @media (max-width: 520px) {
     .fnav__cta-long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
     .fnav__cta-short { display: inline; }
-    .fnav__cta { padding-inline: 14px; }
+    .fnav__cta { padding-inline: 16px; }
     .fnav__logo :global(.wordmark) { font-size: 19px; }
   }
 </style>

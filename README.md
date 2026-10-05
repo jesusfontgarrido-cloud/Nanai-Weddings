@@ -1,9 +1,9 @@
 # Nanai Weddings — Web
 
 Fotografía y vídeo de bodas en Sevilla. La línea de bodas de [Nanai Studio](https://nanaistudio.es):
-misma estructura técnica que su web, con piel propia: blanco puro, League Spartan +
-Playfair cursiva + Archivo y el amarillo del dossier solo para destacar. Astro 5, CSS
-propio y casi cero JS.
+misma estructura técnica que su web, con piel propia: blanco, negro y grises medios, todo
+redondeado, transparencias y degradados suaves, League Spartan + Playfair cursiva +
+Archivo, y un toque dorado solo en el botón de profesionales. Astro 5, CSS propio y poco JS.
 
 - Reglas del proyecto: [`CLAUDE.md`](CLAUDE.md)
 - Decisiones tomadas y pendientes: [`docs/decisiones.md`](docs/decisiones.md)
@@ -17,12 +17,14 @@ propio y casi cero JS.
 
 | Ruta | Contenido |
 |---|---|
-| `/` | Hero · calculadora de tarifas (servicio + precio animado) · historias · cómo trabajamos · proceso · seguridad técnica · reseñas · preguntas · contacto |
-| `/tarifas` | Calculadora completa (servicio, invitados, extras, total), recomendación, Same Day Edit, seguridad técnica, dossier, condiciones en preguntas, contacto |
-| `/profesionales` | Para wedding planners, fincas y proveedores: qué ofrecemos, tarifas y comisión, extras, Same Day Edit, seguridad, protocolo, trabajo, dossier, preguntas, contacto |
-| `/historias` | Las bodas, una por página (`/historias/[slug]`: cartela, película, galería por momentos, proveedores) |
+| `/` | Hero centrado · cómo trabajamos · proceso · historias · tarifas en carpetas · sobre nosotros · preguntas · contacto |
+| `/tarifas` | Carpetas (servicio + su dossier), invitados, extras y total, «Consultar fecha» en ventana emergente, Same Day Edit, condiciones en preguntas, contacto |
+| `/historias` | Galería de muestra: cada trabajo con su portada y fotogramas alrededor; abre el tráiler o la galería por momentos (sin página por boda) |
 | `/aviso-legal`, `/privacidad`, `/cookies` | Textos legales (borrador, faltan los datos del titular) |
-| `/dossier/parejas`, `/dossier/profesionales` | Hojas A4 para imprimir los dossieres (fuera del sitemap) |
+| `/dossier/fotografia`, `/dossier/video` | Hojas A4 para imprimir los dossieres (fuera del sitemap) |
+
+«Profesionales» no es una página: abre un formulario corto. La landing para wedding
+planners (con la comisión) se hará aparte, con acceso por enlace.
 
 ## Puesta en marcha
 
@@ -34,7 +36,7 @@ npm run dev        # http://localhost:4321
 npm run build      # web estática en dist/
 npm run dossieres  # (tras build) imprime los PDF en public/dossieres; luego, build otra vez
 npm run preview
-npm run vista-previa  # (tras build) copia lista para publicar como vista previa en claude.ai
+npm run vista-previa  # (tras build) copia navegable en vista-previa/ (también sirve como HTML exportado)
 ```
 
 ## Estructura
@@ -42,11 +44,13 @@ npm run vista-previa  # (tras build) copia lista para publicar como vista previa
 ```
 src/
   styles/       flat.css (la piel de Weddings), fonts.css, base.css
-  layouts/      BaseLayout (SEO, datos estructurados), LegalLayout
+  layouts/      BaseLayout (SEO, datos estructurados), SiteLayout (barra, pie, ventanas,
+                scripts comunes), LegalLayout
   components/
-    flat/       Nav, Hero, Pricing (calculadora), Stories, Film (Vimeo), Method, Steps,
-                Security, Reviews, Faq, Contact, Footer, Feature, Dossiers, Extras,
-                ProPrices, Pillars, Advice, PageHeader, Ph (huecos), Wordmark, Motion…
+    flat/       Nav, Hero, Method, Steps, Stories, Showcase + WorkViewer (historias),
+                Pricing (carpetas y calculadora), DateDialog, ProDialog, Consent, Feature
+                (Same Day Edit), About, Faq, Contact, Footer, Film (Vimeo), PageHeader,
+                Ph (huecos), Wordmark, Motion, Scripts…
     dossier/    Dossier.astro (hojas imprimibles)
   data/         pricing.ts (precios: la única fuente), faq.ts, copy.ts, stories.ts,
                 site.ts, dossiers.ts
@@ -55,7 +59,7 @@ src/
 public/
   fonts/        League Spartan, Archivo y Playfair Italic (woff2)
   brand/        isotipo de Nanai en una sola tinta (sin el punto rojo)
-  dossieres/    PDF generados
+  dossieres/    PDF generados (fotografía y vídeo)
   og/           imagen para compartir
 scripts/
   dossieres.mjs imprime los dossieres con Chrome
