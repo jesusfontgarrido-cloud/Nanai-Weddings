@@ -23,5 +23,8 @@ desktop.ini
 .vscode/
 .idea/
 
+# vista previa para claude.ai (se genera)
+vista-previa/
+
 # capturas de trabajo
 docs/capturas-*/

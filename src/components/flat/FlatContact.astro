@@ -210,8 +210,9 @@ const proKinds = ['Wedding planner', 'Finca o espacio', 'Otro proveedor'];
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      if (import.meta.env.DEV) {
-        if (note) note.textContent = 'Modo desarrollo: el envío está desactivado.';
+      // En desarrollo y en las vistas previas (html[data-preview]) no se envía nada.
+      if (import.meta.env.DEV || document.documentElement.hasAttribute('data-preview')) {
+        if (note) note.textContent = 'Vista previa: el formulario funciona, pero aquí no envía nada.';
         return;
       }
 

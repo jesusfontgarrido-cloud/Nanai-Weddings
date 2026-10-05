@@ -477,7 +477,8 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
         list.hidden = !on;
       });
 
-      fullLinks.forEach((link) => (link.href = `/tarifas?servicio=${serviceId}#calculadora`));
+      // Se cambia solo el servicio del enlace, sin rehacer la ruta (vale también en vistas previas).
+      fullLinks.forEach((link) => link.setAttribute('href', (link.getAttribute('href') ?? '').replace(/servicio=[^#&]*/, `servicio=${serviceId}`)));
       moveAf();
 
       // La selección viaja al formulario de contacto de la página.

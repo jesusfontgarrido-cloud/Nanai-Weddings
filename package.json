@@ -9,7 +9,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "dossieres": "node scripts/dossieres.mjs",
-    "astro": "astro"
+    "astro": "astro",
+    "vista-previa": "node scripts/vista-previa.mjs dist vista-previa"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.2.1",

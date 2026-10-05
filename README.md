@@ -34,6 +34,7 @@ npm run dev        # http://localhost:4321
 npm run build      # web estática en dist/
 npm run dossieres  # (tras build) imprime los PDF en public/dossieres; luego, build otra vez
 npm run preview
+npm run vista-previa  # (tras build) copia lista para publicar como vista previa en claude.ai
 ```
 
 ## Estructura

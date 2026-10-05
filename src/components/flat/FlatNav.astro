@@ -108,7 +108,7 @@ const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === 
     align-items: center;
     gap: 24px;
     min-height: 64px;
-    padding: 8px var(--f-gutter);
+    padding: calc(8px + env(safe-area-inset-top, 0px)) var(--f-gutter) 8px;
     border-bottom: var(--f-hair) solid rgba(17, 17, 17, 0.1);
     background: rgba(255, 255, 255, 0.96);
     color: #111111;
