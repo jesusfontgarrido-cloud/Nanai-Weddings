@@ -218,12 +218,12 @@ const serviceDossiers = (serviceId: string) =>
 
       {
         full && (
-          <div class="fprice__dock" data-dock aria-hidden="true">
+          <div class="fprice__dock" data-dock inert>
             <span class="fprice__dock-total">
               <span class="label">Estimación</span>
               <strong data-dock-total>{euros(start.price)} €</strong>
             </span>
-            <button class="btn btn--small" type="button" tabindex="-1" data-open-dialog="date-dialog">Consultar fecha</button>
+            <button class="btn btn--small" type="button" data-open-dialog="date-dialog">Consultar fecha</button>
           </div>
         )
       }
@@ -388,7 +388,11 @@ const serviceDossiers = (serviceId: string) =>
     const dock = form.querySelector<HTMLElement>('[data-dock]');
     const extrasBox = form.querySelector('.fcustom__extras');
     if (dock && extrasBox && 'IntersectionObserver' in window) {
-      new IntersectionObserver(([entry]) => dock.classList.toggle('is-shown', entry.isIntersecting), { threshold: 0 }).observe(extrasBox);
+      // Escondida, también para el teclado y los lectores de pantalla (inert).
+      new IntersectionObserver(([entry]) => {
+        dock.classList.toggle('is-shown', entry.isIntersecting);
+        dock.inert = !entry.isIntersecting;
+      }, { threshold: 0 }).observe(extrasBox);
     }
 
     if (reduceMotion) form.classList.add('is-still');

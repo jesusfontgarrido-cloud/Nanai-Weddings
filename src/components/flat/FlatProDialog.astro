@@ -28,9 +28,9 @@ import { site } from '../../data/site';
       <legend class="ffield__label">Profesión</legend>
       <div class="fdlg__row-chips">
         {
-          proDialog.professions.map((value, i) => (
+          proDialog.professions.map((value) => (
             <label class="fchip">
-              <input type="radio" name="profesion" value={value} required checked={i === 0} />
+              <input type="radio" name="profesion" value={value} required />
               <span class="chip">{value}</span>
             </label>
           ))

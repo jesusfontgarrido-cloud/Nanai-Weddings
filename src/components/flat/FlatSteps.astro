@@ -142,12 +142,13 @@ import { process } from '../../data/copy';
   }
 
   .fstep__name,
-  .fstep__text { transition: color 600ms var(--f-ease-out), opacity 600ms var(--f-ease-out); }
+  .fstep__text { transition: color 600ms var(--f-ease-out); }
 
   /* Con JS: los pasos a los que aún no ha llegado el hilo, apagados */
   .fsteps__list.is-live .fstep:not(.is-on) .fstep__dot { background: #F4F4F3; border-color: rgba(17, 17, 17, 0.22); transform: scale(0.8); }
-  .fsteps__list.is-live .fstep:not(.is-on) .fstep__name { color: var(--f-mid); }
-  .fsteps__list.is-live .fstep:not(.is-on) .fstep__text { opacity: 0.45; }
+  /* Apagados, pero legibles (AA): gris medio-oscuro, sin transparencia */
+  .fsteps__list.is-live .fstep:not(.is-on) .fstep__name,
+  .fsteps__list.is-live .fstep:not(.is-on) .fstep__text { color: var(--f-dim); }
 
   @media (min-width: 900px) {
     .fsteps__list {
