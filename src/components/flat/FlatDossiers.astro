@@ -76,12 +76,11 @@ const {
     align-items: start;
     padding: clamp(18px, 2vw, 28px);
     border: var(--f-hair) solid var(--f-line-strong);
-    border-radius: var(--f-r-media);
     text-decoration: none;
     transition: border-color var(--f-dur) var(--f-ease), background-color var(--f-dur) var(--f-ease);
   }
 
-  .fdossier:hover { border-color: var(--f-on-surface); background: var(--f-surface-2); }
+  .fdossier:hover { border-color: var(--f-on-surface); background: var(--f-yellow); }
 
   /* Una hoja en miniatura: apaisada, como el dossier */
   .fdossier__sheet {
@@ -91,18 +90,18 @@ const {
     width: 92px;
     aspect-ratio: 297 / 210;
     padding: 8px;
-    border-radius: 3px;
-    background: #151514;
-    color: #F6F3EE;
+    background: #FFFFFF;
+    box-shadow: 0 0 0 1px rgba(17, 17, 17, 0.2), 0 8px 18px rgba(17, 17, 17, 0.1);
+    color: #111111;
     transition: transform 520ms var(--f-ease-out);
   }
 
   .fdossier:hover .fdossier__sheet { transform: rotate(-3deg) translateY(-2px); }
 
-  .fdossier__mark { font-family: var(--font-type); font-size: 11px; }
+  .fdossier__mark { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; }
   .fdossier__lines { display: grid; gap: 3px; }
   .fdossier__lines i { display: block; height: 2px; background: currentColor; opacity: 0.5; }
-  .fdossier__lines i:first-child { width: 70%; height: 4px; background: var(--f-red); opacity: 1; }
+  .fdossier__lines i:first-child { width: 70%; height: 5px; background: var(--f-yellow); opacity: 1; }
 
   .fdossier__body { display: grid; gap: 6px; }
 
@@ -124,7 +123,7 @@ const {
     font-weight: 600;
   }
 
-  .fdossier__cta svg { width: 18px; height: 18px; color: var(--f-red); transition: transform var(--f-dur) var(--f-ease); }
+  .fdossier__cta svg { width: 18px; height: 18px; color: currentColor; transition: transform var(--f-dur) var(--f-ease); }
   .fdossier:hover .fdossier__cta svg { transform: translateY(2px); }
 
   @media (min-width: 900px) {

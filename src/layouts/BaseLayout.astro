@@ -1,6 +1,6 @@
 ---
 /**
- * Documento base (como el de Nanai Studio): tipografías precargadas, SEO, Open Graph y
+ * Documento base: tipografías precargadas, SEO, Open Graph y
  * datos estructurados de un negocio local (SEO local: «fotógrafo de bodas Sevilla»).
  * Solo datos reales; lo pendiente va marcado en site.ts.
  */
@@ -43,7 +43,7 @@ const jsonLd = {
       description: 'Fotografía y vídeo de bodas en Sevilla, con estilo cinematográfico.',
       url: home,
       image: imageUrl,
-      logo: new URL('/brand/isotipo-negro.svg', Astro.site).toString(),
+      logo: new URL('/brand/isotipo-weddings-negro.svg', Astro.site).toString(),
       email: site.email,
       telephone: site.phoneHref.replace('tel:', ''),
       address: { '@type': 'PostalAddress', addressLocality: 'Dos Hermanas', addressRegion: 'Sevilla', addressCountry: 'ES' },
@@ -84,12 +84,12 @@ const jsonLd = {
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}
-    <meta name="theme-color" content="#F6F3EE" />
+    <meta name="theme-color" content="#FFFFFF" />
     <link rel="preload" href="/fonts/league-spartan-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/archivo-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin />
     <!-- La cursiva va en el logotipo y en el H1 de todas las páginas -->
     <link rel="preload" href="/fonts/playfair-display-latin-wght-italic.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="icon" href="/brand/isotipo-negro.svg" type="image/svg+xml" />
+    <link rel="icon" href="/brand/isotipo-weddings-negro.svg" type="image/svg+xml" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={site.name} />

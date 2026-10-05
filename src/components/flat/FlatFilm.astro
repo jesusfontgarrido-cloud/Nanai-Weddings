@@ -5,7 +5,7 @@
  * ni sigue la sesión). Así no hace falta banner de cookies y la página pesa poco.
  *
  * Vimeo y no YouTube en la web: reproductor limpio, sin anuncios ni vídeos de la
- * competencia al acabar, y mejor compresión (ver docs/propuesta.md).
+ * competencia al acabar, y mejor compresión (ver docs/decisiones.md).
  *
  * Sin `vimeoId`: hueco honesto (con el póster provisional si lo hay).
  */
@@ -56,7 +56,7 @@ const { vimeoId, title, poster, posterAlt = '', ratio = '16 / 9', pendingWhat = 
     if (!id || !button) return;
     button.addEventListener('click', () => {
       const frame = document.createElement('iframe');
-      frame.src = `https://player.vimeo.com/video/${encodeURIComponent(id)}?autoplay=1&dnt=1&title=0&byline=0&portrait=0&color=D9291C`;
+      frame.src = `https://player.vimeo.com/video/${encodeURIComponent(id)}?autoplay=1&dnt=1&title=0&byline=0&portrait=0&color=FFCA00`;
       frame.title = film.querySelector('.ffilm__title')?.textContent ?? 'Vídeo';
       frame.allow = 'autoplay; fullscreen; picture-in-picture';
       frame.allowFullscreen = true;
@@ -71,9 +71,8 @@ const { vimeoId, title, poster, posterAlt = '', ratio = '16 / 9', pendingWhat = 
     position: relative;
     aspect-ratio: var(--ratio);
     overflow: hidden;
-    border-radius: var(--f-r-media);
-    background: #0E0E0D;
-    color: #F6F3EE;
+    background: #0D0D0D;
+    color: #FFFFFF;
   }
 
   .ffilm :global(picture),
@@ -110,9 +109,8 @@ const { vimeoId, title, poster, posterAlt = '', ratio = '16 / 9', pendingWhat = 
     min-height: 48px;
     padding-inline: 18px;
     border: 0;
-    border-radius: var(--f-r);
-    background: var(--f-red);
-    color: #FFFFFF;
+    background: var(--f-yellow);
+    color: #111111;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -124,10 +122,11 @@ const { vimeoId, title, poster, posterAlt = '', ratio = '16 / 9', pendingWhat = 
     display: grid;
     gap: 2px;
     padding: 8px 12px;
-    border-radius: 4px;
-    background: rgba(10, 10, 10, 0.7);
-    font-family: var(--font-type);
-    font-size: 13px;
+    background: rgba(10, 10, 10, 0.75);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 
   .ffilm__title {
@@ -135,8 +134,10 @@ const { vimeoId, title, poster, posterAlt = '', ratio = '16 / 9', pendingWhat = 
     top: clamp(14px, 1.6vw, 22px);
     left: clamp(16px, 2vw, 28px);
     z-index: 2;
-    font-family: var(--font-type);
-    font-size: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
   }
 

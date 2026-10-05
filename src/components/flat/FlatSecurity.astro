@@ -54,7 +54,7 @@ const { quote, deck, items, label = 'Seguridad técnica', id = 'seguridad' } = A
   }
 
   .fsec__quote { max-width: 14ch; }
-  .fsec__quote :global(.accent) { color: var(--f-red); font-weight: 450; }
+  .fsec__quote :global(.accent) { font-weight: 450; }
   .fsec__deck { max-width: 34ch; color: var(--f-muted); }
 
   .fsec__row {
@@ -67,9 +67,10 @@ const { quote, deck, items, label = 'Seguridad técnica', id = 'seguridad' } = A
 
   .fsec__num {
     padding-top: 3px;
-    color: var(--f-red-text);
-    font-family: var(--font-type);
-    font-size: 14px;
+    font-family: var(--font-serif);
+    font-size: 28px;
+    font-style: italic;
+    line-height: 1;
   }
 
   .fsec__body { display: grid; gap: 4px; }

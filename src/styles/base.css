@@ -1,13 +1,14 @@
 /* ═══════════════════════════════════════════════════════════════
    base.css — reset y utilidades compartidas. Las familias tipográficas
-   son las mismas que en Nanai Studio (tokens.css de allí).
+   son las de la marca Nanai.
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
   --font-display: 'League Spartan', 'League Spartan Fallback', system-ui, sans-serif;
   --font-sans: 'Archivo', 'Archivo Fallback', system-ui, sans-serif;
   --font-serif: 'Playfair Display', 'Playfair Fallback', Georgia, serif;
-  --font-type: 'Courier Prime', 'Courier New', ui-monospace, monospace;
+  /* Weddings no usa la voz de guion de Studio: los datos pequeños van en Archivo */
+  --font-type: var(--font-sans);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -23,8 +24,8 @@ html {
 }
 
 body {
-  background: #F6F3EE;
-  color: #151514;
+  background: #FFFFFF;
+  color: #111111;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
@@ -44,8 +45,8 @@ main[tabindex='-1']:focus { outline: none; }
   z-index: 100;
   padding: 10px 16px;
   border-radius: 2px;
-  background: #151514;
-  color: #F6F3EE;
+  background: #111111;
+  color: #FFFFFF;
   transform: translateY(-200%);
 }
 

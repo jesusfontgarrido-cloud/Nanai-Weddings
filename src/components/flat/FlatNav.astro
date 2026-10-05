@@ -1,9 +1,9 @@
 ---
 /**
- * Barra superior (la de Nanai Studio): logo a la izquierda, páginas numeradas en el centro
- * (la activa entre esquinas de encuadre) y, a la derecha, dos botones: «Profesionales»
+ * Barra superior. Blanca, con filete abajo: logotipo a la izquierda, las páginas en el
+ * centro (la activa, subrayada en amarillo) y a la derecha dos botones: «Profesionales»
  * (contorno: la puerta para wedding planners, fincas y proveedores) y «Consultar fecha»
- * con el punto de REC, el único relleno. Su filo inferior es la línea de progreso en rojo.
+ * (negro; en móvil, «Hablemos»).
  * En móvil: «Menú» abre una hoja a pantalla completa con WhatsApp a mano.
  */
 import { site } from '../../data/site';
@@ -19,9 +19,7 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const current = (href: string) => (path === href || (href !== '/' && path.startsWith(`${href}/`)) ? ('page' as const) : undefined);
 const onPro = path.startsWith('/profesionales');
 // En la página de profesionales, el botón principal lleva a su propio contacto.
-const cta = onPro
-  ? { href: '#contacto', label: 'Hablemos', short: 'Hablemos' }
-  : { href: path === '/' ? '#contacto' : '/#contacto', label: 'Consultar fecha', short: 'Hablemos' };
+const cta = onPro ? { href: '#contacto', label: 'Hablemos' } : { href: path === '/' ? '#contacto' : '/#contacto', label: 'Consultar fecha' };
 ---
 
 <header class="fnav">
@@ -33,12 +31,9 @@ const cta = onPro
     <nav class="fnav__links" aria-label="Principal">
       <ul role="list">
         {
-          links.map((link, i) => (
+          links.map((link) => (
             <li>
-              <a href={link.href} aria-current={current(link.href)}>
-                <span class="fnav__idx" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                {link.label}
-              </a>
+              <a href={link.href} aria-current={current(link.href)}>{link.label}</a>
             </li>
           ))
         }
@@ -48,8 +43,7 @@ const cta = onPro
     <div class="fnav__actions">
       <a class="fnav__pro" href="/profesionales" aria-current={onPro ? 'page' : undefined}>Profesionales</a>
       <a class="fnav__cta" href={cta.href}>
-        <span class="fnav__dot" aria-hidden="true"></span>
-        <span class="fnav__cta-long">{cta.label}</span><span class="fnav__cta-short" aria-hidden="true">{cta.short}</span>
+        <span class="fnav__cta-long">{cta.label}</span><span class="fnav__cta-short" aria-hidden="true">Hablemos</span>
       </a>
       <button class="fnav__menu" type="button" popovertarget="flat-menu">Menú</button>
     </div>
@@ -65,34 +59,22 @@ const cta = onPro
   <nav aria-label="Principal (móvil)">
     <ul class="fmenu__list" role="list">
       {
-        links.map((link, i) => (
+        links.map((link) => (
           <li>
-            <a href={link.href} aria-current={current(link.href)}>
-              <span class="fmenu__idx">{String(i + 1).padStart(2, '0')}</span>
-              {link.label}
-            </a>
+            <a href={link.href} aria-current={current(link.href)}>{link.label}</a>
           </li>
         ))
       }
-      <li>
-        <a href="/#contacto">
-          <span class="fmenu__idx">04</span>
-          Consultar fecha
-        </a>
-      </li>
+      <li><a href="/#contacto">Consultar fecha</a></li>
     </ul>
   </nav>
 
-  <!-- Atajos de contacto: en móvil, WhatsApp es lo más rápido -->
   <div class="fmenu__direct">
     <a class="fmenu__pro" href="/profesionales">
       <span>¿Wedding planner, finca o proveedor?</span>
       <strong>Profesionales →</strong>
     </a>
-    <a class="fmenu__wa" href={site.whatsapp}>
-      <span class="fmenu__dot" aria-hidden="true"></span>
-      Escribidnos por WhatsApp
-    </a>
+    <a class="fmenu__wa" href={site.whatsapp}>Escribidnos por WhatsApp</a>
     <a class="fmenu__mail" href={`mailto:${site.email}`}>{site.email}</a>
   </div>
 </div>
@@ -125,51 +107,32 @@ const cta = onPro
     display: flex;
     align-items: center;
     gap: 24px;
-    min-height: 60px;
+    min-height: 64px;
     padding: 8px var(--f-gutter);
-    border-bottom: var(--f-hair) solid rgba(20, 20, 18, 0.12);
-    background: rgba(246, 243, 238, 0.94);
-    color: #151514;
+    border-bottom: var(--f-hair) solid rgba(17, 17, 17, 0.1);
+    background: rgba(255, 255, 255, 0.96);
+    color: #111111;
     view-transition-name: fnav;
-  }
-
-  @supports (animation-timeline: scroll()) {
-    .fnav__bar::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: -1px;
-      height: 2px;
-      background: var(--f-red);
-      transform: scaleX(0);
-      transform-origin: left center;
-      animation: fnav-progress linear both;
-      animation-timeline: scroll(root block);
-    }
-
-    @keyframes fnav-progress {
-      to { transform: scaleX(1); }
-    }
   }
 
   .fnav__logo {
     display: inline-flex;
     align-items: center;
-    min-height: 40px;
+    min-height: 44px;
+    color: #111111;
+    text-decoration: none;
   }
-
-  .fnav__logo { color: #151514; text-decoration: none; }
 
   .fnav__links { flex: 1; }
 
   .fnav__links ul {
     display: flex;
     justify-content: center;
-    gap: 6px;
+    gap: 28px;
   }
 
   .fnav__links a,
+  .fnav__pro,
   .fnav__cta,
   .fnav__menu {
     font-family: var(--font-sans);
@@ -177,116 +140,86 @@ const cta = onPro
     font-weight: 500;
   }
 
-  .fnav__cta { font-weight: 600; }
-  .fnav__cta-short { display: none; }
+  /* Enlaces: la página activa, subrayada en amarillo, como con rotulador */
+  .fnav__links a {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: #444444;
+    text-decoration: none;
+    transition: color var(--f-dur) var(--f-ease);
+  }
 
-  /* Profesionales: botón de contorno, la puerta para el sector */
+  .fnav__links a::after {
+    content: '';
+    position: absolute;
+    left: -2px;
+    right: -2px;
+    bottom: 12px;
+    z-index: -1;
+    height: 7px;
+    background: var(--f-yellow);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 420ms var(--f-ease-out);
+  }
+
+  .fnav__links a:hover,
+  .fnav__links a[aria-current='page'] { color: #111111; }
+
+  .fnav__links a:hover::after,
+  .fnav__links a[aria-current='page']::after { transform: scaleX(1); }
+
+  .fnav__links a[aria-current='page'] { font-weight: 600; }
+
+  .fnav__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .fnav__pro {
     display: inline-flex;
     align-items: center;
-    min-height: 40px;
-    padding-inline: 14px;
-    border: var(--f-hair) solid rgba(20, 20, 18, 0.34);
-    border-radius: var(--f-r);
-    color: #151514;
-    font-family: var(--font-sans);
-    font-size: 14px;
-    font-weight: 500;
+    min-height: 42px;
+    padding-inline: 16px;
+    border: var(--f-hair) solid rgba(17, 17, 17, 0.3);
+    color: #111111;
     text-decoration: none;
     white-space: nowrap;
     transition: border-color var(--f-dur) var(--f-ease), background-color var(--f-dur) var(--f-ease);
   }
 
-  .fnav__pro:hover,
-  .fnav__pro[aria-current='page'] { border-color: #151514; }
+  .fnav__pro:hover { border-color: #111111; }
+  .fnav__pro[aria-current='page'] { border-color: #111111; background: var(--f-yellow); }
 
-  .fnav__pro[aria-current='page'] { background: rgba(20, 20, 18, 0.06); }
-
-  .fnav__links a {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 40px;
-    padding-inline: 12px;
-    color: #55554F;
-    text-decoration: none;
-    transition: color var(--f-dur) var(--f-ease);
-  }
-
-  .fnav__idx { color: #6A6A63; }
-
-  /* Esquinas de encuadre: aparecen al pasar y fijan la página activa */
-  .fnav__links a::before,
-  .fnav__links a::after {
-    content: '';
-    position: absolute;
-    width: 7px;
-    height: 7px;
-    border: 0 solid currentColor;
-    opacity: 0;
-    transition: opacity var(--f-dur) var(--f-ease);
-  }
-
-  .fnav__links a::before { top: 6px; left: 2px; border-top-width: 1px; border-left-width: 1px; }
-  .fnav__links a::after { bottom: 6px; right: 2px; border-bottom-width: 1px; border-right-width: 1px; }
-
-  .fnav__links a:hover,
-  .fnav__links a[aria-current='page'] { color: #151514; }
-
-  .fnav__links a:hover::before,
-  .fnav__links a:hover::after,
-  .fnav__links a[aria-current='page']::before,
-  .fnav__links a[aria-current='page']::after { opacity: 1; }
-
-  .fnav__links a[aria-current='page'] .fnav__idx { color: var(--f-red-text); }
-
-  .fnav__actions {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  /* Hablemos: el único botón relleno de la barra, con el punto de REC */
+  /* El único botón relleno de la barra */
   .fnav__cta {
-    white-space: nowrap;
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    min-height: 40px;
-    padding-inline: 16px;
-    border-radius: var(--f-r);
-    background: #151514;
-    color: #F6F3EE;
+    min-height: 42px;
+    padding-inline: 18px;
+    background: #111111;
+    color: #FFFFFF;
+    font-weight: 600;
     text-decoration: none;
-    transition: background-color var(--f-dur) var(--f-ease);
+    white-space: nowrap;
+    transition: background-color var(--f-dur) var(--f-ease), color var(--f-dur) var(--f-ease);
   }
 
-  .fnav__cta:hover { background: var(--f-red); }
-
-  .fnav__dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--f-red);
-    animation: fnav-rec 1.6s steps(1) infinite;
-  }
-
-  .fnav__cta:hover .fnav__dot { background: #FFFFFF; }
-
-  @keyframes fnav-rec {
-    50% { opacity: 0.25; }
-  }
+  .fnav__cta:hover { background: var(--f-yellow); color: #111111; }
+  .fnav__cta-short { display: none; }
 
   .fnav__menu {
     display: none;
     align-items: center;
-    min-height: 40px;
+    min-height: 42px;
     padding-inline: 14px;
-    border: var(--f-hair) solid rgba(20, 20, 18, 0.34);
-    border-radius: var(--f-r);
+    border: var(--f-hair) solid rgba(17, 17, 17, 0.3);
     background: transparent;
-    color: #151514;
+    color: #111111;
     cursor: pointer;
   }
 
@@ -302,8 +235,8 @@ const cta = onPro
     margin: 0;
     padding: 12px max(16px, var(--f-gutter)) 28px;
     border: 0;
-    background: #F6F3EE;
-    color: #151514;
+    background: #FFFFFF;
+    color: #111111;
   }
 
   .fmenu:popover-open {
@@ -320,6 +253,42 @@ const cta = onPro
     min-height: 48px;
   }
 
+  .fmenu__close {
+    min-height: 44px;
+    padding-inline: 16px;
+    border: var(--f-hair) solid rgba(17, 17, 17, 0.3);
+    background: transparent;
+    color: inherit;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .fmenu__list {
+    display: grid;
+    align-content: center;
+    border-top: var(--f-hair) solid rgba(17, 17, 17, 0.12);
+  }
+
+  .fmenu__list a {
+    display: flex;
+    align-items: center;
+    min-height: 72px;
+    padding: 14px 4px;
+    border-bottom: var(--f-hair) solid rgba(17, 17, 17, 0.12);
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    text-decoration: none;
+  }
+
+  .fmenu__list a[aria-current='page'] {
+    background: linear-gradient(var(--f-yellow), var(--f-yellow)) 4px 70% / 40px 8px no-repeat;
+    padding-left: 56px;
+  }
+
+  .fmenu__direct { display: grid; gap: 12px; }
+
   .fmenu__pro {
     display: flex;
     flex-wrap: wrap;
@@ -328,105 +297,43 @@ const cta = onPro
     gap: 6px 16px;
     min-height: 56px;
     padding: 12px 16px;
-    border: var(--f-hair) solid rgba(20, 20, 18, 0.34);
-    border-radius: var(--f-r);
-    color: #151514;
+    background: var(--f-yellow);
+    color: #111111;
     font-size: 15px;
     text-decoration: none;
-  }
-
-  .fmenu__close {
-    min-height: 44px;
-    padding-inline: 16px;
-    border: var(--f-hair) solid rgba(20, 20, 18, 0.34);
-    border-radius: var(--f-r);
-    background: transparent;
-    color: inherit;
-    font-family: var(--font-type);
-    font-size: 14px;
-    cursor: pointer;
-  }
-
-  .fmenu__list {
-    display: grid;
-    align-content: center;
-    border-top: var(--f-hair) solid rgba(20, 20, 18, 0.14);
-  }
-
-  .fmenu__list a {
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-    min-height: 72px;
-    padding: 16px 4px;
-    border-bottom: var(--f-hair) solid rgba(20, 20, 18, 0.14);
-    font-family: var(--font-display);
-    font-size: 34px;
-    font-weight: 620;
-    letter-spacing: -0.025em;
-    text-decoration: none;
-  }
-
-  .fmenu__idx {
-    color: #6A6A63;
-    font-family: var(--font-type);
-    font-size: 14px;
-  }
-
-  .fmenu__list a[aria-current='page'] .fmenu__idx { color: var(--f-red-text); }
-
-  .fmenu__direct {
-    display: grid;
-    gap: 14px;
   }
 
   .fmenu__wa {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
     min-height: 56px;
-    border-radius: var(--f-r);
-    background: var(--f-red);
+    background: #111111;
     color: #FFFFFF;
     font-size: 17px;
     font-weight: 600;
     text-decoration: none;
   }
 
-  .fmenu__dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: currentColor;
-  }
-
   .fmenu__mail {
     justify-self: center;
     min-height: 32px;
-    color: #55554F;
+    color: #555555;
     font-size: 16px;
   }
 
-  @media (max-width: 899px) {
+  @media (max-width: 959px) {
     .fnav__links { display: none; }
     .fnav__pro { display: none; }
     .fnav__bar { justify-content: space-between; }
     .fnav__menu { display: inline-flex; }
   }
 
-  /* En móvil, el botón corto (como en Studio) para que quepa junto al logotipo */
+  /* En móvil, el botón corto para que quepa junto al logotipo */
   @media (max-width: 520px) {
     .fnav__cta-long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
     .fnav__cta-short { display: inline; }
-  }
-
-  @media (max-width: 420px) {
-    .fnav__cta { padding-inline: 12px; }
+    .fnav__cta { padding-inline: 14px; }
     .fnav__logo :global(.wordmark) { font-size: 19px; }
-  }
-
-  @media (max-width: 360px) {
-    .fnav__dot { display: none; }
   }
 </style>

@@ -1,7 +1,7 @@
 /**
  * Textos de la web. Cada uno indica su origen:
  * · «dossier»: copiado o adaptado de los dossieres de 2026.
- * · «propuesta»: escrito para esta propuesta, espera aprobación.
+ * · «nuevo»: escrito para la web; se puede cambiar sin tocar nada más.
  * Lo que va entre asteriscos sale en Playfair cursiva (FlatEm).
  * Nada de reseñas, cifras ni clientes inventados.
  */
@@ -22,7 +22,7 @@ export const pricingIntro = {
   deck: 'Preferimos daros a escoger cómo se cuenta vuestra boda: precios cerrados y desglosados, sin sorpresas.',
 };
 
-/** Historias. Origen: propuesta. */
+/** Historias. Origen: nuevo. */
 export const storiesIntro = {
   title: 'Bodas que hemos contado',
   deck: 'Cada boda, entera: de los preparativos a la pista.',
@@ -43,7 +43,7 @@ export const method = {
   ],
 };
 
-/** Proceso. Origen: condiciones del dossier, ordenadas como un calendario. Propuesta de redacción. */
+/** Proceso. Origen: condiciones del dossier, ordenadas como un calendario. Redacción nueva. */
 export const process = {
   label: 'Del primer mensaje a la entrega',
   title: 'Así es trabajar con nosotros',
@@ -75,7 +75,7 @@ export const reviews = {
   deck: 'Reseñas reales, de Google o de Bodas.net.',
 };
 
-/** Contacto. Origen: propuesta. Los campos salen del wireframe de referencia (fecha, lugar, invitados). */
+/** Contacto. Origen: nuevo. Los campos salen del wireframe de referencia (fecha, lugar, invitados). */
 export const contact = {
   title: '¿Tenéis *fecha*?',
   lead: 'Contadnos cuándo y dónde, y os decimos si estamos libres. Respondemos en persona, no con un bot.',

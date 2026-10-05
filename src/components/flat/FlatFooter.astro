@@ -1,11 +1,12 @@
 ---
 /**
- * Pie: el cierre en negro, como el de Nanai Studio. Arriba, los datos (con el bloque NAP
- * —nombre, base y teléfono— igual que en el perfil de Google: es lo que lee el SEO
- * local) y los enlaces; abajo, el logotipo a todo el ancho, cortado por el borde como un
- * rótulo que sale de plano. Los enlaces legales que pide la LSSI, al final.
+ * Pie: el cierre del dossier. Banda negra a sangre con la frase de la marca en Playfair
+ * cursiva, el logotipo y los datos de contacto en una línea (el bloque NAP —nombre, base y
+ * teléfono—, igual que en el perfil de Google: es lo que lee el SEO local). Debajo, los
+ * enlaces y los avisos legales que pide la LSSI.
  */
 import FlatWordmark from './FlatWordmark.astro';
+import { manifesto } from '../../data/copy';
 import { site } from '../../data/site';
 
 const year = new Date().getFullYear();
@@ -13,90 +14,106 @@ const year = new Date().getFullYear();
 
 <footer class="sec tone-dark ffooter">
   <div class="wrap ffooter__inner">
-    <div class="ffooter__top">
-      <dl class="ffooter__data">
-        <div><dt class="label">Bodas</dt><dd>Fotografía y vídeo · una línea de <a href={site.parent.url}>{site.parent.name}</a></dd></div>
-        <div><dt class="label">Base</dt><dd>{site.base} · {site.coordinates}</dd></div>
-        <div>
-          <dt class="label">Contacto</dt>
-          <dd>
-            <a href={site.phoneHref}>{site.phone}</a> · <a href={`mailto:${site.email}`}>{site.email}</a>
-          </dd>
-        </div>
-      </dl>
-
-      <nav class="ffooter__links" aria-label="Pie">
-        <a class="chip" href="/historias">Historias</a>
-        <a class="chip" href="/tarifas">Tarifas</a>
-        <a class="chip" href="/tarifas#preguntas">Preguntas</a>
-        <a class="chip" href="/profesionales">Profesionales</a>
-        <a class="chip" href={site.instagram}>Instagram</a>
-        <a class="chip" href={site.whatsapp}>WhatsApp</a>
-      </nav>
+    <div class="ffooter__close">
+      <p class="quote ffooter__quote" data-reveal>
+        {manifesto.map((line, i) => <span class:list={{ ffooter__gap: i === manifesto.length - 1 }}>{line}</span>)}
+      </p>
+      <a class="ffooter__logo" href="/" aria-label="Nanai Weddings, inicio" data-reveal style="--i: 2">
+        <FlatWordmark tone="paper" size="footer" />
+      </a>
+      <p class="ffooter__nap" data-reveal style="--i: 3">
+        <a href={site.phoneHref}>{site.phone}</a>
+        <a href={`mailto:${site.email}`}>{site.email}</a>
+        <a href={site.instagram}>{site.instagramHandle}</a>
+        <span>{site.base}</span>
+      </p>
     </div>
+
+    <nav class="ffooter__links" aria-label="Pie">
+      <a class="chip" href="/historias">Historias</a>
+      <a class="chip" href="/tarifas">Tarifas</a>
+      <a class="chip" href="/tarifas#preguntas">Preguntas</a>
+      <a class="chip" href="/profesionales">Profesionales</a>
+      <a class="chip" href={site.whatsapp}>WhatsApp</a>
+    </nav>
 
     <div class="ffooter__legal">
       <a href="/aviso-legal">Aviso legal</a>
       <a href="/privacidad">Política de privacidad</a>
       <a href="/cookies">Cookies</a>
-      <span class="readout ffooter__end"><span class="readout__key">©</span>{year} {site.name}</span>
+      <span class="ffooter__end">© {year} {site.name} · una línea de <a href={site.parent.url}>{site.parent.name}</a></span>
     </div>
-  </div>
-
-  <div class="ffooter__logo-wrap" aria-hidden="true">
-    <FlatWordmark tone="paper" size="footer" />
   </div>
 </footer>
 
 <style>
-  .ffooter {
-    padding-bottom: 0;
-    overflow: hidden;
-  }
+  .ffooter { padding-bottom: clamp(28px, 3vw, 40px); }
 
   .ffooter__inner {
     display: grid;
     gap: clamp(40px, 5vw, 72px);
   }
 
-  .ffooter__top {
+  .ffooter__close {
     display: grid;
-    gap: 36px;
+    justify-items: center;
+    gap: clamp(28px, 3vw, 40px);
+    padding-top: clamp(16px, 3vw, 40px);
+    text-align: center;
   }
 
-  .ffooter__data {
+  .ffooter__quote {
     display: grid;
-    gap: 12px;
-    margin: 0;
+    font-size: clamp(26px, 2.8vw, 42px);
   }
 
-  .ffooter__data div { display: grid; gap: 2px; }
-  .ffooter__data dd { margin: 0; color: var(--f-on-surface); }
-  .ffooter__data a { display: inline-block; padding-block: 7px; text-decoration: none; }
-  .ffooter__data a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+  .ffooter__gap { margin-top: 0.7em; }
+
+  .ffooter__logo { color: inherit; text-decoration: none; }
+
+  .ffooter__nap {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 28px;
+    color: var(--f-muted);
+    font-size: 15px;
+  }
+
+  .ffooter__nap a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--f-on-surface);
+    text-decoration: none;
+  }
+
+  .ffooter__nap a:first-child { font-weight: 700; }
+  .ffooter__nap a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+  .ffooter__nap span { display: inline-flex; align-items: center; min-height: 32px; }
 
   .ffooter__links {
     display: flex;
     flex-wrap: wrap;
-    align-content: start;
+    justify-content: center;
     gap: 8px;
   }
 
   .ffooter__links .chip:hover {
-    border-color: transparent;
-    background: var(--f-inverse);
-    color: var(--f-on-inverse);
+    border-color: var(--f-yellow);
+    background: var(--f-yellow);
+    color: #111111;
   }
 
   .ffooter__legal {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 12px 24px;
+    gap: 8px 24px;
     padding-top: 18px;
     border-top: var(--f-hair) solid var(--f-line);
     color: var(--f-muted);
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .ffooter__legal a {
@@ -107,22 +124,7 @@ const year = new Date().getFullYear();
 
   .ffooter__end { margin-left: auto; }
 
-  /* El logotipo sale de plano por abajo */
-  .ffooter__logo-wrap {
-    width: 100%;
-    max-width: var(--f-maxw);
-    margin: clamp(32px, 4vw, 56px) auto 0;
-    padding-inline: var(--f-gutter);
-    height: 0.86em;
-    overflow: hidden;
-    font-size: clamp(38px, 9.8vw, 164px);
-    line-height: 1;
-  }
-
-  .ffooter__logo-wrap :global(.wordmark) { font-size: 1em; }
-
-  @media (min-width: 900px) {
-    .ffooter__top { grid-template-columns: 1fr 1fr; align-items: start; }
-    .ffooter__links { justify-content: flex-end; }
+  @media (max-width: 699px) {
+    .ffooter__end { margin-left: 0; }
   }
 </style>

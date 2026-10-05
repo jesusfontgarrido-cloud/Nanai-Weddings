@@ -1,6 +1,6 @@
 ---
 /**
- * Contacto (el de Nanai Studio, con los campos de una boda). WhatsApp primero, como un
+ * Contacto (misma estructura que en Nanai Studio, con los campos de una boda). WhatsApp primero, como un
  * enlace grande sin caja; el correo y el teléfono debajo; el formulario al lado.
  *
  * Parejas: lo que hace falta para responder con disponibilidad y presupuesto sin ir y
@@ -264,7 +264,7 @@ const proKinds = ['Wedding planner', 'Finca o espacio', 'Otro proveedor'];
     gap: 14px;
     margin-top: 12px;
     padding-bottom: 6px;
-    border-bottom: 2px solid var(--f-red);
+    border-bottom: 2px solid var(--f-on-surface);
     color: var(--f-on-surface);
     font-family: var(--font-display);
     font-size: clamp(26px, 2.6vw, 40px);
@@ -277,7 +277,7 @@ const proKinds = ['Wedding planner', 'Finca o espacio', 'Otro proveedor'];
   .fcontact__wa svg {
     width: 0.8em;
     height: 0.8em;
-    color: var(--f-red);
+    color: var(--f-on-surface);
     transition: transform 320ms var(--f-ease-out);
   }
 
@@ -309,7 +309,7 @@ const proKinds = ['Wedding planner', 'Finca o espacio', 'Otro proveedor'];
   .fchip .chip { min-height: 44px; cursor: pointer; }
   .fchip .chip:hover { border-color: var(--f-on-surface); }
   .fchip input:checked + .chip { border-color: transparent; background: var(--f-inverse); color: var(--f-on-inverse); }
-  .fchip input:focus-visible + .chip { outline: 2px solid var(--f-red); outline-offset: 2px; }
+  .fchip input:focus-visible + .chip { outline: 2px solid var(--f-on-surface); outline-offset: 2px; }
 
   .fcontact__row { display: grid; gap: 18px; }
 
@@ -344,9 +344,9 @@ const proKinds = ['Wedding planner', 'Finca o espacio', 'Otro proveedor'];
   .ffield input::placeholder, .ffield textarea::placeholder { color: var(--f-muted); opacity: 0.85; }
 
   .fcontact__selection input {
-    border-bottom-color: var(--f-red);
-    font-family: var(--font-type);
+    border-bottom: 3px solid var(--f-yellow);
     font-size: 15px;
+    font-weight: 600;
   }
 
   /* Consentimiento: casilla desmarcada + primera capa de información */
@@ -369,7 +369,7 @@ const proKinds = ['Wedding planner', 'Finca o espacio', 'Otro proveedor'];
     width: 22px;
     height: 22px;
     margin-top: 1px;
-    accent-color: #151514;
+    accent-color: #111111;
   }
 
   .fconsent__info {

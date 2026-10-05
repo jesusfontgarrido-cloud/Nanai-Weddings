@@ -1,22 +1,17 @@
 ---
 /**
- * Hero. La estructura del de Nanai Studio: la imagen a toda la pantalla y el texto encima,
- * centrado, en claro sobre una sombra suave solo detrás de las letras. Abajo, la imagen se
- * funde con el papel, sin corte con lo que sigue.
+ * Hero, como la portada del dossier para planners: la imagen a toda la pantalla y el
+ * titular abajo a la izquierda, en blanco sobre una sombra que solo oscurece esa esquina.
+ * Primera línea en League Spartan; la segunda, en Playfair cursiva, con «contamos»
+ * subrayado en amarillo. Abajo a la derecha, la puerta para los profesionales.
  *
  * PROVISIONAL: fotograma del dossier para planners (2880 × 1226). Lo ideal es un bucle de
  * vídeo sin sonido de 8–15 s (≤ 6 MB, con póster): ver docs/recursos-pendientes.md. Si se
  * pasa `loop`, se usa el vídeo y la foto queda de póster.
- *
- * El H1 lleva la búsqueda local («Fotografía y vídeo de bodas en Sevilla») y el claim.
- * Abajo, discreta, la puerta para los profesionales del sector.
  */
 import { getImage } from 'astro:assets';
 import heroImage from '../../assets/media/provisional/fotograma-beso-chaqueta-charra.jpg';
 import heroTall from '../../assets/media/provisional/fotograma-beso-vertical.jpg';
-import shoes from '../../assets/media/provisional/fotograma-zapatos-rojos.jpg';
-import earrings from '../../assets/media/provisional/fotograma-novia-pendientes.jpg';
-import FlatSlideCta from './FlatSlideCta.astro';
 import { hero } from '../../data/copy';
 import { site } from '../../data/site';
 
@@ -27,11 +22,7 @@ interface Props {
 
 const { loop } = Astro.props;
 
-const shoesFrame = await getImage({ src: shoes, format: 'webp', width: 480, height: 240, fit: 'cover' });
-const earringsFrame = await getImage({ src: earrings, format: 'webp', width: 400, height: 320, fit: 'cover' });
-
-// Dirección de arte: en pantallas verticales, un recorte vertical propio (si no, el
-// navegador estiraría la foto apaisada y saldría borrosa).
+// En pantallas verticales, un recorte vertical propio (si no, la foto apaisada se estira).
 const wide = [1024, 1440, 1920, 2560];
 const tall = [540, 690];
 const set = async (format: 'avif' | 'webp') => ({
@@ -70,25 +61,22 @@ const wideSizes = '(max-aspect-ratio: 3/2) 150vh, 100vw';
     }
   </figure>
   <span class="fhero__shade" aria-hidden="true"></span>
-  <span class="fhero__fade" aria-hidden="true"></span>
 
   <div class="wrap fhero__content">
     <h1 id="hero-title" class="fhero__h1">
       <span class="label fhero__label" data-reveal>{hero.label}</span>
       <span class="display fhero__title" data-reveal="lines" style="--i: 1">
-        <span>
-          Vosotros la <span class="inframe inframe--pill" aria-hidden="true"><img src={shoesFrame.src} alt="" width="480" height="240" decoding="async" /></span> vivís,
-        </span>
-        <span>
-          nosotros la <span class="inframe inframe--arch" aria-hidden="true"><img src={earringsFrame.src} alt="" width="400" height="320" decoding="async" /></span>
-          <em class="accent">contamos</em>
-        </span>
+        <span>Vosotros la vivís,</span>
+        <span class="accent">nosotros la <span class="fhero__line">contamos</span></span>
       </span>
     </h1>
 
     <div class="fhero__actions" data-reveal style="--i: 4">
-      <FlatSlideCta href="#tarifas" label="Ver tarifas" variant="paper" />
-      <FlatSlideCta href={site.whatsapp} label="WhatsApp" variant="outline" />
+      <a class="btn btn--white" href="#tarifas">
+        Ver tarifas
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      </a>
+      <a class="btn btn--ghost" href={site.whatsapp}>WhatsApp</a>
     </div>
   </div>
 
@@ -103,11 +91,12 @@ const wideSizes = '(max-aspect-ratio: 3/2) 150vh, 100vw';
     position: relative;
     isolation: isolate;
     display: grid;
-    align-items: center;
+    align-items: end;
     min-height: 100vh;
     min-height: 100svh;
     overflow: hidden;
-    background: var(--f-bg);
+    background: #0D0D0D;
+    color: #FFFFFF;
   }
 
   .fhero__photo {
@@ -128,114 +117,89 @@ const wideSizes = '(max-aspect-ratio: 3/2) 150vh, 100vw';
     object-position: 44% 30%;
   }
 
-  /* Weddings: el enfoque de la imagen llega más despacio */
-  html.motion .fhero__photo[data-reveal='focus'] :global(img) {
-    transition: filter var(--f-dur-slow) var(--f-ease-out), transform 1600ms var(--f-ease-out);
-  }
-
+  /* Sombra solo en la esquina del texto */
   .fhero__shade {
     position: absolute;
     inset: 0;
     z-index: -1;
     background:
-      radial-gradient(ellipse 62% 52% at 50% 52%, rgba(12, 12, 11, 0.6), rgba(12, 12, 11, 0.28) 62%, rgba(12, 12, 11, 0) 100%),
-      linear-gradient(rgba(12, 12, 11, 0.12), rgba(12, 12, 11, 0.12));
-  }
-
-  .fhero__fade {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: linear-gradient(
-      to bottom,
-      rgba(246, 243, 238, 0) 80%,
-      rgba(246, 243, 238, 0.78) 93%,
-      #F6F3EE 100%
-    );
+      linear-gradient(to top, rgba(8, 8, 8, 0.72) 0%, rgba(8, 8, 8, 0.38) 34%, rgba(8, 8, 8, 0) 62%),
+      linear-gradient(to right, rgba(8, 8, 8, 0.32), rgba(8, 8, 8, 0) 60%);
   }
 
   .fhero__content {
-    --f-on-surface: #F6F3EE;
-    --f-line-strong: rgba(246, 243, 238, 0.6);
-    --f-inverse: #F6F3EE;
-    --f-on-inverse: #151514;
-    --f-surface-3: rgba(246, 243, 238, 0.2);
+    --f-on-surface: #FFFFFF;
     display: grid;
-    justify-items: center;
-    gap: 18px;
-    padding-top: 96px;
-    padding-bottom: clamp(88px, 14vh, 150px);
-    color: var(--f-on-surface);
-    text-align: center;
-    text-shadow: 0 1px 28px rgba(12, 12, 11, 0.3);
+    justify-items: start;
+    gap: 22px;
+    padding-top: 120px;
+    padding-bottom: clamp(96px, 13vh, 140px);
   }
 
   .fhero__h1 {
     display: grid;
-    justify-items: center;
-    gap: 18px;
+    gap: 16px;
     font-weight: inherit;
   }
 
-  .fhero__label { color: var(--f-on-surface); font-size: 15px; }
+  .fhero__label { color: #FFFFFF; }
 
   .fhero__title {
-    font-size: clamp(44px, 8vw, 140px);
-    color: var(--f-on-surface);
+    font-size: clamp(46px, 6.6vw, 118px);
+    color: #FFFFFF;
   }
 
-  .fhero__title .inframe { box-shadow: 0 0 0 2px rgba(246, 243, 238, 0.9); }
-  .fhero__title .accent { color: inherit; }
   .fhero__title > span { display: block; }
+
+  /* La segunda línea, en cursiva: es la que se recuerda */
+  .fhero__title .accent { line-height: 1.02; }
+
+  /* «contamos»: subrayado amarillo por debajo de la letra (el blanco no se lee sobre amarillo) */
+  .fhero__line {
+    padding-bottom: 0.06em;
+    background: linear-gradient(var(--f-yellow), var(--f-yellow)) 0 100% / 100% 0.075em no-repeat;
+  }
+
+  html.motion .fhero__line {
+    background-size: 0 0.075em;
+    transition: background-size 1200ms var(--f-ease-out) 900ms;
+  }
+
+  html.motion .is-in .fhero__line { background-size: 100% 0.075em; }
 
   .fhero__actions {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     gap: 10px;
-    margin-top: 14px;
+    margin-top: 8px;
   }
 
-  /* La puerta para los profesionales: una línea discreta al pie del hero */
+  /* La puerta para los profesionales: amarilla, abajo a la derecha */
   .fhero__pro {
     position: absolute;
-    left: 50%;
-    bottom: clamp(20px, 4vh, 40px);
+    right: var(--f-gutter);
+    bottom: clamp(24px, 4vh, 40px);
     display: inline-flex;
     flex-wrap: wrap;
-    justify-content: center;
     gap: 2px 10px;
-    width: max-content;
-    max-width: calc(100% - 32px);
-    min-height: 44px;
     align-items: center;
-    padding: 8px 16px;
-    border-radius: var(--f-r);
-    background: rgba(246, 243, 238, 0.9);
-    color: #151514;
+    max-width: calc(100% - 2 * var(--f-gutter));
+    min-height: 44px;
+    padding: 9px 16px;
+    background: var(--f-yellow);
+    color: #111111;
     font-size: 15px;
     text-decoration: none;
-    transform: translateX(-50%);
-    transition: background-color var(--f-dur) var(--f-ease);
+    transition: background-color var(--f-dur) var(--f-ease), color var(--f-dur) var(--f-ease);
   }
 
-  html.motion .fhero__pro[data-reveal]:not(.is-in) { transform: translate(-50%, 28px); }
-  html.motion .fhero__pro[data-reveal].is-in { transform: translateX(-50%); }
-
-  .fhero__pro strong { font-weight: 600; }
-  .fhero__pro:hover { background: #F6F3EE; }
-  .fhero__pro:hover strong { color: var(--f-red-text); }
+  .fhero__pro strong { font-weight: 700; }
+  .fhero__pro:hover { background: #FFFFFF; }
 
   @media (max-width: 699px) {
     .fhero__photo :global(img) { object-position: 50% 30%; }
-
-    .fhero__shade {
-      background:
-        radial-gradient(ellipse 95% 42% at 50% 50%, rgba(12, 12, 11, 0.62), rgba(12, 12, 11, 0.3) 70%, rgba(12, 12, 11, 0) 100%),
-        linear-gradient(rgba(12, 12, 11, 0.18), rgba(12, 12, 11, 0.18));
-    }
-
-    .fhero__title { font-size: clamp(40px, 11.5vw, 62px); }
-    .fhero__label { max-width: 24ch; }
+    .fhero__content { padding-bottom: 116px; }
+    .fhero__title { font-size: clamp(40px, 11.4vw, 60px); }
+    .fhero__pro { left: var(--f-gutter); right: var(--f-gutter); justify-content: space-between; }
   }
 </style>

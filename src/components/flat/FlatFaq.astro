@@ -1,7 +1,7 @@
 ---
 /**
- * Preguntas (el componente de Nanai Studio). El plano rojo de la página: la única banda
- * en rojo. Aquí viven las condiciones —reserva, pagos, cancelación, horas, entrega,
+ * Preguntas. Banda gris a sangre (en blanco si la página ya tiene otra banda de color).
+ * Aquí viven las condiciones —reserva, pagos, cancelación, horas, entrega,
  * desplazamiento—, justo antes del contacto. Admite una lista suelta o grupos.
  */
 import type { Faq, FaqGroup } from '../../data/faq';
@@ -15,8 +15,8 @@ interface Props {
   more?: { href: string; label: string };
   /** Texto bajo el titular. */
   deck?: string;
-  /** Rojo por defecto: el plano rojo de la página. En papel si la página ya lo usa. */
-  tone?: 'red' | 'paper';
+  /** Gris por defecto; en blanco si hace falta separar de otra banda. */
+  tone?: 'gray' | 'white';
 }
 
 const {
@@ -26,12 +26,12 @@ const {
   title = ['Antes de escribirnos,', 'quizá os preguntáis…'],
   more,
   deck,
-  tone = 'red',
+  tone = 'gray',
 } = Astro.props;
 const blocks: FaqGroup[] = groups ?? [{ id: 'todas', title: '', items }];
 ---
 
-<section id={id} class:list={['sec', 'ffaq', { 'tone-red': tone === 'red' }]} aria-labelledby={`${id}-title`}>
+<section id={id} class:list={['sec', 'ffaq', { 'tone-gray': tone === 'gray' }]} aria-labelledby={`${id}-title`}>
   <div class="wrap">
     <div class="ffaq__grid">
       <div class="ffaq__head">
@@ -75,7 +75,7 @@ const blocks: FaqGroup[] = groups ?? [{ id: 'todas', title: '', items }];
 
   .ffaq__head { display: grid; align-content: start; gap: 18px; }
   .ffaq__title > span { display: block; }
-  .ffaq__title-2 { opacity: 0.78; }
+  .ffaq__title-2 { font-family: var(--font-serif); font-size-adjust: ex-height 0.46; font-style: italic; font-weight: 450; letter-spacing: -0.01em; }
   .ffaq__deck { max-width: 40ch; }
   .ffaq__more { justify-self: start; }
 
@@ -84,7 +84,6 @@ const blocks: FaqGroup[] = groups ?? [{ id: 'todas', title: '', items }];
   .ffaq__group {
     margin-bottom: 10px;
     color: var(--f-on-surface);
-    font-weight: 700;
   }
 
   .ffaq__list {
@@ -108,7 +107,7 @@ const blocks: FaqGroup[] = groups ?? [{ id: 'todas', title: '', items }];
     transition: padding-left 320ms var(--f-ease-out);
   }
 
-  .ffaq__q:hover { padding-left: 16px; }
+  .ffaq__q:hover { padding-left: 16px; background: linear-gradient(var(--f-yellow), var(--f-yellow)) 0 0 / 4px 100% no-repeat; }
   .ffaq__q::-webkit-details-marker { display: none; }
 
   .ffaq__icon {

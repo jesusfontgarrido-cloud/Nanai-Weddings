@@ -1,15 +1,17 @@
 # Nanai Weddings — Web
 
-Fotografía y vídeo de bodas en Sevilla. La línea de bodas de [Nanai Studio](https://nanaistudio.es),
-con el mismo sistema visual (papel, League Spartan + Archivo + Playfair cursiva + Courier
-Prime, un solo rojo plano). Astro 5, CSS propio y casi cero JS.
+Fotografía y vídeo de bodas en Sevilla. La línea de bodas de [Nanai Studio](https://nanaistudio.es):
+misma estructura técnica que su web, con piel propia: blanco puro, League Spartan +
+Playfair cursiva + Archivo y el amarillo del dossier solo para destacar. Astro 5, CSS
+propio y casi cero JS.
 
 - Reglas del proyecto: [`CLAUDE.md`](CLAUDE.md)
-- Propuesta, investigación y decisiones pendientes: [`docs/propuesta.md`](docs/propuesta.md)
+- Decisiones tomadas y pendientes: [`docs/decisiones.md`](docs/decisiones.md)
+- Referencias de Behance: [`docs/referencias-behance.md`](docs/referencias-behance.md)
 - Fotos y vídeos que faltan, con su formato: [`docs/recursos-pendientes.md`](docs/recursos-pendientes.md)
 
-> **Propuesta, aún no en producción.** Las imágenes son fotogramas provisionales sacados
-> del dossier para wedding planners; lo demás son huecos marcados.
+> Las imágenes son fotogramas provisionales sacados del dossier para wedding planners; lo
+> que falta son huecos marcados. Antes de publicar, ver «Para publicar» abajo.
 
 ## Páginas
 
@@ -38,7 +40,7 @@ npm run preview
 
 ```
 src/
-  styles/       flat.css (la piel de Studio, adaptada), fonts.css, base.css
+  styles/       flat.css (la piel de Weddings), fonts.css, base.css
   layouts/      BaseLayout (SEO, datos estructurados), LegalLayout
   components/
     flat/       Nav, Hero, Pricing (calculadora), Stories, Film (Vimeo), Method, Steps,
@@ -50,15 +52,26 @@ src/
   assets/media/ provisional/ (fotogramas del dossier, hasta tener el material bueno)
   pages/
 public/
-  fonts/        las mismas woff2 que Nanai Studio
-  brand/        isotipo y logos oficiales de Nanai
+  fonts/        League Spartan, Archivo y Playfair Italic (woff2)
+  brand/        isotipo de Nanai en una sola tinta (sin el punto rojo)
   dossieres/    PDF generados
   og/           imagen para compartir
 scripts/
   dossieres.mjs imprime los dossieres con Chrome
 ```
 
-## Pendiente
+## Para publicar
+
+Es una web estática: `npm run build` deja todo en `dist/`. Se puede servir igual que
+nanaistudio.es (Cloudflare, conectando este repositorio) o en cualquier hosting estático.
+Antes de abrirla al público:
+
+1. Confirmar el dominio en `astro.config.mjs` (ahora `nanaiweddings.es`).
+2. Poner la clave de Web3Forms de Weddings en `src/data/site.ts`.
+3. Rellenar los datos legales del titular (`src/data/site.ts`) y revisar los textos legales.
+4. Cambiar el material provisional (`docs/recursos-pendientes.md`).
+
+Lo que falta, marcado en el código:
 
 ```bash
 grep -rn "data-pending\|PENDIENTE" src

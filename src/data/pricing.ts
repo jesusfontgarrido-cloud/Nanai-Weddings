@@ -4,7 +4,7 @@
  *
  * Origen: «Wedding planner dossier» (2026), el más reciente y el único que trae las
  * condiciones completas. Sus precios son el «precio final para los novios»: la web
- * enseña ese mismo precio a todo el mundo (ver docs/propuesta.md, decisión 1).
+ * enseña ese mismo precio a todo el mundo (ver docs/decisiones.md, «Precio único»).
  * Los dossieres antiguos para parejas decían 900 € (foto) y 1.000 € (vídeo).
  */
 

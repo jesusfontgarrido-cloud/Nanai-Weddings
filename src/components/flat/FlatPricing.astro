@@ -1,15 +1,15 @@
 ---
 /**
- * Calculadora de tarifas. La idea sale del oficio: elegir un servicio es como montar una
- * línea de tiempo de edición. Cada servicio y cada extra es una pista (V1, F1, dron…)
- * sobre los momentos del día; el total corre como un contador.
+ * Calculadora de tarifas. Elegir un servicio es como montar la línea de tiempo del día:
+ * cada servicio y cada extra es una pista sobre los momentos de la boda (preparativos,
+ * ceremonia, cóctel, banquete, barra libre) y el total corre como un contador.
  *
  * Al elegir:
- * · el recuadro de enfoque (AF) salta al servicio elegido y el resto se desenfoca un poco;
+ * · el bloque amarillo (el destacado del dossier) se desliza bajo el servicio elegido;
  * · el precio rueda como un contador;
- * · la pantalla cambia con un rack focus (hoja de contactos para foto, fotograma 2.39:1
- *   para vídeo, las dos cosas para el pack);
- * · las pistas entran en la línea de tiempo y el cabezal rojo la recorre.
+ * · la pantalla cambia con un fundido (hoja de contactos para foto, fotograma 2.39:1 para
+ *   vídeo, las dos cosas para el pack);
+ * · las pistas entran en la línea de tiempo y el cabezal la recorre.
  *
  * Dos modos: «compact» (home: servicio y precio, con enlace a la completa) y «full»
  * (/tarifas: invitados y extras). Sin JS: radios y casillas normales y el precio de
@@ -89,7 +89,7 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
         <fieldset class="fprice__packs" data-packs>
           <legend class="fprice__legend"><span class="fprice__step">01</span> Qué queréis contar</legend>
           <div class="fprice__packlist" data-packlist>
-            <span class="fprice__af" aria-hidden="true" data-af><i></i><i></i><i></i><i></i></span>
+            <span class="fprice__af" aria-hidden="true" data-af></span>
             {
               services.map((service) => (
                 <label class="fpack">
@@ -155,7 +155,8 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
                         </span>
                         <span class="fextra__name">
                           {extra.name}
-                          {extra.crew && <span class="fextra__badge" data-crew-badge hidden />}
+                          {extra.crew && <span class="tag fextra__badge" data-crew-badge hidden />}
+                          {extra.featured && <span class="tag">Destacado</span>}
                         </span>
                         <span class="fextra__price">
                           +{euros(extra.price)} €{extra.unit && <span class="fextra__unit"> {extra.unit}</span>}
@@ -179,7 +180,7 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
         }
       </div>
 
-      <div class="fprice__result tone-bone">
+      <div class="fprice__result tone-gray">
         <!-- Pantalla: lo que os llevaríais, con un rack focus al cambiar -->
         <div class="fscreen" data-screen={start.id} aria-hidden="true">
           <div class="fscreen__layer fscreen__sheet">
@@ -187,15 +188,12 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
               sheet.map((src, i) => (
                 <figure class="fscreen__cell">
                   <Picture src={src} formats={['avif', 'webp']} widths={[200, 400]} sizes="160px" alt="" loading="lazy" />
-                  <figcaption>{String(i + 12).padStart(2, '0')}A</figcaption>
                 </figure>
               ))
             }
           </div>
           <div class="fscreen__layer fscreen__film">
             <Picture src={still} formats={['avif', 'webp']} widths={[640, 1000, 1300]} sizes="(min-width: 1024px) 40vw, 92vw" alt="" loading="lazy" />
-            <span class="fscreen__rec"><span class="rec-dot"></span>REC</span>
-            <span class="fscreen__tc">00:04:12:08</span>
           </div>
           <span class="fscreen__caption" data-screen-caption>{start.crew}</span>
         </div>
@@ -260,7 +258,7 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
         <div class="fprice__actions">
           {
             full ? (
-              <a class="btn btn--red fprice__cta" href="#contacto" data-to-contact>
+              <a class="btn btn--accent fprice__cta" href="#contacto" data-to-contact>
                 Consultar fecha con esta selección
               </a>
             ) : (
@@ -282,7 +280,7 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
               <span class="label">Estimación</span>
               <strong data-dock-total>{startPrice} €</strong>
             </span>
-            <a class="btn btn--red" href="#contacto" tabindex="-1" data-to-contact>Consultar fecha</a>
+            <a class="btn btn--accent" href="#contacto" tabindex="-1" data-to-contact>Consultar fecha</a>
           </div>
         )
       }
@@ -561,10 +559,14 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
   }
 
   .fprice__step {
-    color: var(--f-red-text);
-    font-family: var(--font-type);
-    font-size: 14px;
-    font-weight: 400;
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    background: var(--f-on-surface);
+    color: var(--f-bg);
+    font-size: 12px;
+    font-weight: 700;
   }
 
   /* ── Servicios: tres filas; el recuadro de enfoque salta a la elegida ── */
@@ -575,6 +577,7 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
 
   .fpack {
     position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: baseline;
@@ -582,7 +585,7 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
     padding: 18px 18px 16px;
     border-top: var(--f-hair) solid var(--f-line);
     cursor: pointer;
-    transition: opacity 420ms var(--f-ease-out), filter 420ms var(--f-ease-out);
+    transition: color 420ms var(--f-ease-out);
   }
 
   .fpack:last-of-type { border-bottom: var(--f-hair) solid var(--f-line); }
@@ -614,56 +617,40 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
   .fpack__crew {
     grid-column: 1 / -1;
     color: var(--f-muted);
-    font-family: var(--font-type);
     font-size: 14px;
   }
 
-  /* Sin JS: la opción elegida, con su recuadro fijo */
-  .fpack:has(input:checked) { box-shadow: inset 0 0 0 1px var(--f-on-surface); }
-  .fpack:has(input:focus-visible) { outline: 2px solid var(--f-red); outline-offset: 2px; }
+  .fpack:has(input:checked) .fpack__crew { color: var(--f-on-surface); }
+  .fpack:has(input:focus-visible) { outline: 2px solid var(--f-on-surface); outline-offset: 2px; }
 
-  /* Con JS: el resto se desenfoca un poco (rack focus) y el AF se mueve */
-  .is-live .fpack:has(input:checked) { box-shadow: none; }
-  .is-live .fpack:not(:has(input:checked)) { opacity: 0.62; }
-  .is-live .fpack:not(:has(input:checked)):hover { opacity: 0.85; }
+  /* Sin JS: la opción elegida, en amarillo fijo */
+  .fpack:has(input:checked) { background: var(--f-yellow); }
+
+  /* Con JS: el bloque amarillo se desliza por detrás */
+  .is-live .fpack:has(input:checked) { background: transparent; }
+  .is-live .fpack:not(:has(input:checked)):hover { background: var(--f-surface-2); }
 
   .fprice__af {
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 1;
+    z-index: 0;
     width: var(--w, 0);
     height: var(--h, 0);
+    background: var(--f-yellow);
     transform: translate(var(--x, 0), var(--y, 0));
+    transform-origin: left center;
     pointer-events: none;
     opacity: 0;
   }
 
   .is-live .fprice__af { opacity: 1; }
+
   .is-ready .fprice__af {
     transition:
-      transform 620ms var(--f-ease-out),
-      width 620ms var(--f-ease-out),
-      height 620ms var(--f-ease-out);
-  }
-
-  .fprice__af i {
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    border: 0 solid var(--f-on-surface);
-  }
-
-  .fprice__af i:nth-child(1) { top: 0; left: 0; border-top-width: 2px; border-left-width: 2px; }
-  .fprice__af i:nth-child(2) { top: 0; right: 0; border-top-width: 2px; border-right-width: 2px; }
-  .fprice__af i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 2px; border-left-width: 2px; }
-  .fprice__af i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; }
-
-  /* Al enfocar, las esquinas se encienden en rojo un instante */
-  .is-ready .fprice__af i { animation: fprice-af 900ms var(--f-ease-out); }
-
-  @keyframes fprice-af {
-    0%, 40% { border-color: var(--f-red); }
+      transform 700ms var(--f-ease-out),
+      width 700ms var(--f-ease-out),
+      height 700ms var(--f-ease-out);
   }
 
   /* ── Invitados ── */
@@ -673,7 +660,7 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
   .fchip .chip { min-height: 44px; cursor: pointer; }
   .fchip .chip:hover { border-color: var(--f-on-surface); }
   .fchip input:checked + .chip { border-color: transparent; background: var(--f-inverse); color: var(--f-on-inverse); }
-  .fchip input:focus-visible + .chip { outline: 2px solid var(--f-red); outline-offset: 2px; }
+  .fchip input:focus-visible + .chip { outline: 2px solid var(--f-on-surface); outline-offset: 2px; }
 
   .fprice__crew-note { margin-top: 12px; max-width: 52ch; }
   .fprice__crew-note.is-strong { color: var(--f-on-surface); }
@@ -713,8 +700,8 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
   .fextra__box svg { width: 14px; height: 14px; opacity: 0; transform: scale(0.6); transition: opacity var(--f-dur) var(--f-ease), transform var(--f-dur) var(--f-ease); }
   .fextra input:checked ~ .fextra__box { border-color: var(--f-on-surface); background: var(--f-on-surface); color: var(--f-bg); }
   .fextra input:checked ~ .fextra__box svg { opacity: 1; transform: none; }
-  .fextra input:focus-visible ~ .fextra__box { outline: 2px solid var(--f-red); outline-offset: 2px; }
-  .fextra input:disabled ~ .fextra__box { border-color: var(--f-red); background: var(--f-red); color: #fff; }
+  .fextra input:focus-visible ~ .fextra__box { outline: 2px solid var(--f-on-surface); outline-offset: 2px; }
+  .fextra input:disabled ~ .fextra__box { border-color: var(--f-on-surface); background: var(--f-yellow); color: #111111; }
   .fextra:has(input:disabled) { cursor: default; }
 
   .fextra__name {
@@ -725,15 +712,6 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
     font-weight: 600;
   }
 
-  .fextra__badge {
-    padding: 2px 7px;
-    border-radius: var(--f-r);
-    background: var(--f-red);
-    color: #FFFFFF;
-    font-family: var(--font-type);
-    font-size: 12px;
-    font-weight: 400;
-  }
 
   .fextra__price {
     font-family: var(--font-display);
@@ -746,7 +724,6 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
 
   .fextra__unit {
     color: var(--f-muted);
-    font-family: var(--font-type);
     font-size: 12px;
     font-weight: 400;
     letter-spacing: 0;
@@ -759,13 +736,6 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
     line-height: 1.45;
   }
 
-  .fextra--featured .fextra__name::after {
-    content: 'Destacado';
-    color: var(--f-red-text);
-    font-family: var(--font-type);
-    font-size: 12px;
-    font-weight: 400;
-  }
 
   .fprice__more {
     display: grid;
@@ -790,8 +760,8 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
     aspect-ratio: 16 / 10;
     overflow: hidden;
     border-radius: var(--f-r-media);
-    background: #151514;
-    color: #F6F3EE;
+    background: #0D0D0D;
+    color: #FFFFFF;
   }
 
   .fscreen__layer {
@@ -805,14 +775,13 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
     grid-template-columns: repeat(3, 1fr);
     gap: 6px;
     padding: 6px;
-    background: #F6F3EE;
+    background: #FFFFFF;
   }
 
   .fscreen__cell {
     position: relative;
     margin: 0;
     overflow: hidden;
-    border-radius: 3px;
   }
 
   .fscreen__cell :global(picture),
@@ -822,15 +791,6 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
     object-fit: cover;
   }
 
-  .fscreen__cell figcaption {
-    position: absolute;
-    left: 6px;
-    bottom: 4px;
-    color: #F6F3EE;
-    font-family: var(--font-type);
-    font-size: 11px;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-  }
 
   /* Fotograma 2.39:1 con su letterbox */
   .fscreen__film { background: #0E0E0D; }
@@ -846,19 +806,6 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
 
   .fscreen__film :global(img) { width: 100%; height: 100%; object-fit: cover; }
 
-  .fscreen__rec,
-  .fscreen__tc {
-    position: absolute;
-    top: 12px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--font-type);
-    font-size: 13px;
-  }
-
-  .fscreen__rec { left: 14px; }
-  .fscreen__tc { right: 14px; font-variant-numeric: tabular-nums; }
 
   .fscreen__caption {
     position: absolute;
@@ -867,9 +814,11 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
     z-index: 2;
     padding: 3px 8px;
     border-radius: 4px;
-    background: rgba(10, 10, 10, 0.62);
-    font-family: var(--font-type);
-    font-size: 13px;
+    background: #111111;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
   }
 
   /* Qué capa se ve según el servicio */
@@ -881,13 +830,13 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
   .fscreen[data-screen='pack'] .fscreen__cell:nth-child(n + 5) { display: none; }
   .fscreen:not([data-screen='pack']) .fscreen__layer { clip-path: inset(0 0 0 0); }
 
-  /* Rack focus al cambiar */
-  .fscreen.is-racking .fscreen__layer { animation: fprice-rack 800ms var(--f-ease-out); }
+  /* Fundido a blanco al cambiar */
+  .fscreen.is-racking .fscreen__layer { animation: fprice-fade 800ms var(--f-ease-out); }
 
-  @keyframes fprice-rack {
-    0% { filter: blur(0); }
-    35% { filter: blur(10px) brightness(1.05); }
-    100% { filter: blur(0); }
+  @keyframes fprice-fade {
+    0% { opacity: 1; }
+    35% { opacity: 0.15; }
+    100% { opacity: 1; }
   }
 
   /* Total */
@@ -927,7 +876,7 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
 
   .odo :global(.odo__strip span) { display: block; height: 1.02em; }
 
-  .fprice__reserve { font-family: var(--font-type); font-size: 14px; }
+  .fprice__reserve { font-size: 14px; }
 
   /* ── Línea de tiempo ── */
   .ftl { display: grid; gap: 8px; }
@@ -946,8 +895,10 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
     background-position: bottom left;
     background-repeat: repeat-x;
     color: var(--f-muted);
-    font-family: var(--font-type);
-    font-size: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   .ftl__ruler > span {
@@ -979,11 +930,10 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
     gap: 8px;
     margin-block: 3px;
     padding-inline: 8px;
-    border-radius: 3px;
     background: var(--f-on-surface);
     color: var(--f-bg);
-    font-family: var(--font-type);
     font-size: 12px;
+    font-weight: 600;
     line-height: 26px;
     white-space: nowrap;
     transform-origin: left center;
@@ -1002,9 +952,10 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
     color: var(--f-on-surface);
   }
 
-  .ftl__clip--key:not(.ftl__clip--main) { box-shadow: inset 0 0 0 1px var(--f-red); color: var(--f-red-text); }
+  /* Lo destacado (Same Day Edit), en amarillo */
+  .ftl__clip--key:not(.ftl__clip--main) { background: var(--f-yellow); box-shadow: none; color: #111111; }
 
-  /* Cabezal rojo: recorre la jornada al cambiar */
+  /* Cabezal: recorre la jornada al cambiar */
   .ftl__head {
     position: absolute;
     top: -8px;
@@ -1012,7 +963,7 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
     left: 0;
     z-index: 2;
     width: 2px;
-    background: var(--f-red);
+    background: var(--f-on-surface);
     opacity: 0;
     pointer-events: none;
   }
@@ -1024,7 +975,7 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
     left: -4px;
     width: 10px;
     height: 8px;
-    background: var(--f-red);
+    background: var(--f-on-surface);
     clip-path: polygon(0 0, 100% 0, 50% 100%);
   }
 
@@ -1038,8 +989,7 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
 
   .ftl__aside {
     color: var(--f-muted);
-    font-family: var(--font-type);
-    font-size: 13px;
+    font-size: 14px;
   }
 
   /* Lo que incluye */
@@ -1098,7 +1048,7 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
       margin-inline: calc(var(--f-gutter) * -1);
       padding: 10px var(--f-gutter);
       border-top: var(--f-hair) solid var(--f-line);
-      background: rgba(246, 243, 238, 0.96);
+      background: rgba(255, 255, 255, 0.97);
       transform: translateY(110%);
       opacity: 0;
       pointer-events: none;
@@ -1107,7 +1057,7 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
 
     .fprice__dock.is-shown { transform: none; opacity: 1; pointer-events: auto; }
     .fprice__dock-total { display: grid; }
-    .fprice__dock-total strong { font-family: var(--font-display); font-size: 26px; font-weight: 640; letter-spacing: -0.02em; line-height: 1; }
+    .fprice__dock-total strong { font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
     .fprice__dock .btn { min-height: 48px; padding-inline: 18px; font-size: 15px; }
 
     /* Móvil: servicio → resultado → invitados → extras → barra */
@@ -1138,6 +1088,7 @@ const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`
   }
 
   @media (max-width: 559px) {
+    .ftl__ruler { letter-spacing: 0; text-transform: none; }
     .ftl__ruler > span > span { display: none; }
     .ftl__ruler > span::before { content: attr(data-short); }
   }

@@ -16,7 +16,7 @@ const price = extras.find((extra) => extra.id === 'same-day-edit')?.price ?? 0;
 <section class="sec tone-dark ffeature" aria-labelledby="sde-title">
   <div class="wrap ffeature__grid">
     <div class="ffeature__text">
-      <p class="label ffeature__label" data-reveal><span class="rec-dot"></span>{sameDayEdit.label}</p>
+      <p class="label ffeature__label" data-reveal>{sameDayEdit.label}</p>
       <h2 id="sde-title" class="display ffeature__title" data-reveal="lines"><span>{sameDayEdit.title}</span></h2>
       <p class="quote ffeature__quote" data-reveal style="--i: 2"><FlatEm text={sameDayEdit.quote} /></p>
       <p class="ffeature__body" data-reveal style="--i: 3">{sameDayEdit.text}</p>
@@ -38,25 +38,19 @@ const price = extras.find((extra) => extra.id === 'same-day-edit')?.price ?? 0;
 
   .ffeature__text { display: grid; gap: 18px; }
 
-  .ffeature__label {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--f-on-surface);
-  }
+  .ffeature__label { color: var(--f-signal); }
 
   .ffeature__title { font-size: clamp(54px, 7vw, 120px); }
   .ffeature__quote { max-width: 18ch; font-size: clamp(26px, 2.6vw, 40px); }
   .ffeature__quote :global(.accent) { color: inherit; }
   .ffeature__body { max-width: 46ch; color: var(--f-muted); }
-  .ffeature__price { font-size: clamp(44px, 4.6vw, 72px); color: var(--f-on-surface); }
+  .ffeature__price { font-size: clamp(44px, 4.6vw, 72px); color: var(--f-signal); }
 
   .ffeature__img {
     position: relative;
     margin: 0;
     aspect-ratio: 4 / 5;
     overflow: hidden;
-    border-radius: var(--f-r-media);
   }
 
   .ffeature__img :global(picture),

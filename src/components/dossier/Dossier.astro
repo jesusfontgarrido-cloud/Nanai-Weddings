@@ -4,7 +4,7 @@
  * a los PDF hechos a mano: un precio cambia en pricing.ts y cambia en la web y en el PDF.
  * `npm run dossieres` imprime /dossier/parejas y /dossier/profesionales en public/dossieres.
  *
- * Misma piel que la web (papel, League Spartan, Playfair cursiva, un rojo plano) y la
+ * Misma piel que la web (blanco, League Spartan, Playfair cursiva, el amarillo para lo destacado) y la
  * estructura del dossier para planners de 2026: portada con fotograma, «Qué ofrecemos»,
  * tarifas, extras, Same Day Edit, seguridad, condiciones y cierre.
  */
@@ -123,7 +123,7 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
   <!-- Comisión (profesionales) -->
   {
     forPros && (
-      <section class="sheet sheet--red">
+      <section class="sheet sheet--yellow">
         <header class="sheet__head"><span>Vuestra comisión</span><span>{n('Vuestra comisión')}</span></header>
         <div class="split split--end">
           <div>
@@ -273,7 +273,7 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
     justify-content: center;
     gap: 24px;
     padding: 24px 0;
-    color: #151514;
+    color: #111111;
     font-family: var(--font-sans);
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -288,19 +288,21 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
     height: 210mm;
     padding: 14mm 16mm;
     overflow: hidden;
-    background: #F6F3EE;
+    background: #FFFFFF;
     break-after: page;
   }
 
-  .sheet--dark { background: #121212; color: #F6F3EE; }
-  .sheet--red { background: #D9291C; color: #FFF8F2; }
+  .sheet--dark { background: #0D0D0D; color: #FFFFFF; }
+  .sheet--yellow { background: #FFCA00; color: #111111; }
 
   .sheet__head {
     display: flex;
     justify-content: space-between;
     color: inherit;
-    font-family: var(--font-type);
-    font-size: 9pt;
+    font-size: 7.5pt;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     opacity: 0.7;
   }
 
@@ -326,7 +328,7 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
   .lead em { font-family: var(--font-serif); font-style: italic; }
   .body { max-width: 40em; font-size: 10.5pt; line-height: 1.45; opacity: 0.85; }
   .small { margin-top: auto; font-size: 8.5pt; line-height: 1.4; opacity: 0.75; }
-  .mono { font-family: var(--font-type); font-size: 9pt; opacity: 0.8; }
+  .mono { font-size: 7.5pt; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.8; }
 
   .script {
     font-family: var(--font-serif);
@@ -384,7 +386,7 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
   .rows strong { font-family: var(--font-display); font-size: 12pt; font-weight: 620; letter-spacing: -0.01em; }
   .rows span { grid-column: 1 / -1; opacity: 0.8; }
   .rows b { font-family: var(--font-display); font-size: 14pt; font-weight: 640; }
-  .rows small { font-family: var(--font-type); font-size: 8pt; font-weight: 400; }
+  .rows small { font-family: var(--font-sans); font-size: 7.5pt; font-weight: 400; }
 
   .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12mm; }
   .cols2 .rows li { padding: 2.4mm 0; }
@@ -396,11 +398,11 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
     align-content: start;
     gap: 3.5mm;
     padding: 6mm;
-    border-top: 0.6mm solid #151514;
-    background: #ECE7DF;
+    border-top: 0.6mm solid #111111;
+    background: #F5F5F4;
   }
 
-  .plan--key { border-top-color: #D9291C; }
+  .plan--key { border-top-color: #111111; background: #FFCA00; }
   .plan__deliver { display: grid; gap: 1mm; padding-top: 3mm; border-top: 0.2mm solid rgba(20, 20, 18, 0.2); font-size: 10pt; }
 
   .grid5 {
@@ -410,12 +412,12 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
     margin-top: auto;
   }
 
-  .grid5 div { display: grid; align-content: start; gap: 2mm; padding-top: 3mm; border-top: 0.3mm solid #151514; font-size: 9.5pt; line-height: 1.4; }
+  .grid5 div { display: grid; align-content: start; gap: 2mm; padding-top: 3mm; border-top: 0.3mm solid #111111; font-size: 9.5pt; line-height: 1.4; }
   .grid5 strong { font-family: var(--font-display); font-size: 11.5pt; font-weight: 620; }
   .grid5 span { opacity: 0.85; }
 
   /* Portada */
-  .sheet--cover { padding: 0; gap: 0; background: #121212; color: #F6F3EE; }
+  .sheet--cover { padding: 0; gap: 0; background: #0D0D0D; color: #FFFFFF; }
   .cover__img { width: 100%; height: 150mm; object-fit: cover; object-position: 44% 30%; }
 
   .cover__band {
@@ -428,7 +430,7 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
 
   .cover__band :global(.wordmark) { font-size: 34pt; }
   .cover__meta { display: grid; gap: 2mm; text-align: right; }
-  .cover__label { font-family: var(--font-type); font-size: 9pt; opacity: 0.8; }
+  .cover__label { font-size: 7.5pt; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.85; }
   .cover__title { font-family: var(--font-serif); font-size: 20pt; font-style: italic; }
 
   /* Media hoja con imagen */
@@ -438,7 +440,7 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
   .half__img { width: 100%; height: 100%; object-fit: cover; }
 
   /* Cierre */
-  .sheet--close { display: grid; grid-template-columns: 1fr 1fr; padding: 0; gap: 0; background: #121212; color: #F6F3EE; }
+  .sheet--close { display: grid; grid-template-columns: 1fr 1fr; padding: 0; gap: 0; background: #0D0D0D; color: #FFFFFF; }
   .close__img { width: 100%; height: 100%; object-fit: cover; }
   .close__text { display: grid; align-content: center; gap: 10mm; padding: 16mm; }
   .close__text :global(.wordmark) { font-size: 28pt; }

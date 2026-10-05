@@ -1,6 +1,6 @@
 ---
 /**
- * Historias: la sala de proyección, en negro (como el trabajo en Nanai Studio). Arriba,
+ * Historias: banda negra a sangre, como las páginas de vídeo del dossier. Arriba,
  * un tráiler a lo ancho; debajo, bodas completas en formato vertical, editorial, con
  * pareja, lugar y fecha. Cada una lleva a su página. El wireframe de referencia pide
  * 3–4 bodas reales completas, no un mosaico de fotos sueltas.
@@ -114,7 +114,6 @@ const { more = true, title = storiesIntro.title, deck = storiesIntro.deck, trail
     display: block;
     aspect-ratio: 4 / 5;
     overflow: hidden;
-    border-radius: var(--f-r-media);
     background: var(--f-surface-2);
   }
 
@@ -130,7 +129,7 @@ const { more = true, title = storiesIntro.title, deck = storiesIntro.deck, trail
   /* Rack focus: al pasar por una historia, las demás se desenfocan */
   @media (hover: hover) {
     .fstory:hover .fstory__media :global(img) { transform: scale(1.03); }
-    .fstories__grid:has(.fstory:hover) .fstory:not(:hover) .fstory__media :global(img) { filter: blur(6px) brightness(0.7); }
+    .fstories__grid:has(.fstory:hover) .fstory:not(:hover) .fstory__media :global(img) { filter: brightness(0.55) grayscale(0.4); }
   }
 
   .fstory__caption { display: grid; gap: 4px; }

@@ -2,12 +2,11 @@
 /**
  * Profesionales: tarifas y comisión (dossier para planners). Arriba, los tres precios
  * finales para los novios, con lo que incluye cada uno. Debajo, el plano rojo de la
- * página: la comisión, a lo grande, como en el dossier (allí iba en amarillo; aquí, en el
- * rojo de la marca).
+ * página: la comisión, a lo grande y en amarillo, como en el dossier.
  *
  * La frase clave: el precio de la web y el de vuestra propuesta es el mismo, la comisión
- * sale de nuestra parte. Solo vale si la web enseña el mismo precio a todos (decisión 1
- * de docs/propuesta.md).
+ * sale de nuestra parte. Solo vale si la web enseña el mismo precio a todos («Precio único»
+ * de docs/decisiones.md).
  */
 import { commission, euros, services, terms } from '../../data/pricing';
 
@@ -45,7 +44,7 @@ const rows = services.map((service) => ({ name: service.name, value: commission[
   </div>
 </section>
 
-<section class="sec tone-red fcommission" aria-labelledby="commission-title">
+<section class="sec tone-yellow fcommission" aria-labelledby="commission-title">
   <div class="wrap fcommission__grid">
     <div class="fcommission__big">
       <p class="label fcommission__label" data-reveal>Vuestra comisión</p>
@@ -89,10 +88,9 @@ const rows = services.map((service) => ({ name: service.name, value: commission[
     padding: clamp(20px, 2.2vw, 32px);
     border-top: 2px solid var(--f-on-surface);
     background: var(--f-surface-2);
-    border-radius: 0 0 var(--f-r-media) var(--f-r-media);
   }
 
-  .fpro__card--featured { border-top-color: var(--f-red); }
+  .fpro__card--featured { border-top: 6px solid var(--f-yellow); }
 
   .fpro__price { font-size: clamp(52px, 5.2vw, 84px); }
   .fpro__summary { color: var(--f-muted); font-size: 17px; line-height: 1.5; }

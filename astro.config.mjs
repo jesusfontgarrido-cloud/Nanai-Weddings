@@ -2,7 +2,7 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
-// Dominio de producción, sin barra final. PENDIENTE de confirmar (ver docs/propuesta.md).
+// Dominio de producción, sin barra final. PENDIENTE de confirmar (ver docs/decisiones.md).
 const SITE = 'https://nanaiweddings.es';
 
 export default defineConfig({
