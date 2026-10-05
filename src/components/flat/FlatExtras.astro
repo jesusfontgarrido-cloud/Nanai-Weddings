@@ -1,0 +1,80 @@
+---
+/**
+ * Extras en dos columnas (vídeo · fotografía), en filas con filete y precio a la derecha,
+ * como la página «Extras» del dossier para planners. Para quien quiere la lista entera de
+ * un vistazo (profesionales); las parejas tienen además la calculadora.
+ */
+import { euros, extras, groupNames, type Group } from '../../data/pricing';
+
+interface Props {
+  title?: string;
+  deck?: string;
+}
+
+const { title = 'Extras', deck = 'Se suman a la tarifa base y mantienen su precio.' } = Astro.props;
+const groups: Group[] = ['video', 'foto'];
+---
+
+<section class="sec fextras-sec" aria-labelledby="extras-title">
+  <div class="wrap">
+    <div class="fextras-sec__head">
+      <h2 id="extras-title" class="h2" data-reveal="lines"><span>{title}</span></h2>
+      <p class="fextras-sec__deck" data-reveal style="--i: 2">{deck}</p>
+    </div>
+
+    <div class="fextras-sec__cols">
+      {
+        groups.map((group) => (
+          <div class="fextras-sec__col">
+            <h3 class="h3 fextras-sec__group" data-reveal>{groupNames[group]}</h3>
+            <ul class="rows" role="list" data-stagger>
+              {extras
+                .filter((extra) => extra.group === group)
+                .map((extra) => (
+                  <li class="row">
+                    <span class="row__name">{extra.name}</span>
+                    <span class="row__price">
+                      {euros(extra.price)} €{extra.unit && <span class="fextras-sec__unit"> {extra.unit}</span>}
+                    </span>
+                    <span class="row__text">{extra.text}</span>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+
+    <p class="note fextras-sec__drone" data-reveal>
+      <span class="label">Sobre el dron</span> Lo opera una empresa especializada con la que trabajamos de forma segura. Sujeto a normativa y permisos vigentes: si no puede volarse, no se contrata.
+    </p>
+  </div>
+</section>
+
+<style>
+  .fextras-sec__head { display: grid; gap: 10px; margin-bottom: clamp(28px, 3.6vw, 48px); }
+  .fextras-sec__head h2 > span { display: block; }
+  .fextras-sec__deck { color: var(--f-muted); }
+
+  .fextras-sec__cols { display: grid; gap: 40px var(--f-gap); }
+  .fextras-sec__group { margin-bottom: 14px; }
+
+  .fextras-sec__unit {
+    color: var(--f-muted);
+    font-family: var(--font-type);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .fextras-sec__drone {
+    display: grid;
+    gap: 4px;
+    max-width: 62ch;
+    margin-top: 32px;
+  }
+
+  @media (min-width: 900px) {
+    .fextras-sec__cols { grid-template-columns: 1fr 1fr; gap: 40px clamp(32px, 5vw, 96px); }
+  }
+</style>

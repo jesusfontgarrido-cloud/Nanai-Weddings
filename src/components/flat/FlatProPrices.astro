@@ -1,0 +1,124 @@
+---
+/**
+ * Profesionales: tarifas y comisión (dossier para planners). Arriba, los tres precios
+ * finales para los novios, con lo que incluye cada uno. Debajo, el plano rojo de la
+ * página: la comisión, a lo grande, como en el dossier (allí iba en amarillo; aquí, en el
+ * rojo de la marca).
+ *
+ * La frase clave: el precio de la web y el de vuestra propuesta es el mismo, la comisión
+ * sale de nuestra parte. Solo vale si la web enseña el mismo precio a todos (decisión 1
+ * de docs/propuesta.md).
+ */
+import { commission, euros, services, terms } from '../../data/pricing';
+
+const rows = services.map((service) => ({ name: service.name, value: commission[service.id] }));
+---
+
+<section id="tarifas-pro" class="sec fpro" aria-labelledby="pro-prices-title">
+  <div class="wrap">
+    <div class="fpro__head">
+      <h2 id="pro-prices-title" class="h2" data-reveal="lines"><span>Tarifas</span></h2>
+      <p class="lead fpro__deck" data-reveal style="--i: 2">Precio final para los novios. <strong>Ya incluye vuestra comisión</strong>, y es el mismo que ven en nuestra web.</p>
+    </div>
+
+    <ul class="fpro__cards" role="list" data-stagger>
+      {
+        services.map((service) => (
+          <li class:list={['fpro__card', { 'fpro__card--featured': service.featured }]}>
+            <span class="label">{service.name}</span>
+            <span class="price fpro__price">{euros(service.price)}<span class="price__eur">€</span></span>
+            <p class="fpro__summary">{service.summary}</p>
+            <div class="fpro__deliver">
+              <span class="label">Entrega</span>
+              <ul role="list">
+                {service.deliver.map((item) => <li>{item}</li>)}
+              </ul>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="note fpro__note" data-reveal>
+      Jornada de {terms.hours}. Plazo máximo de entrega: {terms.deliveryMonths} meses. La barra libre empieza cuando el DJ inicia su servicio y los invitados se acercan a la pista. Desplazamiento, dietas y alojamiento según condiciones.
+    </p>
+  </div>
+</section>
+
+<section class="sec tone-red fcommission" aria-labelledby="commission-title">
+  <div class="wrap fcommission__grid">
+    <div class="fcommission__big">
+      <p class="label fcommission__label" data-reveal>Vuestra comisión</p>
+      <p id="commission-title" class="price fcommission__num" data-reveal="lines"><span>{commission.foto}<span class="price__eur">€</span></span></p>
+      <p class="quote fcommission__quote" data-reveal style="--i: 2">por cada servicio contratado a través de vuestra agencia, {commission.pack} € por el pack</p>
+    </div>
+
+    <div class="fcommission__rows">
+      <ul class="rows" role="list" data-stagger>
+        {
+          rows.map((row) => (
+            <li class="row">
+              <span class="row__name">{row.name}</span>
+              <span class="row__price">{row.value} €</span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="fcommission__text" data-reveal>
+        Vosotros cerráis la boda con los novios y os lleváis {commission.foto} € por cada servicio, o {commission.pack} € por el pack de foto y vídeo. Los extras mantienen su precio y no generan comisión.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .fpro__head { display: grid; gap: 12px; margin-bottom: clamp(28px, 3.6vw, 48px); }
+  .fpro__head h2 > span { display: block; }
+  .fpro__deck { max-width: 46ch; color: var(--f-muted); }
+  .fpro__deck strong { color: var(--f-on-surface); font-weight: 600; }
+
+  .fpro__cards {
+    display: grid;
+    gap: var(--f-gap);
+  }
+
+  .fpro__card {
+    display: grid;
+    align-content: start;
+    gap: 14px;
+    padding: clamp(20px, 2.2vw, 32px);
+    border-top: 2px solid var(--f-on-surface);
+    background: var(--f-surface-2);
+    border-radius: 0 0 var(--f-r-media) var(--f-r-media);
+  }
+
+  .fpro__card--featured { border-top-color: var(--f-red); }
+
+  .fpro__price { font-size: clamp(52px, 5.2vw, 84px); }
+  .fpro__summary { color: var(--f-muted); font-size: 17px; line-height: 1.5; }
+
+  .fpro__deliver { display: grid; gap: 6px; padding-top: 10px; border-top: var(--f-hair) solid var(--f-line); }
+  .fpro__deliver li { font-size: 16px; }
+
+  .fpro__note { max-width: 80ch; margin-top: 24px; }
+
+  .fcommission__grid { display: grid; gap: clamp(32px, 4vw, 64px); align-items: end; }
+  .fcommission__big { display: grid; gap: 10px; }
+  .fcommission__label { color: var(--f-on-surface); }
+
+  .fcommission__num {
+    font-size: clamp(120px, 20vw, 320px);
+    line-height: 0.82;
+  }
+
+  .fcommission__num > span { display: block; }
+  .fcommission__quote { max-width: 18ch; font-size: clamp(26px, 2.6vw, 40px); }
+
+  .fcommission__rows { display: grid; gap: 18px; }
+  .fcommission__text { max-width: 48ch; font-size: 16px; line-height: 1.5; }
+
+  @media (min-width: 900px) {
+    .fpro__cards { grid-template-columns: repeat(3, 1fr); }
+    .fcommission__grid { grid-template-columns: 1.2fr 1fr; }
+  }
+</style>

@@ -1,0 +1,56 @@
+/* ═══════════════════════════════════════════════════════════════
+   base.css — reset y utilidades compartidas. Las familias tipográficas
+   son las mismas que en Nanai Studio (tokens.css de allí).
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --font-display: 'League Spartan', 'League Spartan Fallback', system-ui, sans-serif;
+  --font-sans: 'Archivo', 'Archivo Fallback', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', 'Playfair Fallback', Georgia, serif;
+  --font-type: 'Courier Prime', 'Courier New', ui-monospace, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+[hidden] { display: none !important; }
+
+html {
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+}
+
+body {
+  background: #F6F3EE;
+  color: #151514;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+img, svg, video, picture { display: block; max-width: 100%; }
+a { color: inherit; }
+button, input, textarea, select { font: inherit; color: inherit; }
+ul[role='list'], ol[role='list'] { list-style: none; padding: 0; }
+
+main[tabindex='-1']:focus { outline: none; }
+
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 2px;
+  background: #151514;
+  color: #F6F3EE;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}

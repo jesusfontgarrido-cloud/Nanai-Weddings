@@ -1,0 +1,134 @@
+---
+/**
+ * Dossieres para descargar. Se generan desde la web (npm run dossieres → /dossier/*),
+ * así que dicen siempre lo mismo que la web: un precio cambia en pricing.ts y cambia en
+ * las dos partes. Cada tarjeta dice qué trae y cuánto pesa.
+ */
+interface Dossier {
+  href: string;
+  title: string;
+  who: string;
+  contents: string;
+}
+
+interface Props {
+  items: Dossier[];
+  title?: string;
+  deck?: string;
+}
+
+const {
+  items,
+  title = 'Para leer con calma',
+  deck = 'Toda la información en un PDF, para guardarlo o enseñárselo a quien queráis.',
+} = Astro.props;
+---
+
+<section id="dossier" class="sec fdossiers" aria-labelledby="dossier-title">
+  <div class="wrap fdossiers__grid">
+    <div class="fdossiers__head">
+      <p class="label" data-reveal>Dossier</p>
+      <h2 id="dossier-title" class="h2" data-reveal="lines"><span>{title}</span></h2>
+      <p class="fdossiers__deck" data-reveal style="--i: 2">{deck}</p>
+    </div>
+
+    <ul class="fdossiers__list" role="list" data-stagger>
+      {
+        items.map((item) => (
+          <li>
+            <a class="fdossier" href={item.href} download>
+              <span class="fdossier__sheet" aria-hidden="true">
+                <span class="fdossier__mark">PDF</span>
+                <span class="fdossier__lines"><i /><i /><i /></span>
+              </span>
+              <span class="fdossier__body">
+                <span class="label">{item.who}</span>
+                <span class="fdossier__title">{item.title}</span>
+                <span class="fdossier__contents">{item.contents}</span>
+                <span class="fdossier__cta">
+                  Descargar
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6 10l6 6 6-6M5 20h14" /></svg>
+                </span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .fdossiers__grid { display: grid; gap: clamp(28px, 3.6vw, 48px); }
+  .fdossiers__head { display: grid; gap: 12px; }
+  .fdossiers__head h2 > span { display: block; }
+  .fdossiers__deck { max-width: 48ch; color: var(--f-muted); }
+
+  .fdossiers__list {
+    display: grid;
+    gap: var(--f-gap);
+  }
+
+  .fdossier {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+    align-items: start;
+    padding: clamp(18px, 2vw, 28px);
+    border: var(--f-hair) solid var(--f-line-strong);
+    border-radius: var(--f-r-media);
+    text-decoration: none;
+    transition: border-color var(--f-dur) var(--f-ease), background-color var(--f-dur) var(--f-ease);
+  }
+
+  .fdossier:hover { border-color: var(--f-on-surface); background: var(--f-surface-2); }
+
+  /* Una hoja en miniatura: apaisada, como el dossier */
+  .fdossier__sheet {
+    position: relative;
+    display: grid;
+    align-content: space-between;
+    width: 92px;
+    aspect-ratio: 297 / 210;
+    padding: 8px;
+    border-radius: 3px;
+    background: #151514;
+    color: #F6F3EE;
+    transition: transform 520ms var(--f-ease-out);
+  }
+
+  .fdossier:hover .fdossier__sheet { transform: rotate(-3deg) translateY(-2px); }
+
+  .fdossier__mark { font-family: var(--font-type); font-size: 11px; }
+  .fdossier__lines { display: grid; gap: 3px; }
+  .fdossier__lines i { display: block; height: 2px; background: currentColor; opacity: 0.5; }
+  .fdossier__lines i:first-child { width: 70%; height: 4px; background: var(--f-red); opacity: 1; }
+
+  .fdossier__body { display: grid; gap: 6px; }
+
+  .fdossier__title {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 2vw, 28px);
+    font-weight: 620;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .fdossier__contents { color: var(--f-muted); font-size: 16px; line-height: 1.45; }
+
+  .fdossier__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
+  .fdossier__cta svg { width: 18px; height: 18px; color: var(--f-red); transition: transform var(--f-dur) var(--f-ease); }
+  .fdossier:hover .fdossier__cta svg { transform: translateY(2px); }
+
+  @media (min-width: 900px) {
+    .fdossiers__grid { grid-template-columns: 5fr 7fr; }
+    .fdossiers__list:has(> :nth-child(2)) { grid-template-columns: 1fr 1fr; }
+  }
+</style>

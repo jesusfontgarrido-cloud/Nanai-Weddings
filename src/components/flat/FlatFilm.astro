@@ -1,0 +1,149 @@
+---
+/**
+ * Vídeo de Vimeo, sin cookies y sin cargar nada hasta que se pulsa (fachada): póster,
+ * botón de reproducir y, al pulsar, el reproductor con dnt=1 (Vimeo no guarda cookies
+ * ni sigue la sesión). Así no hace falta banner de cookies y la página pesa poco.
+ *
+ * Vimeo y no YouTube en la web: reproductor limpio, sin anuncios ni vídeos de la
+ * competencia al acabar, y mejor compresión (ver docs/propuesta.md).
+ *
+ * Sin `vimeoId`: hueco honesto (con el póster provisional si lo hay).
+ */
+import type { ImageMetadata } from 'astro';
+import { Picture } from 'astro:assets';
+import FlatPh from './FlatPh.astro';
+
+interface Props {
+  vimeoId?: string;
+  title: string;
+  poster?: ImageMetadata;
+  posterAlt?: string;
+  /** Proporción del reproductor. */
+  ratio?: string;
+  /** Qué falta, para el hueco: «Tráiler de una boda». */
+  pendingWhat?: string;
+}
+
+const { vimeoId, title, poster, posterAlt = '', ratio = '16 / 9', pendingWhat = 'Tráiler de una boda' } = Astro.props;
+---
+
+{
+  !poster && !vimeoId ? (
+    <FlatPh what={pendingWhat} format={`VÍDEO · ${ratio.replace(/ /g, '')} · Vimeo`} ratio={ratio} dark />
+  ) : (
+    <div class="ffilm" style={`--ratio: ${ratio}`} data-film={vimeoId} data-pending={vimeoId ? undefined : 'media'}>
+      {poster && <Picture src={poster} formats={['avif', 'webp']} widths={[800, 1280, 1920]} sizes="(min-width: 1200px) 1100px, 94vw" alt={posterAlt} loading="lazy" />}
+      {vimeoId ? (
+        <button class="ffilm__play" type="button" data-film-play aria-label={`Reproducir: ${title}`}>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>
+          Reproducir
+        </button>
+      ) : (
+        <span class="ffilm__pending">
+          <strong>{pendingWhat}</strong>
+          <span>VÍDEO · Vimeo · pendiente</span>
+        </span>
+      )}
+      <span class="ffilm__title">{title}</span>
+    </div>
+  )
+}
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-film]').forEach((film) => {
+    const id = film.dataset.film;
+    const button = film.querySelector<HTMLButtonElement>('[data-film-play]');
+    if (!id || !button) return;
+    button.addEventListener('click', () => {
+      const frame = document.createElement('iframe');
+      frame.src = `https://player.vimeo.com/video/${encodeURIComponent(id)}?autoplay=1&dnt=1&title=0&byline=0&portrait=0&color=D9291C`;
+      frame.title = film.querySelector('.ffilm__title')?.textContent ?? 'Vídeo';
+      frame.allow = 'autoplay; fullscreen; picture-in-picture';
+      frame.allowFullscreen = true;
+      film.replaceChildren(frame);
+      film.classList.add('is-playing');
+    });
+  });
+</script>
+
+<style>
+  .ffilm {
+    position: relative;
+    aspect-ratio: var(--ratio);
+    overflow: hidden;
+    border-radius: var(--f-r-media);
+    background: #0E0E0D;
+    color: #F6F3EE;
+  }
+
+  .ffilm :global(picture),
+  .ffilm :global(img),
+  .ffilm iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 0;
+  }
+
+  .ffilm:not(.is-playing)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(10, 10, 10, 0.55), rgba(10, 10, 10, 0) 55%);
+    pointer-events: none;
+  }
+
+  .ffilm__play,
+  .ffilm__pending {
+    position: absolute;
+    left: clamp(16px, 2vw, 28px);
+    bottom: clamp(16px, 2vw, 28px);
+    z-index: 2;
+  }
+
+  .ffilm__play {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding-inline: 18px;
+    border: 0;
+    border-radius: var(--f-r);
+    background: var(--f-red);
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .ffilm__play svg { width: 14px; height: 14px; }
+
+  .ffilm__pending {
+    display: grid;
+    gap: 2px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    background: rgba(10, 10, 10, 0.7);
+    font-family: var(--font-type);
+    font-size: 13px;
+  }
+
+  .ffilm__title {
+    position: absolute;
+    top: clamp(14px, 1.6vw, 22px);
+    left: clamp(16px, 2vw, 28px);
+    z-index: 2;
+    font-family: var(--font-type);
+    font-size: 14px;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+  }
+
+  .ffilm.is-playing .ffilm__title { display: none; }
+
+  /* En móvil, el 2.39:1 se queda muy bajo: un formato más alto */
+  @media (max-width: 699px) {
+    .ffilm { aspect-ratio: 16 / 10; }
+  }
+</style>

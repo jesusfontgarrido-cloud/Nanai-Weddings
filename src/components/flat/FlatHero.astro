@@ -1,0 +1,241 @@
+---
+/**
+ * Hero. La estructura del de Nanai Studio: la imagen a toda la pantalla y el texto encima,
+ * centrado, en claro sobre una sombra suave solo detrás de las letras. Abajo, la imagen se
+ * funde con el papel, sin corte con lo que sigue.
+ *
+ * PROVISIONAL: fotograma del dossier para planners (2880 × 1226). Lo ideal es un bucle de
+ * vídeo sin sonido de 8–15 s (≤ 6 MB, con póster): ver docs/recursos-pendientes.md. Si se
+ * pasa `loop`, se usa el vídeo y la foto queda de póster.
+ *
+ * El H1 lleva la búsqueda local («Fotografía y vídeo de bodas en Sevilla») y el claim.
+ * Abajo, discreta, la puerta para los profesionales del sector.
+ */
+import { getImage } from 'astro:assets';
+import heroImage from '../../assets/media/provisional/fotograma-beso-chaqueta-charra.jpg';
+import heroTall from '../../assets/media/provisional/fotograma-beso-vertical.jpg';
+import shoes from '../../assets/media/provisional/fotograma-zapatos-rojos.jpg';
+import earrings from '../../assets/media/provisional/fotograma-novia-pendientes.jpg';
+import FlatSlideCta from './FlatSlideCta.astro';
+import { hero } from '../../data/copy';
+import { site } from '../../data/site';
+
+interface Props {
+  /** Bucle del hero (mp4/webm en /public/media). */
+  loop?: string;
+}
+
+const { loop } = Astro.props;
+
+const shoesFrame = await getImage({ src: shoes, format: 'webp', width: 480, height: 240, fit: 'cover' });
+const earringsFrame = await getImage({ src: earrings, format: 'webp', width: 400, height: 320, fit: 'cover' });
+
+// Dirección de arte: en pantallas verticales, un recorte vertical propio (si no, el
+// navegador estiraría la foto apaisada y saldría borrosa).
+const wide = [1024, 1440, 1920, 2560];
+const tall = [540, 690];
+const set = async (format: 'avif' | 'webp') => ({
+  wide: (await Promise.all(wide.map((width) => getImage({ src: heroImage, format, width })))).map((img, i) => `${img.src} ${wide[i]}w`).join(', '),
+  tall: (await Promise.all(tall.map((width) => getImage({ src: heroTall, format, width })))).map((img, i) => `${img.src} ${tall[i]}w`).join(', '),
+});
+const avif = await set('avif');
+const webp = await set('webp');
+const fallback = await getImage({ src: heroImage, format: 'jpg', width: 1920 });
+const portrait = '(max-aspect-ratio: 2/3)';
+const wideSizes = '(max-aspect-ratio: 3/2) 150vh, 100vw';
+---
+
+<section class="fhero" aria-labelledby="hero-title" data-hero>
+  <figure class="fhero__photo" data-reveal="focus">
+    {
+      loop ? (
+        <video src={loop} poster={fallback.src} autoplay muted loop playsinline preload="metadata" aria-hidden="true" />
+      ) : (
+        <picture>
+          <source media={portrait} type="image/avif" srcset={avif.tall} sizes="100vw" />
+          <source media={portrait} type="image/webp" srcset={webp.tall} sizes="100vw" />
+          <source type="image/avif" srcset={avif.wide} sizes={wideSizes} />
+          <source type="image/webp" srcset={webp.wide} sizes={wideSizes} />
+          <img
+            src={fallback.src}
+            width={heroImage.width}
+            height={heroImage.height}
+            alt="Beso de los novios entre burbujas a la salida de la ceremonia; él lleva una chaqueta charra bordada en oro"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </picture>
+      )
+    }
+  </figure>
+  <span class="fhero__shade" aria-hidden="true"></span>
+  <span class="fhero__fade" aria-hidden="true"></span>
+
+  <div class="wrap fhero__content">
+    <h1 id="hero-title" class="fhero__h1">
+      <span class="label fhero__label" data-reveal>{hero.label}</span>
+      <span class="display fhero__title" data-reveal="lines" style="--i: 1">
+        <span>
+          Vosotros la <span class="inframe inframe--pill" aria-hidden="true"><img src={shoesFrame.src} alt="" width="480" height="240" decoding="async" /></span> vivís,
+        </span>
+        <span>
+          nosotros la <span class="inframe inframe--arch" aria-hidden="true"><img src={earringsFrame.src} alt="" width="400" height="320" decoding="async" /></span>
+          <em class="accent">contamos</em>
+        </span>
+      </span>
+    </h1>
+
+    <div class="fhero__actions" data-reveal style="--i: 4">
+      <FlatSlideCta href="#tarifas" label="Ver tarifas" variant="paper" />
+      <FlatSlideCta href={site.whatsapp} label="WhatsApp" variant="outline" />
+    </div>
+  </div>
+
+  <a class="fhero__pro" href="/profesionales" data-reveal style="--i: 6">
+    <span>{hero.pro.lead}</span>
+    <strong>{hero.pro.link} →</strong>
+  </a>
+</section>
+
+<style>
+  .fhero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    align-items: center;
+    min-height: 100vh;
+    min-height: 100svh;
+    overflow: hidden;
+    background: var(--f-bg);
+  }
+
+  .fhero__photo {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    margin: 0;
+  }
+
+  .fhero__photo :global(picture),
+  .fhero__photo :global(img),
+  .fhero__photo video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 44% 30%;
+  }
+
+  /* Weddings: el enfoque de la imagen llega más despacio */
+  html.motion .fhero__photo[data-reveal='focus'] :global(img) {
+    transition: filter var(--f-dur-slow) var(--f-ease-out), transform 1600ms var(--f-ease-out);
+  }
+
+  .fhero__shade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(ellipse 62% 52% at 50% 52%, rgba(12, 12, 11, 0.6), rgba(12, 12, 11, 0.28) 62%, rgba(12, 12, 11, 0) 100%),
+      linear-gradient(rgba(12, 12, 11, 0.12), rgba(12, 12, 11, 0.12));
+  }
+
+  .fhero__fade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+      to bottom,
+      rgba(246, 243, 238, 0) 80%,
+      rgba(246, 243, 238, 0.78) 93%,
+      #F6F3EE 100%
+    );
+  }
+
+  .fhero__content {
+    --f-on-surface: #F6F3EE;
+    --f-line-strong: rgba(246, 243, 238, 0.6);
+    --f-inverse: #F6F3EE;
+    --f-on-inverse: #151514;
+    --f-surface-3: rgba(246, 243, 238, 0.2);
+    display: grid;
+    justify-items: center;
+    gap: 18px;
+    padding-top: 96px;
+    padding-bottom: clamp(88px, 14vh, 150px);
+    color: var(--f-on-surface);
+    text-align: center;
+    text-shadow: 0 1px 28px rgba(12, 12, 11, 0.3);
+  }
+
+  .fhero__h1 {
+    display: grid;
+    justify-items: center;
+    gap: 18px;
+    font-weight: inherit;
+  }
+
+  .fhero__label { color: var(--f-on-surface); font-size: 15px; }
+
+  .fhero__title {
+    font-size: clamp(44px, 8vw, 140px);
+    color: var(--f-on-surface);
+  }
+
+  .fhero__title .inframe { box-shadow: 0 0 0 2px rgba(246, 243, 238, 0.9); }
+  .fhero__title .accent { color: inherit; }
+  .fhero__title > span { display: block; }
+
+  .fhero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  /* La puerta para los profesionales: una línea discreta al pie del hero */
+  .fhero__pro {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(20px, 4vh, 40px);
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px 10px;
+    width: max-content;
+    max-width: calc(100% - 32px);
+    min-height: 44px;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: var(--f-r);
+    background: rgba(246, 243, 238, 0.9);
+    color: #151514;
+    font-size: 15px;
+    text-decoration: none;
+    transform: translateX(-50%);
+    transition: background-color var(--f-dur) var(--f-ease);
+  }
+
+  html.motion .fhero__pro[data-reveal]:not(.is-in) { transform: translate(-50%, 28px); }
+  html.motion .fhero__pro[data-reveal].is-in { transform: translateX(-50%); }
+
+  .fhero__pro strong { font-weight: 600; }
+  .fhero__pro:hover { background: #F6F3EE; }
+  .fhero__pro:hover strong { color: var(--f-red-text); }
+
+  @media (max-width: 699px) {
+    .fhero__photo :global(img) { object-position: 50% 30%; }
+
+    .fhero__shade {
+      background:
+        radial-gradient(ellipse 95% 42% at 50% 50%, rgba(12, 12, 11, 0.62), rgba(12, 12, 11, 0.3) 70%, rgba(12, 12, 11, 0) 100%),
+        linear-gradient(rgba(12, 12, 11, 0.18), rgba(12, 12, 11, 0.18));
+    }
+
+    .fhero__title { font-size: clamp(40px, 11.5vw, 62px); }
+    .fhero__label { max-width: 24ch; }
+  }
+</style>

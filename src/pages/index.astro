@@ -1,0 +1,44 @@
+---
+/**
+ * Inicio. Orden (embudo del wireframe de referencia, con la economía de Nanai Studio):
+ * hero · tarifas (la calculadora, pronto: precios a la vista filtran y dan confianza) ·
+ * historias (la prueba) · cómo trabajamos · proceso · seguridad técnica · reseñas ·
+ * preguntas (las condiciones) · contacto.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import FlatMotion from '../components/flat/FlatMotion.astro';
+import FlatNav from '../components/flat/FlatNav.astro';
+import FlatHero from '../components/flat/FlatHero.astro';
+import FlatPricing from '../components/flat/FlatPricing.astro';
+import FlatStories from '../components/flat/FlatStories.astro';
+import FlatMethod from '../components/flat/FlatMethod.astro';
+import FlatSteps from '../components/flat/FlatSteps.astro';
+import FlatSecurity from '../components/flat/FlatSecurity.astro';
+import FlatReviews from '../components/flat/FlatReviews.astro';
+import FlatFaq from '../components/flat/FlatFaq.astro';
+import FlatContact from '../components/flat/FlatContact.astro';
+import FlatFooter from '../components/flat/FlatFooter.astro';
+import { homeFaq } from '../data/faq';
+import { security } from '../data/copy';
+---
+
+<BaseLayout path="/">
+  <div class="flat">
+    <FlatMotion />
+    <FlatNav />
+
+    <main id="contenido">
+      <FlatHero />
+      <FlatPricing mode="compact" />
+      <FlatStories />
+      <FlatMethod />
+      <FlatSteps />
+      <FlatSecurity quote={security.quote} deck={security.deck} items={security.items} />
+      <FlatReviews />
+      <FlatFaq items={homeFaq} more={{ href: '/tarifas#preguntas', label: 'Todas las condiciones' }} />
+      <FlatContact />
+    </main>
+
+    <FlatFooter />
+  </div>
+</BaseLayout>

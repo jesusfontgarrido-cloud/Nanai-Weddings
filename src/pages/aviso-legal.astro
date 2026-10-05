@@ -1,0 +1,27 @@
+---
+import LegalLayout from '../layouts/LegalLayout.astro';
+import { site } from '../data/site';
+---
+
+<LegalLayout title="Aviso legal" path="/aviso-legal" updated="5 de octubre de 2026">
+  <p>En cumplimiento del artículo 10 de la Ley 34/2002, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), estos son los datos del titular de esta web:</p>
+  <ul>
+    <li><strong>Titular:</strong> <span data-pending="legal">{site.legal.holder}</span>, que opera con el nombre comercial {site.name}, línea de bodas de {site.parent.name}.</li>
+    <li><strong>NIF:</strong> <span data-pending="legal">{site.legal.taxId}</span></li>
+    <li><strong>Domicilio:</strong> <span data-pending="legal">{site.legal.address}</span></li>
+    <li><strong>Correo electrónico:</strong> <a href={`mailto:${site.email}`}>{site.email}</a></li>
+    <li><strong>Teléfono:</strong> {site.phone}</li>
+  </ul>
+
+  <h2>Objeto</h2>
+  <p>Esta web informa sobre los servicios de fotografía y vídeo de bodas de {site.name} y permite contactar para consultar disponibilidad y pedir presupuesto. Los precios publicados son informativos; las condiciones de cada servicio se fijan por escrito al reservar.</p>
+
+  <h2>Propiedad intelectual</h2>
+  <p>Las fotografías, los vídeos, los textos y el diseño de esta web son de {site.name} o se usan con permiso de sus titulares y de las personas que aparecen en ellos. No se pueden copiar, distribuir ni transformar sin autorización.</p>
+
+  <h2>Responsabilidad</h2>
+  <p>Cuidamos que la información sea correcta y esté al día, pero puede contener errores puntuales. Los enlaces a otras webs se ofrecen por comodidad; no respondemos de su contenido.</p>
+
+  <h2>Legislación</h2>
+  <p>Esta web se rige por la legislación española.</p>
+</LegalLayout>

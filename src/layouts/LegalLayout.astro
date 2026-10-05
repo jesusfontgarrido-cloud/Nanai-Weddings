@@ -1,0 +1,53 @@
+---
+/**
+ * Páginas legales (aviso legal, privacidad, cookies). Texto largo y tranquilo: una columna
+ * de lectura sobre el papel. BORRADOR: los datos del titular están pendientes y el texto
+ * debe revisarlo una asesoría antes de publicar.
+ */
+import BaseLayout from './BaseLayout.astro';
+import FlatMotion from '../components/flat/FlatMotion.astro';
+import FlatNav from '../components/flat/FlatNav.astro';
+import FlatFooter from '../components/flat/FlatFooter.astro';
+
+interface Props {
+  title: string;
+  path: string;
+  updated: string;
+}
+
+const { title, path, updated } = Astro.props;
+---
+
+<BaseLayout title={`${title} | Nanai Weddings`} description={`${title} de la web de Nanai Weddings.`} path={path}>
+  <div class="flat">
+    <FlatMotion />
+    <FlatNav />
+    <main id="contenido" class="sec flegal">
+      <div class="wrap flegal__inner">
+        <h1 class="h2 flegal__title">{title}</h1>
+        <p class="label">Actualizado el {updated} · borrador pendiente de revisión legal</p>
+        <div class="flegal__prose">
+          <slot />
+        </div>
+      </div>
+    </main>
+    <FlatFooter />
+  </div>
+</BaseLayout>
+
+<style>
+  .flegal { padding-top: clamp(120px, 18vh, 200px); }
+  .flegal__inner { display: grid; gap: 16px; max-width: 760px; }
+  .flegal__title { font-size: clamp(40px, 5vw, 72px); }
+
+  .flegal__prose { display: grid; gap: 14px; margin-top: 24px; }
+  .flegal__prose :global(h2) { margin-top: 18px; font-family: var(--font-display); font-size: 24px; font-weight: 620; letter-spacing: -0.015em; }
+  .flegal__prose :global(p),
+  .flegal__prose :global(li) { color: var(--f-muted); line-height: 1.6; }
+  .flegal__prose :global(strong) { color: var(--f-on-surface); }
+  .flegal__prose :global(ul) { display: grid; gap: 6px; padding-left: 20px; }
+  .flegal__prose :global(table) { width: 100%; border-collapse: collapse; font-size: 15px; }
+  .flegal__prose :global(th),
+  .flegal__prose :global(td) { padding: 10px 8px; border-bottom: 1px solid var(--f-line); text-align: left; vertical-align: top; }
+  .flegal__prose :global([data-pending]) { color: var(--f-red-text); }
+</style>

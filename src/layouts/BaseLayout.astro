@@ -1,0 +1,113 @@
+---
+/**
+ * Documento base (como el de Nanai Studio): tipografías precargadas, SEO, Open Graph y
+ * datos estructurados de un negocio local (SEO local: «fotógrafo de bodas Sevilla»).
+ * Solo datos reales; lo pendiente va marcado en site.ts.
+ */
+import '../styles/fonts.css';
+import '../styles/base.css';
+import '../styles/flat.css';
+import { site } from '../data/site';
+import { services } from '../data/pricing';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Ruta canónica relativa, p. ej. "/". Por defecto, la actual. */
+  path?: string;
+  /** Imagen para compartir (1200 × 630), ruta pública. */
+  image?: string;
+  /** Páginas que no deben indexarse (dossier imprimible). */
+  noindex?: boolean;
+}
+
+const {
+  title = 'Nanai Weddings | Fotografía y vídeo de bodas en Sevilla',
+  description = 'Fotografía y vídeo de bodas en Sevilla, con estilo cinematográfico. Precios cerrados y publicados: foto, vídeo o los dos, con un mismo equipo.',
+  path,
+  image = '/og/nanai-weddings.jpg',
+  noindex = false,
+} = Astro.props;
+
+const canonical = new URL(path ?? Astro.url.pathname, Astro.site).toString();
+const imageUrl = new URL(image, Astro.site).toString();
+const home = new URL('/', Astro.site).toString();
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'ProfessionalService',
+      '@id': `${home}#negocio`,
+      name: site.name,
+      description: 'Fotografía y vídeo de bodas en Sevilla, con estilo cinematográfico.',
+      url: home,
+      image: imageUrl,
+      logo: new URL('/brand/isotipo-negro.svg', Astro.site).toString(),
+      email: site.email,
+      telephone: site.phoneHref.replace('tel:', ''),
+      address: { '@type': 'PostalAddress', addressLocality: 'Dos Hermanas', addressRegion: 'Sevilla', addressCountry: 'ES' },
+      geo: { '@type': 'GeoCoordinates', latitude: site.geo.lat, longitude: site.geo.lng },
+      areaServed: [
+        { '@type': 'AdministrativeArea', name: 'Sevilla' },
+        { '@type': 'AdministrativeArea', name: 'Andalucía' },
+      ],
+      priceRange: `${Math.min(...services.map((s) => s.price))} € – ${Math.max(...services.map((s) => s.price))} €`,
+      sameAs: [site.instagram],
+      parentOrganization: { '@type': 'Organization', name: site.parent.name, url: site.parent.url },
+      makesOffer: services.map((service) => ({
+        '@type': 'Offer',
+        name: `${service.name} de boda`,
+        price: service.price,
+        priceCurrency: 'EUR',
+        description: service.summary,
+      })),
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${home}#web`,
+      url: home,
+      name: site.name,
+      inLanguage: 'es',
+      publisher: { '@id': `${home}#negocio` },
+    },
+  ],
+};
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="theme-color" content="#F6F3EE" />
+    <link rel="preload" href="/fonts/league-spartan-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/archivo-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- La cursiva va en el logotipo y en el H1 de todas las páginas -->
+    <link rel="preload" href="/fonts/playfair-display-latin-wght-italic.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="icon" href="/brand/isotipo-negro.svg" type="image/svg+xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Nanai Weddings: beso de los novios entre burbujas" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <slot name="head" />
+  </head>
+  <body>
+    <a href="#contenido" class="skip-link">Saltar al contenido</a>
+    <slot />
+  </body>
+</html>

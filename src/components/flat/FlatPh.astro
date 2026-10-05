@@ -1,0 +1,26 @@
+---
+/**
+ * Hueco honesto para una imagen o un vídeo que aún no tenemos: la proporción real, qué
+ * va ahí y en qué formato. Todos llevan data-pending: `grep -rn "data-pending" src` los
+ * lista, y docs/recursos-pendientes.md dice qué pedir para cada uno.
+ */
+interface Props {
+  /** Qué va aquí, en pocas palabras: «Retrato del equipo», «Bucle del hero». */
+  what: string;
+  /** Formato: «FOTO · 4:5», «VÍDEO · 16:9 · 8–15 s». */
+  format: string;
+  /** Proporción CSS, p. ej. "4 / 5". */
+  ratio?: string;
+  dark?: boolean;
+  class?: string;
+}
+
+const { what, format, ratio = '4 / 5', dark = false, class: className } = Astro.props;
+---
+
+<div class:list={['ph', { 'ph--dark': dark }, className]} style={`--ratio: ${ratio}`} data-pending="media" role="img" aria-label={`Pendiente: ${what}`}>
+  <span class="ph__label" aria-hidden="true">
+    <strong>{what}</strong>
+    <span>{format} · pendiente</span>
+  </span>
+</div>

@@ -1,0 +1,451 @@
+---
+/**
+ * Dossier imprimible (A4 apaisado), generado desde los mismos datos que la web. Sustituye
+ * a los PDF hechos a mano: un precio cambia en pricing.ts y cambia en la web y en el PDF.
+ * `npm run dossieres` imprime /dossier/parejas y /dossier/profesionales en public/dossieres.
+ *
+ * Misma piel que la web (papel, League Spartan, Playfair cursiva, un rojo plano) y la
+ * estructura del dossier para planners de 2026: portada con fotograma, «Qué ofrecemos»,
+ * tarifas, extras, Same Day Edit, seguridad, condiciones y cierre.
+ */
+import { getImage } from 'astro:assets';
+import FlatWordmark from '../flat/FlatWordmark.astro';
+import FlatEm from '../flat/FlatEm.astro';
+import { commission, crewRule, euros, extras, groupNames, services, terms, type Group } from '../../data/pricing';
+import { conditions } from '../../data/faq';
+import { manifesto, method, pro, sameDayEdit, security } from '../../data/copy';
+import { site } from '../../data/site';
+import coverSrc from '../../assets/media/provisional/fotograma-beso-chaqueta-charra.jpg';
+import styleSrc from '../../assets/media/provisional/fotograma-preboda-rio.jpg';
+import sdeSrc from '../../assets/media/provisional/fotograma-novia-sonrisa.jpg';
+import detailSrc from '../../assets/media/provisional/fotograma-chaqueta-bordada.jpg';
+
+interface Props {
+  audience: 'couples' | 'pros';
+}
+
+const { audience } = Astro.props;
+const forPros = audience === 'pros';
+const year = new Date().getFullYear();
+
+const cover = await getImage({ src: coverSrc, format: 'jpg', width: 2200, quality: 78 });
+const style = await getImage({ src: styleSrc, format: 'jpg', width: 1000, quality: 80 });
+const sde = await getImage({ src: sdeSrc, format: 'jpg', width: 1200, quality: 80 });
+const detail = await getImage({ src: detailSrc, format: 'jpg', width: 1600, quality: 78 });
+const groups: Group[] = ['video', 'foto'];
+
+const pages = forPros
+  ? ['Qué ofrecemos', 'Estilo', 'Tarifas', 'Vuestra comisión', 'Extras', 'Same Day Edit', 'Seguridad técnica', 'Protocolo', 'Condiciones']
+  : ['Qué ofrecemos', 'Tarifas', 'Extras', 'Same Day Edit', 'Seguridad técnica', 'Condiciones'];
+const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
+---
+
+<div class="dossier">
+  <!-- Portada -->
+  <section class="sheet sheet--cover">
+    <img class="cover__img" src={cover.src} alt="" />
+    <div class="cover__band">
+      <FlatWordmark tone="paper" />
+      <div class="cover__meta">
+        <p class="cover__label">{forPros ? 'Dossier para wedding planners' : 'Dossier para parejas'} · {year}</p>
+        <p class="cover__title">Fotografía y vídeo de bodas</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Qué ofrecemos -->
+  <section class="sheet">
+    <header class="sheet__head"><span>Qué ofrecemos</span><span>{n('Qué ofrecemos')}</span></header>
+    <div class="split">
+      <h2 class="big">Qué<br />ofrecemos</h2>
+      <div class="stack">
+        <p class="lead">
+          {forPros
+            ? <>Cubrimos la fotografía y el vídeo de vuestras bodas con un mismo equipo y <em>un mismo criterio</em>. Vosotros diseñáis la boda; nosotros la contamos.</>
+            : <>Nos gusta plantear cada boda como un nuevo intento de emocionar: contarla <em>como una película</em>, con un mismo equipo para la foto y el vídeo.</>}
+        </p>
+        <ul class="rows">
+          {(forPros
+            ? pro.pillars
+            : [
+                { name: 'Os conocemos antes', text: 'Un café, vuestro cronograma y vuestras películas, series y artistas favoritos, para darle un toque único a las fotos y al vídeo.' },
+                { name: 'Precios cerrados', text: 'Tarifas, extras y condiciones por escrito. Preferimos daros a escoger cómo se cuenta vuestra boda.' },
+                { name: 'Un mismo equipo', text: 'Foto y vídeo coordinados entre sí y con vuestro cronograma. Una sola conversación para los dos servicios.' },
+              ]
+          ).map((item) => (
+            <li><strong>{item.name}</strong><span>{item.text}</span></li>
+          ))}
+        </ul>
+      </div>
+    </div>
+    <footer class="sheet__foot"><span>{site.phone}</span><span>{site.email}</span><span>{site.instagramHandle}</span><span>{site.base}</span></footer>
+  </section>
+
+  <!-- Estilo (profesionales) o cómo trabajamos (parejas, más abajo) -->
+  {
+    forPros && (
+      <section class="sheet sheet--split">
+        <div class="half">
+          <header class="sheet__head"><span>Estilo</span><span>{n('Estilo')}</span></header>
+          <h2 class="big">Estilo</h2>
+          <p class="script">cinematográfico y dinámico</p>
+          <p class="lead">{method.deck}</p>
+          <p class="body">Antes de la boda preguntamos a los novios por sus películas, series y artistas favoritos, para dar un toque único a las fotos y al vídeo.</p>
+        </div>
+        <img class="half__img" src={style.src} alt="" />
+      </section>
+    )
+  }
+
+  <!-- Tarifas -->
+  <section class="sheet">
+    <header class="sheet__head"><span>Tarifas</span><span>{n('Tarifas')}</span></header>
+    <div class="title-row">
+      <h2 class="big">Tarifas</h2>
+      <p class="body">{forPros ? <>Precio final para los novios. <strong>Ya incluye vuestra comisión</strong> y es el mismo que publica nuestra web.</> : <>Precios cerrados. Reserva: {terms.booking} € por servicio.</>}</p>
+    </div>
+    <div class="cols3">
+      {services.map((service) => (
+        <div class:list={['plan', { 'plan--key': service.featured }]}>
+          <p class="mono">{service.name}</p>
+          <p class="price">{euros(service.price)} €</p>
+          <p class="body">{service.summary}</p>
+          <div class="plan__deliver">
+            <p class="mono">Entrega</p>
+            {service.deliver.map((item) => <p>{item}</p>)}
+          </div>
+        </div>
+      ))}
+    </div>
+    <p class="small">Jornada de {terms.hours}. Plazo máximo de entrega: {terms.deliveryMonths} meses. La barra libre empieza cuando el DJ inicia su servicio y los invitados se acercan a la pista. Desplazamiento, dietas y alojamiento según condiciones.</p>
+  </section>
+
+  <!-- Comisión (profesionales) -->
+  {
+    forPros && (
+      <section class="sheet sheet--red">
+        <header class="sheet__head"><span>Vuestra comisión</span><span>{n('Vuestra comisión')}</span></header>
+        <div class="split split--end">
+          <div>
+            <p class="giant">{commission.foto} €</p>
+            <p class="script script--lg">por cada servicio contratado a través de vuestra agencia, {commission.pack} € por el pack</p>
+          </div>
+          <div class="stack">
+            <ul class="rows rows--price">
+              {services.map((service) => (
+                <li><strong>{service.name}</strong><b>{commission[service.id]} €</b></li>
+              ))}
+            </ul>
+            <p class="body">Vosotros cerráis la boda con los novios y os lleváis {commission.foto} € por cada servicio, o {commission.pack} € por el pack de foto y vídeo. Los extras mantienen su precio y no generan comisión.</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Extras -->
+  <section class="sheet">
+    <header class="sheet__head"><span>Extras</span><span>{n('Extras')}</span></header>
+    <div class="title-row">
+      <h2 class="big">Extras</h2>
+      <p class="body">Se suman a la tarifa base.</p>
+    </div>
+    <div class="cols2">
+      {groups.map((group) => (
+        <div>
+          <h3 class="mid">{groupNames[group]}</h3>
+          <ul class="rows rows--price">
+            {extras.filter((extra) => extra.group === group).map((extra) => (
+              <li>
+                <strong>{extra.name}</strong>
+                <b>{euros(extra.price)} €{extra.unit && <small> {extra.unit}</small>}</b>
+                <span>{extra.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+    <p class="small">Sobre el dron: lo opera una empresa especializada. Sujeto a normativa y permisos vigentes: si no puede volarse, no se contrata.</p>
+  </section>
+
+  <!-- Same Day Edit -->
+  <section class="sheet sheet--split sheet--dark">
+    <div class="half">
+      <header class="sheet__head"><span>{sameDayEdit.label}</span><span>{n('Same Day Edit')}</span></header>
+      <h2 class="big">Same Day<br />Edit</h2>
+      <p class="script script--lg"><FlatEm text={sameDayEdit.quote} /></p>
+      <p class="body">{sameDayEdit.text}</p>
+      <p class="price">{euros(extras.find((extra) => extra.id === 'same-day-edit')?.price ?? 0)} €</p>
+    </div>
+    <img class="half__img" src={sde.src} alt="" style="object-position: 28% 40%" />
+  </section>
+
+  <!-- Seguridad técnica (parejas) -->
+  {
+    !forPros && (
+      <section class="sheet">
+        <header class="sheet__head"><span>Seguridad técnica</span><span>{n('Seguridad técnica')}</span></header>
+        <div class="split">
+          <div class="stack">
+            <h2 class="big">Una boda<br />no se repite</h2>
+            <p class="lead">{security.deck}</p>
+          </div>
+          <ul class="rows">
+            {security.items.map((item) => (
+              <li><strong>{item.name}</strong><span>{item.text}</span></li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Seguridad técnica y protocolo (profesionales) -->
+  {
+    forPros && (
+      <section class="sheet">
+        <header class="sheet__head"><span>Seguridad técnica</span><span>{n('Seguridad técnica')}</span></header>
+        <div class="split">
+          <div class="stack stack--between">
+            <h2 class="big">Seguridad<br />técnica</h2>
+            <p class="script script--lg">Una boda no se repite. Nuestro equipo está pensado para no perder ni un archivo ni una palabra.</p>
+          </div>
+          <ul class="rows">
+            {security.items.map((item) => (
+              <li><strong>{item.name}</strong><span>{item.text}</span></li>
+            ))}
+            <li><strong>Dimensión del equipo</strong><span>La tarifa incluye un fotógrafo/a o un operador/a por servicio. El segundo ({crewRule.price} €) es recomendable a partir de {crewRule.recommendedFrom} invitados y obligatorio a partir de {crewRule.requiredFrom}.</span></li>
+          </ul>
+        </div>
+      </section>
+    )
+  }
+  {
+    forPros && (
+      <section class="sheet">
+        <header class="sheet__head"><span>Protocolo</span><span>{n('Protocolo')}</span></header>
+        <div class="split">
+          <div class="stack stack--between">
+            <h2 class="big">Protocolo</h2>
+            <p class="script script--lg"><FlatEm text={pro.protocolQuote} /></p>
+          </div>
+          <ul class="rows">
+            {pro.protocol.map((item) => (
+              <li><strong>{item.name}</strong><span>{item.text}</span></li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Condiciones -->
+  <section class="sheet">
+    <header class="sheet__head"><span>Condiciones</span><span>{n('Condiciones')}</span></header>
+    <h2 class="big">Condiciones</h2>
+    <div class="grid5">
+      {conditions.map((item) => (
+        <div><strong>{item.name}</strong><span>{item.text}</span></div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Cierre -->
+  <section class="sheet sheet--close">
+    <img class="close__img" src={detail.src} alt="" />
+    <div class="close__text">
+      <p class="script script--lg">{manifesto.map((line, i) => <>{line}{i < manifesto.length - 1 && <br />}</>)}</p>
+      <FlatWordmark tone="paper" />
+      <p class="close__data"><b>{site.phone}</b><span>{site.email}</span><span>{site.instagramHandle}</span><span>{site.base}</span></p>
+    </div>
+  </section>
+</div>
+
+<style>
+  @page { size: A4 landscape; margin: 0; }
+
+  :global(html), :global(body) { background: #8A8780; }
+  :global(.skip-link) { display: none; }
+
+  .dossier {
+    display: grid;
+    justify-content: center;
+    gap: 24px;
+    padding: 24px 0;
+    color: #151514;
+    font-family: var(--font-sans);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .sheet {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 7mm;
+    width: 297mm;
+    height: 210mm;
+    padding: 14mm 16mm;
+    overflow: hidden;
+    background: #F6F3EE;
+    break-after: page;
+  }
+
+  .sheet--dark { background: #121212; color: #F6F3EE; }
+  .sheet--red { background: #D9291C; color: #FFF8F2; }
+
+  .sheet__head {
+    display: flex;
+    justify-content: space-between;
+    color: inherit;
+    font-family: var(--font-type);
+    font-size: 9pt;
+    opacity: 0.7;
+  }
+
+  .sheet__foot {
+    display: flex;
+    gap: 8mm;
+    margin-top: auto;
+    font-size: 9pt;
+    opacity: 0.8;
+  }
+
+  .big {
+    font-family: var(--font-display);
+    font-size: 52pt;
+    font-weight: 640;
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+  }
+
+  .mid { margin-bottom: 3mm; font-family: var(--font-display); font-size: 20pt; font-weight: 620; letter-spacing: -0.02em; }
+
+  .lead { max-width: 34em; font-size: 15pt; line-height: 1.35; }
+  .lead em { font-family: var(--font-serif); font-style: italic; }
+  .body { max-width: 40em; font-size: 10.5pt; line-height: 1.45; opacity: 0.85; }
+  .small { margin-top: auto; font-size: 8.5pt; line-height: 1.4; opacity: 0.75; }
+  .mono { font-family: var(--font-type); font-size: 9pt; opacity: 0.8; }
+
+  .script {
+    font-family: var(--font-serif);
+    font-size: 20pt;
+    font-style: italic;
+    line-height: 1.15;
+  }
+
+  .script--lg { max-width: 15em; font-size: 22pt; }
+  .script :global(.accent) { color: inherit; font-family: inherit; font-size-adjust: none; }
+
+  .price {
+    font-family: var(--font-display);
+    font-size: 40pt;
+    font-weight: 640;
+    line-height: 1;
+    letter-spacing: -0.035em;
+  }
+
+  .giant {
+    white-space: nowrap;
+    font-family: var(--font-display);
+    font-size: 132pt;
+    font-weight: 660;
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 14mm;
+    flex: 1;
+    align-items: start;
+  }
+
+  .split--end { align-items: end; }
+  .stack { display: grid; gap: 6mm; }
+  .stack--between { align-content: space-between; height: 100%; }
+
+  .title-row { display: flex; align-items: baseline; gap: 10mm; }
+
+  .rows { display: grid; padding: 0; list-style: none; border-top: 0.3mm solid currentColor; }
+
+  .rows li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1mm 6mm;
+    padding: 3.2mm 0;
+    border-bottom: 0.2mm solid color-mix(in srgb, currentColor 22%, transparent);
+    font-size: 10pt;
+    line-height: 1.4;
+  }
+
+  .rows strong { font-family: var(--font-display); font-size: 12pt; font-weight: 620; letter-spacing: -0.01em; }
+  .rows span { grid-column: 1 / -1; opacity: 0.8; }
+  .rows b { font-family: var(--font-display); font-size: 14pt; font-weight: 640; }
+  .rows small { font-family: var(--font-type); font-size: 8pt; font-weight: 400; }
+
+  .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12mm; }
+  .cols2 .rows li { padding: 2.4mm 0; }
+
+  .cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; }
+
+  .plan {
+    display: grid;
+    align-content: start;
+    gap: 3.5mm;
+    padding: 6mm;
+    border-top: 0.6mm solid #151514;
+    background: #ECE7DF;
+  }
+
+  .plan--key { border-top-color: #D9291C; }
+  .plan__deliver { display: grid; gap: 1mm; padding-top: 3mm; border-top: 0.2mm solid rgba(20, 20, 18, 0.2); font-size: 10pt; }
+
+  .grid5 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6mm 6mm;
+    margin-top: auto;
+  }
+
+  .grid5 div { display: grid; align-content: start; gap: 2mm; padding-top: 3mm; border-top: 0.3mm solid #151514; font-size: 9.5pt; line-height: 1.4; }
+  .grid5 strong { font-family: var(--font-display); font-size: 11.5pt; font-weight: 620; }
+  .grid5 span { opacity: 0.85; }
+
+  /* Portada */
+  .sheet--cover { padding: 0; gap: 0; background: #121212; color: #F6F3EE; }
+  .cover__img { width: 100%; height: 150mm; object-fit: cover; object-position: 44% 30%; }
+
+  .cover__band {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    padding: 0 16mm;
+  }
+
+  .cover__band :global(.wordmark) { font-size: 34pt; }
+  .cover__meta { display: grid; gap: 2mm; text-align: right; }
+  .cover__label { font-family: var(--font-type); font-size: 9pt; opacity: 0.8; }
+  .cover__title { font-family: var(--font-serif); font-size: 20pt; font-style: italic; }
+
+  /* Media hoja con imagen */
+  .sheet--split { display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding: 0; }
+  .half { display: flex; flex-direction: column; gap: 6mm; padding: 14mm 14mm 14mm 16mm; }
+  .half .price { margin-top: auto; }
+  .half__img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* Cierre */
+  .sheet--close { display: grid; grid-template-columns: 1fr 1fr; padding: 0; gap: 0; background: #121212; color: #F6F3EE; }
+  .close__img { width: 100%; height: 100%; object-fit: cover; }
+  .close__text { display: grid; align-content: center; gap: 10mm; padding: 16mm; }
+  .close__text :global(.wordmark) { font-size: 28pt; }
+  .close__data { display: grid; gap: 1mm; font-size: 10pt; opacity: 0.85; }
+
+  @media print {
+    :global(html), :global(body) { background: none; }
+    .dossier { display: block; padding: 0; }
+  }
+</style>

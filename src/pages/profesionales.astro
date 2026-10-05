@@ -1,0 +1,62 @@
+---
+/**
+ * Profesionales: para wedding planners, fincas y otros proveedores con quien trabajar.
+ * Sale del dossier para planners: qué ofrecemos, tarifas con la comisión incluida (el
+ * plano rojo de esta página), extras, Same Day Edit, seguridad técnica, protocolo,
+ * trabajo, dossier, preguntas (en papel, que el rojo ya lo tiene la comisión) y contacto.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import FlatMotion from '../components/flat/FlatMotion.astro';
+import FlatNav from '../components/flat/FlatNav.astro';
+import FlatPageHeader from '../components/flat/FlatPageHeader.astro';
+import FlatPillars from '../components/flat/FlatPillars.astro';
+import FlatProPrices from '../components/flat/FlatProPrices.astro';
+import FlatExtras from '../components/flat/FlatExtras.astro';
+import FlatFeature from '../components/flat/FlatFeature.astro';
+import FlatSecurity from '../components/flat/FlatSecurity.astro';
+import FlatStories from '../components/flat/FlatStories.astro';
+import FlatDossiers from '../components/flat/FlatDossiers.astro';
+import FlatFaq from '../components/flat/FlatFaq.astro';
+import FlatContact from '../components/flat/FlatContact.astro';
+import FlatFooter from '../components/flat/FlatFooter.astro';
+import { pro, security } from '../data/copy';
+import { proFaq } from '../data/faq';
+import { dossiers } from '../data/dossiers';
+---
+
+<BaseLayout
+  title="Profesionales | Nanai Weddings · Foto y vídeo para wedding planners en Sevilla"
+  description="Fotografía y vídeo de bodas para wedding planners, fincas y proveedores en Sevilla: un solo proveedor, precios cerrados y comisión para vuestra agencia."
+  path="/profesionales"
+>
+  <div class="flat">
+    <FlatMotion />
+    <FlatNav />
+
+    <main id="contenido">
+      <FlatPageHeader
+        num="01"
+        label="Para profesionales"
+        title={pro.title}
+        deck={pro.deck}
+        cta={{ href: '#dossier', label: 'Descargar dossier' }}
+      />
+      <FlatPillars items={pro.pillars} />
+      <FlatProPrices />
+      <FlatExtras />
+      <FlatFeature />
+      <FlatSecurity quote={security.quote} deck={security.deck} items={security.items} />
+      <FlatSecurity id="protocolo" label="Protocolo" quote={pro.protocolQuote} items={pro.protocol} />
+      <FlatStories title="Nuestro trabajo" deck="Bodas completas, para que veáis cómo contamos un día entero." />
+      <FlatDossiers
+        items={[dossiers.pros]}
+        title="El dossier, para vuestra propuesta"
+        deck="Tarifas, comisión, extras y condiciones en un PDF para tenerlo a mano o reenviarlo."
+      />
+      <FlatFaq items={proFaq} tone="paper" title={['Lo que suele preguntar', 'una wedding planner']} />
+      <FlatContact kind="pro" />
+    </main>
+
+    <FlatFooter />
+  </div>
+</BaseLayout>

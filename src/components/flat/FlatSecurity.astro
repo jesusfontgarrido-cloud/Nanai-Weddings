@@ -1,0 +1,88 @@
+---
+/**
+ * Seguridad técnica (dossier para planners): la frase en Playfair cursiva, grande, a la
+ * izquierda, y las garantías en filas con filete a la derecha. Es prueba, no adjetivos:
+ * dice qué hacemos para no perder nada. También sirve para el protocolo de profesionales.
+ */
+import FlatEm from './FlatEm.astro';
+
+interface Props {
+  quote: string;
+  deck?: string;
+  items: { name: string; text: string }[];
+  label?: string;
+  id?: string;
+}
+
+const { quote, deck, items, label = 'Seguridad técnica', id = 'seguridad' } = Astro.props;
+---
+
+<section id={id} class="sec fsec" aria-labelledby={`${id}-title`}>
+  <div class="wrap fsec__grid">
+    <div class="fsec__intro">
+      <p class="label" data-reveal>{label}</p>
+      <p id={`${id}-title`} class="quote fsec__quote" data-reveal style="--i: 1"><FlatEm text={quote} /></p>
+      {deck && <p class="lead fsec__deck" data-reveal style="--i: 2">{deck}</p>}
+    </div>
+
+    <ul class="rows fsec__list" role="list" data-stagger>
+      {
+        items.map((item, i) => (
+          <li class="fsec__row">
+            <span class="fsec__num">{String(i + 1).padStart(2, '0')}</span>
+            <span class="fsec__body">
+              <span class="row__name">{item.name}</span>
+              <span class="fsec__text">{item.text}</span>
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .fsec__grid {
+    display: grid;
+    gap: clamp(32px, 4vw, 64px);
+  }
+
+  .fsec__intro {
+    display: grid;
+    align-content: start;
+    gap: 18px;
+  }
+
+  .fsec__quote { max-width: 14ch; }
+  .fsec__quote :global(.accent) { color: var(--f-red); font-weight: 450; }
+  .fsec__deck { max-width: 34ch; color: var(--f-muted); }
+
+  .fsec__row {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 12px;
+    padding-block: 20px;
+    border-bottom: var(--f-hair) solid var(--f-line);
+  }
+
+  .fsec__num {
+    padding-top: 3px;
+    color: var(--f-red-text);
+    font-family: var(--font-type);
+    font-size: 14px;
+  }
+
+  .fsec__body { display: grid; gap: 4px; }
+
+  .fsec__text {
+    max-width: 56ch;
+    color: var(--f-muted);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  @media (min-width: 1024px) {
+    .fsec__grid { grid-template-columns: 5fr 7fr; align-items: start; }
+    .fsec__intro { position: sticky; top: 100px; }
+  }
+</style>

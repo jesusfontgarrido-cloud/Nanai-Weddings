@@ -1,0 +1,14 @@
+# Caché del navegador (Cloudflare, static assets). Igual que en Nanai Studio.
+# Los archivos de /_astro llevan una huella en el nombre: se pueden guardar un año.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Tipografías, logos, imágenes fijas y dossieres: un mes.
+/fonts/*
+  Cache-Control: public, max-age=2592000
+/brand/*
+  Cache-Control: public, max-age=2592000
+/og/*
+  Cache-Control: public, max-age=2592000
+/dossieres/*
+  Cache-Control: public, max-age=86400

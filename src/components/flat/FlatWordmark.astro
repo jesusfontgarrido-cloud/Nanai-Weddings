@@ -1,0 +1,57 @@
+---
+/**
+ * Logotipo de Nanai Weddings. PROVISIONAL: compuesto como en el dossier para planners
+ * (isotipo oficial + «Nanai» en League Spartan + «weddings» en Playfair cursiva) hasta
+ * tener el SVG oficial. Cuando llegue, se cambia aquí y en ningún sitio más.
+ */
+interface Props {
+  tone?: 'ink' | 'paper';
+  size?: 'nav' | 'footer';
+}
+
+const { tone = 'ink', size = 'nav' } = Astro.props;
+const isotipo = tone === 'ink' ? '/brand/isotipo-negro.svg' : '/brand/isotipo-blanco.svg';
+---
+
+<span class:list={['wordmark', `wordmark--${tone}`, `wordmark--${size}`]}>
+  <img class="wordmark__iso" src={isotipo} alt="" width="215" height="205" />
+  <span class="wordmark__nanai">Nanai</span><span class="wordmark__weddings">weddings</span>
+</span>
+
+<style>
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28em;
+    font-size: 22px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .wordmark--ink { color: #151514; }
+  .wordmark--paper { color: #F6F3EE; }
+
+  .wordmark__iso {
+    width: auto;
+    height: 1.12em;
+    margin-right: 0.06em;
+  }
+
+  .wordmark__nanai {
+    font-family: var(--font-display);
+    font-weight: 760;
+    letter-spacing: -0.045em;
+    transform: translateY(0.06em);
+  }
+
+  .wordmark__weddings {
+    margin-left: 0.02em;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 1.04em;
+    letter-spacing: -0.01em;
+  }
+
+  .wordmark--footer { font-size: clamp(38px, 9.8vw, 164px); gap: 0.18em; }
+</style>

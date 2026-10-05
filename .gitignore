@@ -1,0 +1,27 @@
+# build
+dist/
+.astro/
+
+# dependencias
+node_modules/
+
+# entorno
+.env
+.env.production
+
+# logs y temporales
+npm-debug.log*
+*.log
+*.tmp
+
+# sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# editores
+.vscode/
+.idea/
+
+# capturas de trabajo
+docs/capturas-*/

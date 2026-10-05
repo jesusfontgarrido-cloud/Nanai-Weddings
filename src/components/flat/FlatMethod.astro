@@ -1,0 +1,143 @@
+---
+/**
+ * Cómo trabajamos (el mismo patrón que en Nanai Studio): el estilo en una frase a la
+ * izquierda y, a la derecha, tres imágenes que lo cuentan, cada una con una línea.
+ * En escritorio: una alta y dos apiladas, como la rejilla de VYNN.
+ *
+ * Imágenes: dos fotogramas provisionales del dossier y un hueco para una foto del equipo
+ * trabajando (BTS en blanco y negro, que se enciende a color al pasar el ratón).
+ */
+import { Picture } from 'astro:assets';
+import FlatPh from './FlatPh.astro';
+import { method } from '../../data/copy';
+import { site } from '../../data/site';
+import hands from '../../assets/media/provisional/fotograma-manos-tatuaje.jpg';
+import smile from '../../assets/media/provisional/fotograma-novia-sonrisa.jpg';
+
+const shots = [
+  { area: 'a', src: null, what: 'Equipo con una pareja (BTS)', format: 'FOTO B/N · 4:5' },
+  { area: 'b', src: hands, alt: 'Fotograma: las manos tatuadas de la pareja, entrelazadas', focus: '50% 50%' },
+  { area: 'c', src: smile, alt: 'Fotograma: la novia sonríe a contraluz', focus: '30% 40%' },
+];
+---
+
+<section class="sec fmethod" aria-labelledby="method-title">
+  <div class="wrap fmethod__grid">
+    <div class="fmethod__text">
+      <p class="label" data-reveal>{method.label}</p>
+      <h2 id="method-title" class="h2" data-reveal="lines">
+        <span>{method.title[0]}</span>
+        <span>como una <em class="accent">película</em></span>
+      </h2>
+      <p class="lead fmethod__deck" data-reveal style="--i: 2">{method.deck}</p>
+      <p class="note fmethod__studio" data-reveal style="--i: 3">
+        Nanai Weddings es la línea de bodas de <a class="link" href={site.parent.url}>{site.parent.name}</a>, productora audiovisual de Sevilla.
+      </p>
+    </div>
+
+    {
+      shots.map((shot, i) => (
+        <figure class={`fmethod__shot fmethod__shot--${shot.area}`} data-reveal style={`--i: ${i + 1}`}>
+          <div class:list={['fmethod__img', { bw: !shot.src }]}>
+            {shot.src ? (
+              <Picture
+                src={shot.src}
+                formats={['avif', 'webp']}
+                widths={[480, 800, 1200]}
+                sizes="(min-width: 1024px) 26vw, 92vw"
+                alt={shot.alt ?? ''}
+                loading="lazy"
+                style={shot.focus ? `object-position: ${shot.focus}` : undefined}
+              />
+            ) : (
+              <FlatPh what={shot.what ?? ''} format={shot.format ?? ''} ratio="auto" class="fmethod__ph" />
+            )}
+          </div>
+          <figcaption class="label fmethod__cap">
+            <span class="fmethod__num">0{i + 1}</span>
+            {method.shots[i].caption}
+          </figcaption>
+        </figure>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .fmethod__grid {
+    display: grid;
+    gap: clamp(28px, 3vw, 40px) var(--f-gap);
+  }
+
+  .fmethod__text {
+    display: grid;
+    align-content: start;
+    gap: 20px;
+  }
+
+  .fmethod__text h2 { font-size: clamp(34px, 3.8vw, 60px); }
+  .fmethod__text h2 > span { display: block; }
+  .fmethod__deck { max-width: 36ch; color: var(--f-muted); }
+  .fmethod__studio { max-width: 40ch; }
+  .fmethod__studio .link { min-height: 0; color: var(--f-on-surface); }
+
+  .fmethod__shot {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+  }
+
+  .fmethod__img {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 240px;
+    overflow: hidden;
+    border-radius: var(--f-r-media);
+    background: var(--f-surface-3);
+  }
+
+  .fmethod__img :global(picture),
+  .fmethod__img :global(img),
+  .fmethod__img :global(.fmethod__ph) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: auto;
+  }
+
+  .fmethod__img :global(img) { transition: transform 1200ms var(--f-ease-out); }
+  .fmethod__shot:hover .fmethod__img :global(img) { transform: scale(1.03); }
+
+  .fmethod__cap {
+    display: flex;
+    gap: 10px;
+    color: var(--f-on-surface);
+  }
+
+  .fmethod__num { color: var(--f-red-text); }
+
+  @media (min-width: 700px) {
+    .fmethod__grid { grid-template-columns: 1fr 1fr; }
+    .fmethod__text { grid-column: 1 / -1; }
+    .fmethod__shot--a { grid-row: span 2; }
+    .fmethod__img { min-height: 260px; }
+  }
+
+  @media (min-width: 1024px) {
+    .fmethod__grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: auto auto;
+      align-items: stretch;
+    }
+
+    .fmethod__text { grid-column: 1 / span 4; grid-row: 1 / span 2; align-self: center; }
+    .fmethod__shot--a { grid-column: 6 / span 4; grid-row: 1 / span 2; }
+    .fmethod__shot--b { grid-column: 10 / span 3; grid-row: 1; }
+    .fmethod__shot--c { grid-column: 10 / span 3; grid-row: 2; }
+    .fmethod__shot--a .fmethod__img { min-height: 560px; }
+    .fmethod__img { min-height: 220px; }
+  }
+</style>

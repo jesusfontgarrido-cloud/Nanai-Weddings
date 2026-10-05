@@ -1,0 +1,64 @@
+---
+/**
+ * Reseñas. Sitio reservado: aquí va el widget de reseñas reales (Google, como en Nanai
+ * Studio con Featurable, o Bodas.net). Hasta conectarlo, tres huecos marcados.
+ * Nunca se escriben reseñas de ejemplo con nombre: parecerían reales.
+ */
+import { reviews } from '../../data/copy';
+---
+
+<section class="sec freviews" aria-labelledby="reviews-title">
+  <div class="wrap freviews__inner">
+    <div class="freviews__head">
+      <h2 id="reviews-title" class="h2" data-reveal="lines"><span>{reviews.title}</span></h2>
+      <p class="freviews__deck" data-reveal style="--i: 2">{reviews.deck}</p>
+    </div>
+
+    <ul class="freviews__list" role="list" data-stagger>
+      {
+        [1, 2, 3].map((n) => (
+          <li class="freview" data-pending="review">
+            <span class="freview__stars" aria-hidden="true">★★★★★</span>
+            <p class="freview__text">Reseña real n.º {n} de una pareja (Google o Bodas.net).</p>
+            <p class="label">Nombres · boda en [lugar] · pendiente</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .freviews__inner { display: grid; gap: clamp(28px, 3.6vw, 48px); }
+  .freviews__head { display: grid; gap: 10px; }
+  .freviews__head h2 > span { display: block; }
+  .freviews__deck { color: var(--f-muted); }
+
+  .freviews__list {
+    display: grid;
+    gap: var(--f-gap);
+  }
+
+  .freview {
+    display: grid;
+    align-content: start;
+    gap: 14px;
+    padding: clamp(20px, 2.2vw, 32px);
+    border: var(--f-hair) dashed var(--f-line-strong);
+    border-radius: var(--f-r-media);
+  }
+
+  .freview__stars { color: var(--f-red); letter-spacing: 0.12em; }
+
+  .freview__text {
+    color: var(--f-muted);
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-style: italic;
+    line-height: 1.3;
+  }
+
+  @media (min-width: 900px) {
+    .freviews__list { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>

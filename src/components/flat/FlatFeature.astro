@@ -1,0 +1,74 @@
+---
+/**
+ * Servicio destacado: Same Day Edit (dossier para planners). Cápsula negra, la sala de
+ * proyección: a la izquierda el nombre, la frase en Playfair y el precio; a la derecha,
+ * el fotograma. Es el extra que más diferencia: el vídeo de la boda, en la propia boda.
+ */
+import { Picture } from 'astro:assets';
+import FlatEm from './FlatEm.astro';
+import { sameDayEdit } from '../../data/copy';
+import { euros, extras } from '../../data/pricing';
+import frame from '../../assets/media/provisional/fotograma-novia-sonrisa.jpg';
+
+const price = extras.find((extra) => extra.id === 'same-day-edit')?.price ?? 0;
+---
+
+<section class="sec tone-dark ffeature" aria-labelledby="sde-title">
+  <div class="wrap ffeature__grid">
+    <div class="ffeature__text">
+      <p class="label ffeature__label" data-reveal><span class="rec-dot"></span>{sameDayEdit.label}</p>
+      <h2 id="sde-title" class="display ffeature__title" data-reveal="lines"><span>{sameDayEdit.title}</span></h2>
+      <p class="quote ffeature__quote" data-reveal style="--i: 2"><FlatEm text={sameDayEdit.quote} /></p>
+      <p class="ffeature__body" data-reveal style="--i: 3">{sameDayEdit.text}</p>
+      <p class="price ffeature__price" data-reveal style="--i: 4">{euros(price)}<span class="price__eur">€</span></p>
+    </div>
+
+    <figure class="ffeature__img" data-reveal="focus">
+      <Picture src={frame} formats={['avif', 'webp']} widths={[640, 1000, 1400]} sizes="(min-width: 1024px) 50vw, 92vw" alt="Fotograma: la novia sonríe a contraluz, con pendientes de corazón" loading="lazy" style="object-position: 28% 40%" />
+    </figure>
+  </div>
+</section>
+
+<style>
+  .ffeature__grid {
+    display: grid;
+    gap: clamp(32px, 4vw, 64px);
+    align-items: center;
+  }
+
+  .ffeature__text { display: grid; gap: 18px; }
+
+  .ffeature__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--f-on-surface);
+  }
+
+  .ffeature__title { font-size: clamp(54px, 7vw, 120px); }
+  .ffeature__quote { max-width: 18ch; font-size: clamp(26px, 2.6vw, 40px); }
+  .ffeature__quote :global(.accent) { color: inherit; }
+  .ffeature__body { max-width: 46ch; color: var(--f-muted); }
+  .ffeature__price { font-size: clamp(44px, 4.6vw, 72px); color: var(--f-on-surface); }
+
+  .ffeature__img {
+    position: relative;
+    margin: 0;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: var(--f-r-media);
+  }
+
+  .ffeature__img :global(picture),
+  .ffeature__img :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (min-width: 1024px) {
+    .ffeature__grid { grid-template-columns: 1fr 1fr; }
+    .ffeature__img { aspect-ratio: 5 / 6; }
+  }
+</style>

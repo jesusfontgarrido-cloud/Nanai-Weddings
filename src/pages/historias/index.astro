@@ -1,0 +1,37 @@
+---
+/**
+ * Historias: todas las bodas, cada una con su página. De momento, huecos con portadas
+ * provisionales (fotogramas del dossier) hasta tener el material y los datos reales.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import FlatMotion from '../../components/flat/FlatMotion.astro';
+import FlatNav from '../../components/flat/FlatNav.astro';
+import FlatPageHeader from '../../components/flat/FlatPageHeader.astro';
+import FlatStories from '../../components/flat/FlatStories.astro';
+import FlatContact from '../../components/flat/FlatContact.astro';
+import FlatFooter from '../../components/flat/FlatFooter.astro';
+---
+
+<BaseLayout
+  title="Historias | Nanai Weddings · Bodas en Sevilla contadas en foto y vídeo"
+  description="Bodas reales en Sevilla y Andalucía contadas de principio a fin: preparativos, ceremonia, retratos y fiesta, en fotografía y vídeo."
+  path="/historias"
+>
+  <div class="flat">
+    <FlatMotion />
+    <FlatNav />
+
+    <main id="contenido">
+      <FlatPageHeader
+        num="01"
+        label="Historias"
+        title={['Bodas que', 'hemos *contado*']}
+        deck="Cada boda, entera y en orden: de los preparativos a la pista. Sin mosaicos de fotos sueltas, para que veáis cómo cuidamos un día completo."
+      />
+      <FlatStories heading={false} more={false} title="Historias" />
+      <FlatContact />
+    </main>
+
+    <FlatFooter />
+  </div>
+</BaseLayout>

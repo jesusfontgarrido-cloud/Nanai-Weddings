@@ -1,0 +1,1150 @@
+---
+/**
+ * Calculadora de tarifas. La idea sale del oficio: elegir un servicio es como montar una
+ * línea de tiempo de edición. Cada servicio y cada extra es una pista (V1, F1, dron…)
+ * sobre los momentos del día; el total corre como un contador.
+ *
+ * Al elegir:
+ * · el recuadro de enfoque (AF) salta al servicio elegido y el resto se desenfoca un poco;
+ * · el precio rueda como un contador;
+ * · la pantalla cambia con un rack focus (hoja de contactos para foto, fotograma 2.39:1
+ *   para vídeo, las dos cosas para el pack);
+ * · las pistas entran en la línea de tiempo y el cabezal rojo la recorre.
+ *
+ * Dos modos: «compact» (home: servicio y precio, con enlace a la completa) y «full»
+ * (/tarifas: invitados y extras). Sin JS: radios y casillas normales y el precio de
+ * partida a la vista. Con movimiento reducido: todo cambia al instante.
+ *
+ * Los precios salen de src/data/pricing.ts. La selección se manda al formulario de
+ * contacto de la página (evento «nanai:selection»).
+ */
+import { Picture } from 'astro:assets';
+import FlatEm from './FlatEm.astro';
+import { crewRule, euros, extras, groupNames, guestOptions, services, stages, terms, type Group } from '../../data/pricing';
+import { pricingIntro } from '../../data/copy';
+import still from '../../assets/media/provisional/fotograma-novia-buganvilla.jpg';
+import sheet1 from '../../assets/media/provisional/hoja/foto-01.jpg';
+import sheet2 from '../../assets/media/provisional/hoja/foto-02.jpg';
+import sheet3 from '../../assets/media/provisional/hoja/foto-03.jpg';
+import sheet4 from '../../assets/media/provisional/hoja/foto-04.jpg';
+import sheet5 from '../../assets/media/provisional/hoja/foto-05.jpg';
+import sheet6 from '../../assets/media/provisional/hoja/foto-06.jpg';
+
+interface Props {
+  mode?: 'compact' | 'full';
+  id?: string;
+  /** Titular propio (la página de tarifas ya tiene el suyo arriba). */
+  heading?: boolean;
+}
+
+const { mode = 'compact', id = 'tarifas', heading = true } = Astro.props;
+const full = mode === 'full';
+const start = services.find((service) => service.featured) ?? services[0];
+const sheet = [sheet1, sheet2, sheet3, sheet4, sheet5, sheet6];
+const groups: Group[] = ['video', 'foto'];
+const dayExtras = extras.filter((extra) => extra.slot.kind === 'day');
+
+const trackCode: Record<string, string> = {
+  'operador-extra': 'V2',
+  'camara-extra': 'V3',
+  'dron-video': 'V4',
+  'same-day-edit': 'SDE',
+  podcast: 'A2',
+  'fotografo-extra': 'F2',
+  'dron-foto': 'F3',
+};
+
+const data = {
+  services: services.map(({ id, name, price, groups }) => ({ id, name, price, groups })),
+  extras: extras.map(({ id, group, name, price, crew, slot }) => ({ id, group, name, price, crew: Boolean(crew), slot: slot.kind })),
+  crewRule,
+  booking: terms.booking,
+  freeKm: terms.freeKm,
+};
+
+const startPrice = euros(start.price);
+/** En móvil la regla no cabe entera: nombres cortos. */
+const shortStages = ['Prep.', 'Ceremonia', 'Cóctel', 'Banquete', 'Fiesta'];
+const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`;
+---
+
+<section id={id} class:list={['sec', 'fprice', `fprice--${mode}`]} aria-labelledby={`${id}-title`}>
+  <div class="wrap">
+    {
+      heading ? (
+        <div class="fprice__head">
+          <p class="label" data-reveal>{pricingIntro.label}</p>
+          <h2 id={`${id}-title`} class="h2" data-reveal="lines"><span><FlatEm text={pricingIntro.title} /></span></h2>
+          <p class="lead fprice__deck" data-reveal style="--i: 2">{pricingIntro.deck}</p>
+        </div>
+      ) : (
+        <h2 id={`${id}-title`} class="visually-hidden">Calculadora de tarifas</h2>
+      )
+    }
+
+    <form class="fprice__grid" data-pricing data-mode={mode} action={full ? '#contacto' : '/tarifas'} method="get">
+      <script type="application/json" data-pricing-data set:html={JSON.stringify(data)} />
+
+      <div class="fprice__controls">
+        <fieldset class="fprice__packs" data-packs>
+          <legend class="fprice__legend"><span class="fprice__step">01</span> Qué queréis contar</legend>
+          <div class="fprice__packlist" data-packlist>
+            <span class="fprice__af" aria-hidden="true" data-af><i></i><i></i><i></i><i></i></span>
+            {
+              services.map((service) => (
+                <label class="fpack">
+                  <input type="radio" name="servicio" value={service.id} checked={service.id === start.id} />
+                  <span class="fpack__name">{service.name}</span>
+                  <span class="fpack__price">{euros(service.price)} €</span>
+                  <span class="fpack__crew">{service.crew}</span>
+                </label>
+              ))
+            }
+          </div>
+        </fieldset>
+
+        {
+          !full && (
+            <div class="fprice__includes">
+              {services.map((service) => (
+                <ul class="fincludes" role="list" data-for={service.id} hidden={service.id !== start.id}>
+                  <li>{service.crew}, {service.id === 'pack' ? 'coordinados' : 'toda la jornada'}</li>
+                  {service.deliver.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                  <li>Entrega en {terms.deliveryMonths} meses como máximo</li>
+                </ul>
+              ))}
+            </div>
+          )
+        }
+
+        {
+          full && (
+            <fieldset class="fprice__guests">
+              <legend class="fprice__legend"><span class="fprice__step">02</span> Cuántos invitados</legend>
+              <div class="fprice__chips">
+                {guestOptions.map((option, i) => (
+                  <label class="fchip">
+                    <input type="radio" name="invitados" value={option.id} checked={i === 0} data-crew={option.crew} />
+                    <span class="chip">{option.label}</span>
+                  </label>
+                ))}
+              </div>
+              <p class="note fprice__crew-note" data-crew-note aria-live="polite">
+                Con más de {crewRule.recommendedFrom} invitados os recomendamos un segundo fotógrafo/a u operador/a; desde {crewRule.requiredFrom}, es obligatorio.
+              </p>
+            </fieldset>
+          )
+        }
+
+        {
+          full && (
+            <div class="fprice__extras">
+              <p class="fprice__legend"><span class="fprice__step">03</span> Extras</p>
+              {groups.map((group) => (
+                <fieldset class="fextras" data-group={group}>
+                  <legend class="label fextras__title">{groupNames[group]}</legend>
+                  {extras
+                    .filter((extra) => extra.group === group)
+                    .map((extra) => (
+                      <label class:list={['fextra', { 'fextra--featured': extra.featured }]} data-extra-row={extra.id}>
+                        <input type="checkbox" name="extras" value={extra.id} data-extra={extra.id} />
+                        <span class="fextra__box" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                        </span>
+                        <span class="fextra__name">
+                          {extra.name}
+                          {extra.crew && <span class="fextra__badge" data-crew-badge hidden />}
+                        </span>
+                        <span class="fextra__price">
+                          +{euros(extra.price)} €{extra.unit && <span class="fextra__unit"> {extra.unit}</span>}
+                        </span>
+                        <span class="fextra__text">{extra.text}</span>
+                      </label>
+                    ))}
+                </fieldset>
+              ))}
+            </div>
+          )
+        }
+
+        {
+          !full && (
+            <p class="fprice__more" data-reveal>
+              <span class="muted">Dron, álbum, Same Day Edit, preboda…</span>
+              <a class="link" href={fullHref(start.id)} data-full-link>Añadir extras y calcular →</a>
+            </p>
+          )
+        }
+      </div>
+
+      <div class="fprice__result tone-bone">
+        <!-- Pantalla: lo que os llevaríais, con un rack focus al cambiar -->
+        <div class="fscreen" data-screen={start.id} aria-hidden="true">
+          <div class="fscreen__layer fscreen__sheet">
+            {
+              sheet.map((src, i) => (
+                <figure class="fscreen__cell">
+                  <Picture src={src} formats={['avif', 'webp']} widths={[200, 400]} sizes="160px" alt="" loading="lazy" />
+                  <figcaption>{String(i + 12).padStart(2, '0')}A</figcaption>
+                </figure>
+              ))
+            }
+          </div>
+          <div class="fscreen__layer fscreen__film">
+            <Picture src={still} formats={['avif', 'webp']} widths={[640, 1000, 1300]} sizes="(min-width: 1024px) 40vw, 92vw" alt="" loading="lazy" />
+            <span class="fscreen__rec"><span class="rec-dot"></span>REC</span>
+            <span class="fscreen__tc">00:04:12:08</span>
+          </div>
+          <span class="fscreen__caption" data-screen-caption>{start.crew}</span>
+        </div>
+
+        <div class="fprice__total">
+          <p class="label fprice__total-label">{full ? 'Vuestra estimación' : 'Desde'}</p>
+          <p class="price fprice__price" aria-hidden="true">
+            <span class="odo" data-odo>{startPrice}</span><span class="price__eur">€</span>
+          </p>
+          <p class="visually-hidden" aria-live="polite" data-total-text>Total: {startPrice} euros</p>
+          <p class="note fprice__reserve" data-reserve>
+            Reserva: {euros(terms.booking * 2)} € · Hasta {terms.freeKm} km de Dos Hermanas, sin desplazamiento
+          </p>
+        </div>
+
+        <!-- Línea de tiempo: la jornada y sus pistas (orientativo) -->
+        <div class="ftl" data-tl>
+          <div class="ftl__ruler" aria-hidden="true">
+            {stages.map((stage, i) => <span data-short={shortStages[i]}><span>{stage}</span></span>)}
+          </div>
+          <div class="ftl__tracks">
+            <span class="ftl__head" aria-hidden="true" data-head></span>
+            <div class="ftl__track is-on" data-track="foto" style="--from: 0; --to: 4" data-for="foto pack">
+              <span class="ftl__clip ftl__clip--main"><b>F1</b> Fotógrafo/a</span>
+            </div>
+            <div class="ftl__track is-on" data-track="video" style="--from: 0; --to: 4" data-for="video pack">
+              <span class="ftl__clip ftl__clip--main"><b>V1</b> Operador/a</span>
+            </div>
+            {
+              dayExtras.map((extra) =>
+                extra.slot.kind === 'day' ? (
+                  <div class="ftl__track" data-track={extra.id} style={`--from: ${extra.slot.from}; --to: ${extra.slot.to}`}>
+                    <span class:list={['ftl__clip', { 'ftl__clip--key': extra.featured }]}>
+                      <b>{trackCode[extra.id]}</b> {extra.name}
+                    </span>
+                  </div>
+                ) : null,
+              )
+            }
+          </div>
+          <p class="ftl__aside" data-aside hidden></p>
+          <p class="visually-hidden" data-tl-text>Cobertura: toda la jornada, de los preparativos a una hora después del inicio de la barra libre.</p>
+        </div>
+
+        <!-- Lo que incluye cada servicio (en la completa, aquí; en la de la home, bajo los servicios) -->
+        {
+          full && (
+            <div class="fprice__includes">
+              {services.map((service) => (
+                <ul class="fincludes" role="list" data-for={service.id} hidden={service.id !== start.id}>
+                  <li>{service.crew}, {service.id === 'pack' ? 'coordinados' : 'toda la jornada'}</li>
+                  {service.deliver.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                  <li>Entrega en {terms.deliveryMonths} meses como máximo</li>
+                </ul>
+              ))}
+            </div>
+          )
+        }
+
+        <div class="fprice__actions">
+          {
+            full ? (
+              <a class="btn btn--red fprice__cta" href="#contacto" data-to-contact>
+                Consultar fecha con esta selección
+              </a>
+            ) : (
+              <>
+                <a class="btn fprice__cta" href={fullHref(start.id)} data-full-link>
+                  Calcular con extras
+                </a>
+                <a class="link" href="#contacto" data-to-contact>Consultar fecha →</a>
+              </>
+            )
+          }
+        </div>
+      </div>
+
+      {
+        full && (
+          <div class="fprice__dock" data-dock aria-hidden="true">
+            <span class="fprice__dock-total">
+              <span class="label">Estimación</span>
+              <strong data-dock-total>{startPrice} €</strong>
+            </span>
+            <a class="btn btn--red" href="#contacto" tabindex="-1" data-to-contact>Consultar fecha</a>
+          </div>
+        )
+      }
+    </form>
+  </div>
+</section>
+
+<script>
+  type Data = {
+    services: { id: string; name: string; price: number; groups: string[] }[];
+    extras: { id: string; group: string; name: string; price: number; crew: boolean; slot: 'day' | 'other' | 'delivery' }[];
+    crewRule: { recommendedFrom: number; requiredFrom: number; price: number };
+    booking: number;
+    freeKm: number;
+  };
+
+  const euros = (value: number) => String(value).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /**
+   * Contador: cada cifra es una tira 0–9 que rueda hasta su número. Con `hold`, monta las
+   * tiras en cero y espera (la primera vez rueda al entrar la calculadora en pantalla).
+   */
+  const odometer = (node: HTMLElement, value: number, hold = false) => {
+    const text = euros(value);
+    const chars = [...text];
+    const current = [...node.children].map((child) => (child as HTMLElement).dataset.char ?? '');
+    const sameShape = current.length === chars.length && current.every((char, i) => (char === '.') === (chars[i] === '.'));
+
+    if (!sameShape) {
+      node.replaceChildren(
+        ...chars.map((char, i) => {
+          const col = document.createElement('span');
+          if (char === '.') {
+            col.className = 'odo__sep';
+            col.dataset.char = '.';
+            col.textContent = '.';
+            return col;
+          }
+          col.className = 'odo__col';
+          col.dataset.char = '0';
+          col.style.setProperty('--k', String(i));
+          const strip = document.createElement('span');
+          strip.className = 'odo__strip';
+          strip.innerHTML = '0123456789'.split('').map((d) => `<span>${d}</span>`).join('');
+          col.append(strip);
+          return col;
+        }),
+      );
+      // Un fotograma después, para que la tira arranque desde 0 y ruede.
+      void node.offsetWidth;
+    }
+
+    if (hold) return;
+    chars.forEach((char, i) => {
+      const col = node.children[i] as HTMLElement;
+      if (char === '.') return;
+      col.dataset.char = char;
+      col.style.setProperty('--d', char);
+    });
+  };
+
+  document.querySelectorAll<HTMLFormElement>('[data-pricing]').forEach((form) => {
+    const raw = form.querySelector('[data-pricing-data]')?.textContent;
+    if (!raw) return;
+    const data = JSON.parse(raw) as Data;
+    const full = form.dataset.mode === 'full';
+
+    const packs = form.querySelector<HTMLElement>('[data-packlist]');
+    const af = form.querySelector<HTMLElement>('[data-af]');
+    const odo = form.querySelector<HTMLElement>('[data-odo]');
+    const totalText = form.querySelector<HTMLElement>('[data-total-text]');
+    const reserve = form.querySelector<HTMLElement>('[data-reserve]');
+    const screen = form.querySelector<HTMLElement>('[data-screen]');
+    const caption = form.querySelector<HTMLElement>('[data-screen-caption]');
+    const head = form.querySelector<HTMLElement>('[data-head]');
+    const aside = form.querySelector<HTMLElement>('[data-aside]');
+    const dockTotal = form.querySelector<HTMLElement>('[data-dock-total]');
+    const crewNote = form.querySelector<HTMLElement>('[data-crew-note]');
+    const fullLinks = form.querySelectorAll<HTMLAnchorElement>('[data-full-link]');
+
+    form.classList.add('is-live');
+    form.addEventListener('submit', (event) => event.preventDefault());
+
+    // Preselección desde la URL (?servicio=video) al venir de la home.
+    const wanted = new URLSearchParams(location.search).get('servicio');
+    const wantedInput = wanted ? form.querySelector<HTMLInputElement>(`input[name="servicio"][value="${CSS.escape(wanted)}"]`) : null;
+    if (wantedInput) wantedInput.checked = true;
+
+    let lastService = '';
+    // El contador espera a que la calculadora se vea para rodar por primera vez.
+    let seen = reduceMotion || !('IntersectionObserver' in window);
+
+    const moveAf = () => {
+      const checked = packs?.querySelector<HTMLInputElement>('input:checked')?.closest('label');
+      if (!packs || !af || !checked) return;
+      const box = checked.getBoundingClientRect();
+      const origin = packs.getBoundingClientRect();
+      af.style.setProperty('--x', `${box.left - origin.left}px`);
+      af.style.setProperty('--y', `${box.top - origin.top}px`);
+      af.style.setProperty('--w', `${box.width}px`);
+      af.style.setProperty('--h', `${box.height}px`);
+    };
+
+    const update = (animate = true) => {
+      const serviceId = form.querySelector<HTMLInputElement>('input[name="servicio"]:checked')?.value ?? data.services[0].id;
+      const service = data.services.find((s) => s.id === serviceId) ?? data.services[0];
+      const serviceChanged = serviceId !== lastService;
+      lastService = serviceId;
+
+      // Invitados → segundo fotógrafo/operador recomendado u obligatorio.
+      const crewLevel = form.querySelector<HTMLInputElement>('input[name="invitados"]:checked')?.dataset.crew ?? 'none';
+
+      // Grupos de extras que admite el servicio.
+      form.querySelectorAll<HTMLElement>('[data-group]').forEach((group) => {
+        const on = service.groups.includes(group.dataset.group ?? '');
+        group.hidden = !on;
+      });
+
+      const chosen: Data['extras'] = [];
+      data.extras.forEach((extra) => {
+        const input = form.querySelector<HTMLInputElement>(`input[data-extra="${extra.id}"]`);
+        if (!input) return;
+        const available = service.groups.includes(extra.group);
+        const badge = input.closest('label')?.querySelector<HTMLElement>('[data-crew-badge]');
+
+        if (extra.crew) {
+          const required = available && crewLevel === 'required';
+          if (required) input.checked = true;
+          if (input.disabled && !required) input.checked = false;
+          input.disabled = required;
+          if (badge) {
+            badge.hidden = !available || crewLevel === 'none';
+            badge.textContent = crewLevel === 'required' ? 'Obligatorio' : 'Recomendado';
+          }
+        }
+        if (available && input.checked) chosen.push(extra);
+      });
+
+      const total = service.price + chosen.reduce((sum, extra) => sum + extra.price, 0);
+      const reservation = data.booking * service.groups.length;
+
+      if (odo) odometer(odo, total, !seen);
+      if (totalText) totalText.textContent = `Total ${full ? 'estimado' : 'desde'}: ${euros(total)} euros`;
+      if (dockTotal) dockTotal.textContent = `${euros(total)} €`;
+      if (reserve) reserve.textContent = `Reserva: ${euros(reservation)} € · Hasta ${data.freeKm} km de Dos Hermanas, sin desplazamiento`;
+      if (crewNote) crewNote.classList.toggle('is-strong', crewLevel !== 'none');
+
+      // Pantalla: rack focus entre la hoja de contactos, el fotograma o los dos.
+      if (screen && serviceChanged) {
+        screen.dataset.screen = serviceId;
+        if (animate && !reduceMotion) {
+          screen.classList.remove('is-racking');
+          void screen.offsetWidth;
+          screen.classList.add('is-racking');
+        }
+      }
+      if (caption) {
+        const crew = { foto: 'Un fotógrafo/a', video: 'Un operador/a', pack: 'Fotógrafo/a + operador/a' } as Record<string, string>;
+        const extraCrew = chosen.filter((extra) => extra.crew).length;
+        caption.textContent = `${crew[serviceId] ?? ''}${extraCrew ? ` + ${extraCrew} más` : ''}`;
+      }
+
+      // Pistas de la línea de tiempo.
+      form.querySelectorAll<HTMLElement>('[data-track]').forEach((track) => {
+        const key = track.dataset.track ?? '';
+        const forList = track.dataset.for?.split(' ');
+        const on = forList ? forList.includes(serviceId) : chosen.some((extra) => extra.id === key);
+        track.classList.toggle('is-on', on);
+      });
+
+      const otherDay = chosen.filter((extra) => extra.slot === 'other').map((extra) => `${extra.name}${service.groups.length > 1 ? ` (${extra.group === 'video' ? 'vídeo' : 'foto'})` : ''}`);
+      const delivery = chosen.filter((extra) => extra.slot === 'delivery').map((extra) => extra.name);
+      if (aside) {
+        const parts = [otherDay.length ? `Otro día: ${otherDay.join(', ')}` : '', delivery.length ? `Con la entrega: ${delivery.join(', ')}` : ''].filter(Boolean);
+        aside.textContent = parts.join(' · ');
+        aside.hidden = parts.length === 0;
+      }
+
+      // El cabezal rojo recorre la jornada.
+      if (head && animate && !reduceMotion) {
+        head.classList.remove('is-playing');
+        void head.offsetWidth;
+        head.classList.add('is-playing');
+      }
+
+      // Lo que incluye.
+      form.querySelectorAll<HTMLElement>('ul[data-for]').forEach((list) => {
+        const on = list.dataset.for === serviceId;
+        if (on && list.hidden && animate && !reduceMotion) {
+          list.classList.remove('is-in');
+          requestAnimationFrame(() => list.classList.add('is-in'));
+        }
+        list.hidden = !on;
+      });
+
+      fullLinks.forEach((link) => (link.href = `/tarifas?servicio=${serviceId}#calculadora`));
+      moveAf();
+
+      // La selección viaja al formulario de contacto de la página.
+      const names = chosen.map((extra) => `${extra.name}${service.groups.length > 1 ? ` (${extra.group === 'video' ? 'vídeo' : 'foto'})` : ''}`);
+      const summary = `${service.name}${names.length ? ` + ${names.join(', ')}` : ''} · ${euros(total)} € (${full ? 'estimación' : 'desde'})`;
+      const guests = form.querySelector<HTMLInputElement>('input[name="invitados"]:checked')?.value;
+      document.dispatchEvent(new CustomEvent('nanai:selection', { detail: { service: serviceId, summary, guests, detailed: full } }));
+    };
+
+    form.addEventListener('change', () => update());
+    window.addEventListener('resize', moveAf);
+    if (document.fonts) void document.fonts.ready.then(moveAf);
+    update(false);
+    requestAnimationFrame(() => form.classList.add('is-ready'));
+
+    if (!seen) {
+      const result = form.querySelector('.fprice__price');
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          observer.disconnect();
+          seen = true;
+          update(false);
+        },
+        { threshold: 0.6 },
+      );
+      if (result) observer.observe(result);
+    }
+
+    // Barra fija de móvil: solo mientras la calculadora está en pantalla.
+    const dock = form.querySelector<HTMLElement>('[data-dock]');
+    if (dock && 'IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(([entry]) => dock.classList.toggle('is-shown', entry.isIntersecting), { threshold: 0 });
+      const controls = form.querySelector('.fprice__extras');
+      if (controls) observer.observe(controls);
+    }
+  });
+</script>
+
+<style>
+  .fprice__head {
+    display: grid;
+    gap: 14px;
+    margin-bottom: clamp(36px, 4.4vw, 64px);
+  }
+
+  .fprice__head h2 > span { display: block; }
+  .fprice__deck { max-width: 46ch; color: var(--f-muted); }
+
+  .fprice__grid {
+    position: relative;
+    display: grid;
+    gap: clamp(28px, 3.4vw, 56px);
+  }
+
+  .fprice__controls {
+    display: grid;
+    align-content: start;
+    gap: clamp(28px, 3vw, 44px);
+  }
+
+  .fprice__packs,
+  .fprice__guests,
+  .fextras {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+
+  .fprice__legend {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 0;
+    margin-bottom: 14px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .fprice__step {
+    color: var(--f-red-text);
+    font-family: var(--font-type);
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  /* ── Servicios: tres filas; el recuadro de enfoque salta a la elegida ── */
+  .fprice__packlist {
+    position: relative;
+    display: grid;
+  }
+
+  .fpack {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: 2px 16px;
+    padding: 18px 18px 16px;
+    border-top: var(--f-hair) solid var(--f-line);
+    cursor: pointer;
+    transition: opacity 420ms var(--f-ease-out), filter 420ms var(--f-ease-out);
+  }
+
+  .fpack:last-of-type { border-bottom: var(--f-hair) solid var(--f-line); }
+
+  .fprice--compact .fprice__includes { padding-inline: 4px; }
+
+  .fpack input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  .fpack__name {
+    font-family: var(--font-display);
+    font-size: clamp(26px, 2.5vw, 38px);
+    font-weight: 620;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  .fpack__price {
+    font-family: var(--font-display);
+    font-size: clamp(20px, 1.8vw, 26px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .fpack__crew {
+    grid-column: 1 / -1;
+    color: var(--f-muted);
+    font-family: var(--font-type);
+    font-size: 14px;
+  }
+
+  /* Sin JS: la opción elegida, con su recuadro fijo */
+  .fpack:has(input:checked) { box-shadow: inset 0 0 0 1px var(--f-on-surface); }
+  .fpack:has(input:focus-visible) { outline: 2px solid var(--f-red); outline-offset: 2px; }
+
+  /* Con JS: el resto se desenfoca un poco (rack focus) y el AF se mueve */
+  .is-live .fpack:has(input:checked) { box-shadow: none; }
+  .is-live .fpack:not(:has(input:checked)) { opacity: 0.62; }
+  .is-live .fpack:not(:has(input:checked)):hover { opacity: 0.85; }
+
+  .fprice__af {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: var(--w, 0);
+    height: var(--h, 0);
+    transform: translate(var(--x, 0), var(--y, 0));
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .is-live .fprice__af { opacity: 1; }
+  .is-ready .fprice__af {
+    transition:
+      transform 620ms var(--f-ease-out),
+      width 620ms var(--f-ease-out),
+      height 620ms var(--f-ease-out);
+  }
+
+  .fprice__af i {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 0 solid var(--f-on-surface);
+  }
+
+  .fprice__af i:nth-child(1) { top: 0; left: 0; border-top-width: 2px; border-left-width: 2px; }
+  .fprice__af i:nth-child(2) { top: 0; right: 0; border-top-width: 2px; border-right-width: 2px; }
+  .fprice__af i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 2px; border-left-width: 2px; }
+  .fprice__af i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; }
+
+  /* Al enfocar, las esquinas se encienden en rojo un instante */
+  .is-ready .fprice__af i { animation: fprice-af 900ms var(--f-ease-out); }
+
+  @keyframes fprice-af {
+    0%, 40% { border-color: var(--f-red); }
+  }
+
+  /* ── Invitados ── */
+  .fprice__chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fchip { position: relative; display: inline-flex; }
+  .fchip input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .fchip .chip { min-height: 44px; cursor: pointer; }
+  .fchip .chip:hover { border-color: var(--f-on-surface); }
+  .fchip input:checked + .chip { border-color: transparent; background: var(--f-inverse); color: var(--f-on-inverse); }
+  .fchip input:focus-visible + .chip { outline: 2px solid var(--f-red); outline-offset: 2px; }
+
+  .fprice__crew-note { margin-top: 12px; max-width: 52ch; }
+  .fprice__crew-note.is-strong { color: var(--f-on-surface); }
+
+  /* ── Extras ── */
+  .fprice__extras { display: grid; gap: 28px; }
+  .fprice__extras .fprice__legend { margin-bottom: 0; }
+  .fextras { display: grid; }
+  .fextras__title { margin-bottom: 4px; padding: 0; }
+
+  .fextra {
+    position: relative;
+    display: grid;
+    grid-template-columns: 26px 1fr auto;
+    align-items: baseline;
+    gap: 2px 14px;
+    padding: 14px 4px;
+    border-top: var(--f-hair) solid var(--f-line);
+    cursor: pointer;
+  }
+
+  .fextra:last-child { border-bottom: var(--f-hair) solid var(--f-line); }
+
+  .fextra input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+
+  .fextra__box {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    align-self: center;
+    border: var(--f-hair) solid var(--f-line-strong);
+    border-radius: var(--f-r);
+    transition: background-color var(--f-dur) var(--f-ease), border-color var(--f-dur) var(--f-ease);
+  }
+
+  .fextra__box svg { width: 14px; height: 14px; opacity: 0; transform: scale(0.6); transition: opacity var(--f-dur) var(--f-ease), transform var(--f-dur) var(--f-ease); }
+  .fextra input:checked ~ .fextra__box { border-color: var(--f-on-surface); background: var(--f-on-surface); color: var(--f-bg); }
+  .fextra input:checked ~ .fextra__box svg { opacity: 1; transform: none; }
+  .fextra input:focus-visible ~ .fextra__box { outline: 2px solid var(--f-red); outline-offset: 2px; }
+  .fextra input:disabled ~ .fextra__box { border-color: var(--f-red); background: var(--f-red); color: #fff; }
+  .fextra:has(input:disabled) { cursor: default; }
+
+  .fextra__name {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    font-weight: 600;
+  }
+
+  .fextra__badge {
+    padding: 2px 7px;
+    border-radius: var(--f-r);
+    background: var(--f-red);
+    color: #FFFFFF;
+    font-family: var(--font-type);
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  .fextra__price {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 620;
+    letter-spacing: -0.015em;
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  .fextra__unit {
+    color: var(--f-muted);
+    font-family: var(--font-type);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .fextra__text {
+    grid-column: 2 / -1;
+    color: var(--f-muted);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .fextra--featured .fextra__name::after {
+    content: 'Destacado';
+    color: var(--f-red-text);
+    font-family: var(--font-type);
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  .fprice__more {
+    display: grid;
+    gap: 4px;
+    font-size: 16px;
+  }
+
+  .fprice__more .link { justify-self: start; }
+
+  /* ── Resultado ── */
+  .fprice__result {
+    display: grid;
+    align-content: start;
+    gap: 22px;
+    padding: clamp(16px, 2vw, 28px);
+    border-radius: var(--f-r-card);
+  }
+
+  /* Pantalla */
+  .fscreen {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: var(--f-r-media);
+    background: #151514;
+    color: #F6F3EE;
+  }
+
+  .fscreen__layer {
+    position: absolute;
+    inset: 0;
+    transition: opacity 700ms var(--f-ease-out), filter 700ms var(--f-ease-out), clip-path 900ms var(--f-ease-out);
+  }
+
+  .fscreen__sheet {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 6px;
+    background: #F6F3EE;
+  }
+
+  .fscreen__cell {
+    position: relative;
+    margin: 0;
+    overflow: hidden;
+    border-radius: 3px;
+  }
+
+  .fscreen__cell :global(picture),
+  .fscreen__cell :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .fscreen__cell figcaption {
+    position: absolute;
+    left: 6px;
+    bottom: 4px;
+    color: #F6F3EE;
+    font-family: var(--font-type);
+    font-size: 11px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Fotograma 2.39:1 con su letterbox */
+  .fscreen__film { background: #0E0E0D; }
+
+  .fscreen__film :global(picture) {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    aspect-ratio: 2.39 / 1;
+    transform: translateY(-50%);
+  }
+
+  .fscreen__film :global(img) { width: 100%; height: 100%; object-fit: cover; }
+
+  .fscreen__rec,
+  .fscreen__tc {
+    position: absolute;
+    top: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-type);
+    font-size: 13px;
+  }
+
+  .fscreen__rec { left: 14px; }
+  .fscreen__tc { right: 14px; font-variant-numeric: tabular-nums; }
+
+  .fscreen__caption {
+    position: absolute;
+    left: 14px;
+    bottom: 12px;
+    z-index: 2;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(10, 10, 10, 0.62);
+    font-family: var(--font-type);
+    font-size: 13px;
+  }
+
+  /* Qué capa se ve según el servicio */
+  .fscreen[data-screen='foto'] .fscreen__film { opacity: 0; }
+  .fscreen[data-screen='video'] .fscreen__sheet { opacity: 0; }
+  /* Pack: pantalla partida, la hoja de contactos a la izquierda y el fotograma a la derecha */
+  .fscreen[data-screen='pack'] .fscreen__film { clip-path: inset(0 0 0 50%); }
+  .fscreen[data-screen='pack'] .fscreen__sheet { right: 50%; grid-template-columns: repeat(2, 1fr); }
+  .fscreen[data-screen='pack'] .fscreen__cell:nth-child(n + 5) { display: none; }
+  .fscreen:not([data-screen='pack']) .fscreen__layer { clip-path: inset(0 0 0 0); }
+
+  /* Rack focus al cambiar */
+  .fscreen.is-racking .fscreen__layer { animation: fprice-rack 800ms var(--f-ease-out); }
+
+  @keyframes fprice-rack {
+    0% { filter: blur(0); }
+    35% { filter: blur(10px) brightness(1.05); }
+    100% { filter: blur(0); }
+  }
+
+  /* Total */
+  .fprice__total { display: grid; gap: 6px; }
+  .fprice__total-label { color: var(--f-muted); }
+
+  .fprice__price {
+    display: flex;
+    align-items: baseline;
+    font-size: clamp(64px, 7.4vw, 124px);
+  }
+
+  .odo {
+    display: inline-flex;
+    height: 1.02em;
+    overflow: hidden;
+    line-height: 1.02;
+  }
+
+  .odo :global(.odo__col) {
+    display: inline-block;
+    width: 0.6em;
+    height: 1.02em;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .odo :global(.odo__sep) { display: inline-block; width: 0.22em; }
+
+  .odo :global(.odo__strip) {
+    display: flex;
+    flex-direction: column;
+    transform: translateY(calc(var(--d, 0) * -1.02em));
+    transition: transform var(--f-dur-reveal) var(--f-ease-out);
+    transition-delay: calc(var(--k, 0) * 70ms);
+  }
+
+  .odo :global(.odo__strip span) { display: block; height: 1.02em; }
+
+  .fprice__reserve { font-family: var(--font-type); font-size: 14px; }
+
+  /* ── Línea de tiempo ── */
+  .ftl { display: grid; gap: 8px; }
+
+  .ftl__ruler,
+  .ftl__track {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .ftl__ruler {
+    padding-bottom: 6px;
+    border-bottom: var(--f-hair) solid var(--f-line-strong);
+    background-image: linear-gradient(to right, var(--f-line-strong) 1px, transparent 1px);
+    background-size: 20% 6px;
+    background-position: bottom left;
+    background-repeat: repeat-x;
+    color: var(--f-muted);
+    font-family: var(--font-type);
+    font-size: 12px;
+  }
+
+  .ftl__ruler > span {
+    padding-left: 4px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .ftl__tracks {
+    position: relative;
+    display: grid;
+  }
+
+  .ftl__track {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows 520ms var(--f-ease-out), opacity 420ms var(--f-ease-out);
+  }
+
+  .ftl__track.is-on { grid-template-rows: 1fr; opacity: 1; }
+
+  .ftl__clip {
+    grid-column: calc(var(--from) + 1) / calc(var(--to) + 2);
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-block: 3px;
+    padding-inline: 8px;
+    border-radius: 3px;
+    background: var(--f-on-surface);
+    color: var(--f-bg);
+    font-family: var(--font-type);
+    font-size: 12px;
+    line-height: 26px;
+    white-space: nowrap;
+    transform-origin: left center;
+    transform: scaleX(0.04);
+    transition: transform 720ms var(--f-ease-out);
+  }
+
+  .ftl__track.is-on .ftl__clip { transform: none; }
+  .ftl__track:not(.is-on) .ftl__clip { margin-block: 0; }
+  .ftl__clip b { font-weight: 700; }
+
+  /* Los extras, en hueco: se distinguen de los servicios base */
+  .ftl__clip:not(.ftl__clip--main) {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--f-on-surface);
+    color: var(--f-on-surface);
+  }
+
+  .ftl__clip--key:not(.ftl__clip--main) { box-shadow: inset 0 0 0 1px var(--f-red); color: var(--f-red-text); }
+
+  /* Cabezal rojo: recorre la jornada al cambiar */
+  .ftl__head {
+    position: absolute;
+    top: -8px;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    width: 2px;
+    background: var(--f-red);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .ftl__head::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -4px;
+    width: 10px;
+    height: 8px;
+    background: var(--f-red);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+
+  .ftl__head.is-playing { animation: fprice-head 1300ms cubic-bezier(0.45, 0, 0.2, 1) both; }
+
+  @keyframes fprice-head {
+    0% { left: 0; opacity: 1; }
+    88% { left: calc(100% - 2px); opacity: 1; }
+    100% { left: calc(100% - 2px); opacity: 0; }
+  }
+
+  .ftl__aside {
+    color: var(--f-muted);
+    font-family: var(--font-type);
+    font-size: 13px;
+  }
+
+  /* Lo que incluye */
+  .fincludes {
+    display: grid;
+    gap: 8px;
+  }
+
+  .fincludes li {
+    position: relative;
+    padding-left: 22px;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .fincludes li::before {
+    content: '';
+    position: absolute;
+    top: 0.62em;
+    left: 2px;
+    width: 10px;
+    height: 1px;
+    background: var(--f-on-surface);
+  }
+
+  html.motion .fincludes.is-in li { animation: fprice-li 620ms var(--f-ease-out) both; }
+  html.motion .fincludes.is-in li:nth-child(2) { animation-delay: 60ms; }
+  html.motion .fincludes.is-in li:nth-child(3) { animation-delay: 120ms; }
+  html.motion .fincludes.is-in li:nth-child(4) { animation-delay: 180ms; }
+  html.motion .fincludes.is-in li:nth-child(5) { animation-delay: 240ms; }
+
+  @keyframes fprice-li {
+    from { opacity: 0; transform: translateY(10px); }
+  }
+
+  .fprice__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 22px;
+    padding-top: 4px;
+  }
+
+  /* Barra fija en móvil (calculadora completa) */
+  .fprice__dock { display: none; }
+
+  @media (max-width: 1023px) {
+    .fprice__dock {
+      position: sticky;
+      bottom: 0;
+      z-index: 5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-inline: calc(var(--f-gutter) * -1);
+      padding: 10px var(--f-gutter);
+      border-top: var(--f-hair) solid var(--f-line);
+      background: rgba(246, 243, 238, 0.96);
+      transform: translateY(110%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 380ms var(--f-ease-out), opacity 380ms var(--f-ease-out);
+    }
+
+    .fprice__dock.is-shown { transform: none; opacity: 1; pointer-events: auto; }
+    .fprice__dock-total { display: grid; }
+    .fprice__dock-total strong { font-family: var(--font-display); font-size: 26px; font-weight: 640; letter-spacing: -0.02em; line-height: 1; }
+    .fprice__dock .btn { min-height: 48px; padding-inline: 18px; font-size: 15px; }
+
+    /* Móvil: servicio → resultado → invitados → extras → barra */
+    .fprice--full .fprice__controls { display: contents; }
+    .fprice--full .fprice__packs { order: 1; }
+    .fprice--full .fprice__result { order: 2; }
+    .fprice--full .fprice__guests { order: 3; }
+    .fprice--full .fprice__extras { order: 4; }
+    .fprice--full .fprice__dock { order: 5; }
+
+    /* Home: servicio → resultado → qué incluye → enlace a la completa */
+    .fprice--compact .fprice__controls { display: contents; }
+    .fprice--compact .fprice__packs { order: 1; }
+    .fprice--compact .fprice__result { order: 2; }
+    .fprice--compact .fprice__includes { order: 3; }
+    .fprice--compact .fprice__more { order: 4; }
+  }
+
+  @media (min-width: 1024px) {
+    .fprice__grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      align-items: start;
+    }
+
+    .fprice__controls { grid-column: 1 / span 5; }
+    .fprice__result { grid-column: 7 / span 6; position: sticky; top: 84px; }
+    .fprice--compact .fprice__includes { padding-top: 6px; }
+  }
+
+  @media (max-width: 559px) {
+    .ftl__ruler > span > span { display: none; }
+    .ftl__ruler > span::before { content: attr(data-short); }
+  }
+
+  @media (max-width: 419px) {
+    .ftl__ruler { font-size: 10px; }
+    .ftl__ruler > span { padding-left: 3px; }
+    .ftl__clip { font-size: 11px; padding-inline: 6px; gap: 5px; }
+  }
+</style>
