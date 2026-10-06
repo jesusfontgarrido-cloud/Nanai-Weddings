@@ -17,9 +17,10 @@ Archivo, y un toque dorado solo en el botón de profesionales. Astro 5, CSS prop
 
 | Ruta | Contenido |
 |---|---|
-| `/` | Hero centrado · cómo trabajamos · proceso · historias · tarifas en carpetas · sobre nosotros · preguntas · contacto |
+| `/` | Hero centrado · cómo trabajamos · proceso (3 pasos) · historias · tarifas en carpetas · para profesionales · sobre nosotros · preguntas · contacto |
 | `/tarifas` | Carpetas (servicio + su dossier), invitados, extras y total, «Consultar fecha» en ventana emergente, Same Day Edit, condiciones en preguntas, contacto |
-| `/historias` | Galería de muestra: cada trabajo con su portada y fotogramas alrededor; abre el tráiler o la galería por momentos (sin página por boda) |
+| `/historias` | Selector: tráilers o galerías |
+| `/historias/video`, `/historias/fotografia` | Galerías de muestra: cada trabajo con su portada y fotogramas alrededor; abre el tráiler o la galería por momentos (sin página por boda) |
 | `/aviso-legal`, `/privacidad`, `/cookies` | Textos legales (borrador, faltan los datos del titular) |
 | `/dossier/fotografia`, `/dossier/video` | Hojas A4 para imprimir los dossieres (fuera del sitemap) |
 

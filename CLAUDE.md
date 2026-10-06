@@ -17,8 +17,9 @@ redondeadas y apiladas, botones píldora) y `docs/referencias-behance.md`.
 - **Blanco, negro y grises medios.** Blanco puro (`#FFFFFF`) y tinta `#111111`. Bandas en
   gris que entran y salen con degradado (`.tone-gray`) o en tarjeta oscura redondeada con
   margen alrededor (`.sec--card.tone-dark`). Sin grano ni papel. Nada de rojo ni amarillo.
-- **Dorado apagado (`#BFA06A` / `#D9C394`) solo en el botón «Profesionales»** de la barra
-  (y su gemelo del menú móvil). En ningún otro sitio.
+- **Dorado apagado (`#BFA06A` / `#D9C394`) solo en los botones de profesionales** (los que
+  abren su formulario: el de la barra, el del menú móvil y el de la sección «Para
+  profesionales» de la home; clase `.btn--pro`). En ningún otro sitio.
 - **Todo redondeado:** botones en píldora (`.btn`, `.chip`), tarjetas a 28 px, fotos a
   18 px, campos a 14 px. **Transparencias** (barra de cristal, ventanas emergentes con
   desenfoque, botones `.btn--glass`) y **degradados suaves** entre secciones (el hero se
@@ -40,25 +41,31 @@ clientes, parejas ni cifras.
 
 ## Arquitectura
 
-- **Páginas:** `/` · `/historias` · `/tarifas` · `/aviso-legal` · `/privacidad` ·
-  `/cookies`. Todas sobre `SiteLayout.astro` (barra, pie, ventana de Profesionales y
-  `FlatScripts`). Nav: Inicio · Historias · Tarifas, y a la derecha **Profesionales**
-  (dorado; abre una ventana emergente) y **Consultar fecha** (negro; «Hablemos» en móvil).
+- **Páginas:** `/` · `/historias` (selector) · `/historias/video` · `/historias/fotografia`
+  · `/tarifas` · `/aviso-legal` · `/privacidad` · `/cookies`. Todas sobre
+  `SiteLayout.astro` (barra, pie, ventana de Profesionales y `FlatScripts`). Nav: Inicio ·
+  Historias (desplegable al pulsar: Vídeo · Fotografía) · Tarifas, y a la derecha
+  **Profesionales** (dorado; abre una ventana emergente) y **Consultar fecha** (negro;
+  «Hablemos» en móvil).
 - **No hay página pública para profesionales** (ni comisión, ni dossier para planners):
   el usuario hará esa landing aparte, con acceso por enlace. En esta web, «Profesionales»
   abre un formulario corto (profesión, forma de contacto, Instagram, qué os interesa).
-- **Home:** hero centrado · cómo trabajamos · proceso · historias · tarifas (carpetas) ·
-  sobre nosotros · preguntas · contacto.
+- **Home:** hero centrado · cómo trabajamos · proceso (3 pasos: reservamos y nos
+  conocemos · el día de la boda · la entrega) · historias · tarifas (carpetas) · para
+  profesionales (explica el botón dorado: servicios para empresas del sector, sin cifras)
+  · sobre nosotros · preguntas · contacto.
 - **Tarifas:** carpetas apiladas (Fotografía delante, Vídeo y Foto + vídeo detrás; dentro,
   el dossier de ese servicio: foto → fotografía, vídeo → vídeo, foto + vídeo → los dos) ·
   invitados (informa, **nunca marca nada solo**; desde 130, segundo fotógrafo/operador
   obligatorio) · extras (preboda y postboda por separado) · resumen · «Consultar fecha con
   esta selección» abre una ventana emergente (nombre, fecha, forma de contacto) · Same Day
   Edit · condiciones en preguntas · contacto.
-- **Historias:** galería de muestra, sin página por boda. Todos los trabajos igual de
-  grandes: portada en el centro y cuatro fotogramas alrededor. Al pulsar se abre el
-  **tráiler** (vídeo: siempre el tráiler) o la **galería por momentos** (solo foto).
-  `/historias#<id>` lo abre directamente (así enlazan las tarjetas de la home).
+- **Historias:** foto y vídeo por separado. `/historias` elige entre las dos;
+  `/historias/video` (tráilers, siempre el tráiler) y `/historias/fotografia` (galerías por
+  momentos) son galerías de muestra, sin página por boda: todos los trabajos igual de
+  grandes, portada en el centro y cuatro fotogramas alrededor. Al pulsar se abre el
+  tráiler o la galería; `/historias/<tipo>#<id>` lo abre directamente (así enlazan las
+  tarjetas de la home).
 - **Fuera:** línea de tiempo de la jornada, «Nuestra recomendación», seguridad técnica y
   reseñas (de momento). La reserva, los kilómetros y las horas van en las preguntas.
 - **Condiciones en preguntas:** reserva, pagos, cancelación, horas, entrega, desplazamiento.

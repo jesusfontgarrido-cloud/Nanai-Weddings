@@ -1,4 +1,4 @@
-# Nanai Weddings · Decisiones (5-10-2026, revisión 3)
+# Nanai Weddings · Decisiones (6-10-2026, revisión 4)
 
 ## Tomadas
 
@@ -13,6 +13,9 @@
 | **Historias como galería de muestra** | Todos los trabajos con el mismo peso; sin página por boda. Vídeo: solo tráilers. Foto: galería por momentos |
 | **Proceso con un hilo que avanza al bajar** | Se pidió darle una vuelta a la animación al pasar el ratón: al pasar el ratón no funciona en móvil y esconde contenido; el hilo que se dibuja con el scroll cuenta lo mismo (un calendario que avanza), sin lenguaje de cámara de Studio, y sin él todo se lee igual |
 | **Sobre nosotros en la home** | Qué es Nanai Studio y quién es Jesús Font, contado desde las bodas (textos de la web de Studio) |
+| **Historias: desplegable en la barra + selector + una página por tipo** | El usuario dejó elegir entre una página que lleve a fotos o a vídeo y un desplegable. Se hacen las dos cosas, que no compiten: el desplegable (al pulsar, no al pasar el ratón: funciona en móvil y con teclado) lleva directo a `/historias/video` o `/historias/fotografia`, y `/historias` queda como selector para quien llega por un enlace o por buscador |
+| **Proceso en tres pasos** | Revisión 4: reservamos y nos conocemos · el día de la boda · la entrega |
+| **Sección «Para profesionales» en la home** | Explica el botón dorado: servicios para empresas del sector (lo que en inglés se llama B2B), sin cifras ni comisión. El botón de la sección es dorado como el de la barra porque abre lo mismo |
 | **Isotipo en una sola tinta** | Como en el dossier: en Weddings no va el punto rojo |
 | **Precios a la vista con calculadora** | Lo más valorado de la categoría en Behance ordena la oferta como un catálogo; el wireframe de referencia pide transparencia |
 | **Condiciones en preguntas frecuentes** | Lo sensible (reserva, pagos, cancelación, horas, entrega, desplazamiento) no va en titulares |

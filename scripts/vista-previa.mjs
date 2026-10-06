@@ -17,6 +17,7 @@ fs.mkdirSync(out, { recursive: true });
 
 const pages = [
   'index.html', '404.html', 'tarifas/index.html', 'historias/index.html',
+  'historias/video/index.html', 'historias/fotografia/index.html',
   'aviso-legal/index.html', 'privacidad/index.html', 'cookies/index.html',
 ];
 
