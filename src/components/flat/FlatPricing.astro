@@ -1,33 +1,47 @@
 ---
 /**
- * Tarifas como carpetas apiladas (referencia: details.so, tarjetas que asoman unas detrás
- * de otras). Cada servicio es una carpeta con su pestaña: Fotografía delante, Vídeo y
- * Foto + vídeo detrás. Al pulsar una pestaña, esa carpeta pasa al frente y las demás se
- * quedan detrás, asomando.
+ * Tarifas como una caja de carpetas (prototipo elegido por el usuario en la revisión 4:
+ * «pila oscura», referencia details.so). Tres carpetas con la pestaña en su tercio
+ * (Fotografía a la izquierda, Vídeo en el centro, Foto + vídeo a la derecha); cada pestaña
+ * se une al cuerpo con hombros cóncavos y enseña su precio. Las de detrás asoman más
+ * arriba, más estrechas y en grises medios.
  *
- * Dentro de cada carpeta: el servicio y su precio (en dos tonos), lo que incluye y, a la
- * derecha, las imágenes de ejemplo (home) o el dossier de ese servicio (/tarifas; con
- * foto + vídeo, los dos).
+ * Al elegir una, se saca de la caja: sube por detrás, pasa delante en lo alto y se posa;
+ * después su contenido sale de dentro. Con movimiento reducido, el cambio es inmediato.
+ * Las tres comparten una celda: la más alta marca la altura y la página no salta.
+ *
+ * Dentro: a la izquierda, el servicio, el precio, lo que incluye; a la derecha, imágenes
+ * de ejemplo (home) o el dossier de ese servicio como hojas impresas (/tarifas; foto →
+ * fotografía, vídeo → vídeo, foto + vídeo → los dos). Las hojas son capturas de los PDF
+ * que genera `npm run dossieres` (src/assets/media/dossier).
  *
  * Dos modos:
  * · «compact» (home): «Consultar fecha» (ventana emergente) y «Calcular con extras».
  * · «full» (/tarifas): debajo, invitados y extras, y un resumen con el total que abre la
  *   misma ventana emergente con la selección.
  *
- * Sin JS: las pestañas son radios y la carpeta elegida se ve delante igualmente.
+ * Sin JS: las pestañas son radios y la carpeta elegida pasa delante con :has().
  * Los precios salen de src/data/pricing.ts.
  */
-import { Picture } from 'astro:assets';
+import { Image } from 'astro:assets';
 import FlatEm from './FlatEm.astro';
 import FlatDateDialog from './FlatDateDialog.astro';
 import { crewRule, euros, extras, groupNames, guestOptions, services, terms, type Group } from '../../data/pricing';
 import { dossiers } from '../../data/dossiers';
 import { pricingIntro } from '../../data/copy';
-import still from '../../assets/media/provisional/fotograma-novia-buganvilla.jpg';
-import sheet1 from '../../assets/media/provisional/hoja/foto-01.jpg';
-import sheet2 from '../../assets/media/provisional/hoja/foto-02.jpg';
-import sheet3 from '../../assets/media/provisional/hoja/foto-03.jpg';
-import sheet4 from '../../assets/media/provisional/hoja/foto-04.jpg';
+import kiss from '../../assets/media/provisional/fotograma-beso-chaqueta-charra.jpg';
+import smile from '../../assets/media/provisional/fotograma-novia-sonrisa.jpg';
+import hands from '../../assets/media/provisional/fotograma-manos-tatuaje.jpg';
+import photo1 from '../../assets/media/provisional/hoja/foto-01.jpg';
+import photo2 from '../../assets/media/provisional/hoja/foto-02.jpg';
+import photo3 from '../../assets/media/provisional/hoja/foto-03.jpg';
+import photo4 from '../../assets/media/provisional/hoja/foto-04.jpg';
+import photo5 from '../../assets/media/provisional/hoja/foto-05.jpg';
+import photo6 from '../../assets/media/provisional/hoja/foto-06.jpg';
+import fotoCover from '../../assets/media/dossier/foto-portada.png';
+import fotoTarifa from '../../assets/media/dossier/foto-tarifa.png';
+import videoCover from '../../assets/media/dossier/video-portada.png';
+import videoTarifa from '../../assets/media/dossier/video-tarifa.png';
 
 interface Props {
   mode?: 'compact' | 'full';
@@ -39,8 +53,13 @@ interface Props {
 const { mode = 'compact', id = 'tarifas', heading = true } = Astro.props;
 const full = mode === 'full';
 const start = services[0];
-const sheet = [sheet1, sheet2, sheet3, sheet4];
 const groups: Group[] = ['video', 'foto'];
+
+// Dossieres con sus dos hojas de muestra (portada delante, tarifa detrás).
+const docs = {
+  foto: { ...dossiers.foto, cover: fotoCover, inner: fotoTarifa },
+  video: { ...dossiers.video, cover: videoCover, inner: videoTarifa },
+};
 
 const data = {
   services: services.map(({ id, name, price, groups }) => ({ id, name, price, groups })),
@@ -50,7 +69,8 @@ const data = {
 
 const fullHref = (service: string) => `/tarifas?servicio=${service}#calculadora`;
 const serviceDossiers = (serviceId: string) =>
-  serviceId === 'foto' ? [dossiers.foto] : serviceId === 'video' ? [dossiers.video] : [dossiers.foto, dossiers.video];
+  serviceId === 'foto' ? [docs.foto] : serviceId === 'video' ? [docs.video] : [docs.foto, docs.video];
+const img = { formats: ['webp'] as const, loading: 'lazy' as const, alt: '' };
 ---
 
 <section id={id} class:list={['sec', 'fprice', `fprice--${mode}`]} aria-labelledby={`${id}-title`}>
@@ -70,81 +90,92 @@ const serviceDossiers = (serviceId: string) =>
     <form class="fprice__form" data-pricing data-mode={mode} action="#" method="get">
       <script type="application/json" data-pricing-data set:html={JSON.stringify(data)} />
 
-      <!-- Las carpetas -->
-      <fieldset class="ffolders" data-folders>
+      <!-- La caja de carpetas -->
+      <fieldset class="fx" data-stack data-mode={mode}>
         <legend class="visually-hidden">Servicio</legend>
         {
           services.map((service, i) => (
-            <div class="ffolder" data-folder={service.id} data-depth={i === 0 ? 0 : i} style={`--i: ${i}`}>
-              <label class="ffolder__tab">
+            <div class="fx-folder" data-folder={service.id} data-depth={i} style={`--i: ${i}; --d: ${i}`}>
+              <label class="fx-tab">
                 <input type="radio" name="servicio" value={service.id} checked={service.id === start.id} />
-                <span>{service.name}</span>
+                <span class="fx-tab__name">{service.name}</span>
+                <span class="fx-tab__price">{euros(service.price)} €</span>
               </label>
 
-              <div class="ffolder__body" data-folder-body>
-                <div class="ffolder__info">
-                  <p class="label ffolder__label">Tarifa</p>
-                  <h3 class="ffolder__name">
+              <div class="fx-body" data-body inert={i !== 0 ? true : undefined}>
+                <div class="fx-info">
+                  <p class="label fx-label r" style="--k: 0">Precio cerrado</p>
+                  <h3 class="fx-name r" style="--k: 1">
                     <span>{service.name}</span>
-                    <span class="ffolder__price">{euros(service.price)} €</span>
+                    <span class="fx-price">{euros(service.price)} €</span>
                   </h3>
-                  <ul class="ffolder__list" role="list">
+                  {full && <p class="fx-summary r" style="--k: 2">{service.summary}</p>}
+                  <ul class="fx-list r" style={`--k: ${full ? 3 : 2}`} role="list">
                     <li>{service.crew} toda la jornada</li>
                     {service.deliver.map((item) => (
                       <li>{item}</li>
                     ))}
                     <li>Entrega en {terms.deliveryMonths} meses como máximo</li>
                   </ul>
-                  {!full && (
-                    <div class="ffolder__actions">
+                  {full ? (
+                    <p class="fx-next r" style="--k: 4">Debajo, invitados y extras: el total cambia al momento.</p>
+                  ) : (
+                    <div class="fx-actions r" style="--k: 3">
                       <button class="btn btn--light" type="button" data-open-dialog="date-dialog">
                         Consultar fecha
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
                       </button>
-                      <a class="btn ffolder__ghost" href={fullHref(service.id)}>Calcular con extras</a>
+                      <a class="btn btn--glass" href={fullHref(service.id)}>Calcular con extras</a>
                     </div>
                   )}
                 </div>
 
-                <div class:list={['ffolder__media', `ffolder__media--${service.id}`]}>
-                  {full ? (
-                    <ul class="ffolder__dossiers" role="list">
-                      {serviceDossiers(service.id).map((dossier) => (
-                        <li>
-                          <a class="fdoc" href={dossier.href} download>
-                            <span class="fdoc__sheet" aria-hidden="true">
-                              <span>PDF</span>
-                              <i /><i /><i />
+                {full ? (
+                  <div class:list={['fx-tray', { 'fx-tray--pair': service.id === 'pack' }]}>
+                    <p class="label fx-tray__label r" style="--k: 1">{service.id === 'pack' ? 'Los dos dossieres · vista previa' : 'El dossier · vista previa'}</p>
+                    <div class="fx-tray__docs">
+                      {serviceDossiers(service.id).map((doc, k) => (
+                        <figure class:list={['fx-doc', { 'fx-doc--pair': service.id === 'pack' }]} style={`--k: ${k + 1}`}>
+                          <div class="fx-sheets" aria-hidden="true">
+                            <Image class="fx-sheet fx-sheet--inner" src={doc.inner} widths={[420, 840]} sizes="(min-width: 900px) 24vw, 70vw" {...img} />
+                            <Image class="fx-sheet fx-sheet--cover" src={doc.cover} widths={[420, 840]} sizes="(min-width: 900px) 24vw, 70vw" {...img} />
+                          </div>
+                          <figcaption class="fx-doc__foot">
+                            <span class="fx-doc__text">
+                              <strong>{doc.title}</strong>
+                              <span>PDF · {doc.contents}</span>
                             </span>
-                            <span class="fdoc__text">
-                              <strong>{dossier.title}</strong>
-                              <span>{dossier.contents}</span>
-                            </span>
-                            <span class="fdoc__cta">
-                              Descargar
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6 10l6 6 6-6M5 20h14" /></svg>
-                            </span>
-                          </a>
-                        </li>
+                            <a class="btn btn--light fx-doc__btn" href={doc.href} download>
+                              {service.id === 'pack' ? 'Descargar' : 'Descargar dossier'}
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
+                            </a>
+                          </figcaption>
+                        </figure>
                       ))}
-                    </ul>
-                  ) : (
-                    <>
-                      {service.id !== 'video' && (
-                        <div class="ffolder__sheet">
-                          {sheet.map((src) => (
-                            <Picture src={src} formats={['avif', 'webp']} widths={[240, 480]} sizes="(min-width: 1024px) 14vw, 40vw" alt="" loading="lazy" />
-                          ))}
-                        </div>
-                      )}
-                      {service.id !== 'foto' && (
-                        <div class="ffolder__film">
-                          <Picture src={still} formats={['avif', 'webp']} widths={[640, 1000, 1400]} sizes="(min-width: 1024px) 40vw, 90vw" alt="" loading="lazy" />
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
+                    </div>
+                  </div>
+                ) : service.id === 'foto' ? (
+                  <div class="fx-media fx-media--foto r" style="--k: 1">
+                    <Image class="fx-ph fx-ph--a" src={photo1} widths={[480, 900]} sizes="(min-width: 900px) 34vw, 60vw" {...img} />
+                    <Image class="fx-ph fx-ph--b" src={photo2} widths={[240, 480]} sizes="(min-width: 900px) 17vw, 30vw" {...img} />
+                    <Image class="fx-ph fx-ph--c" src={photo4} widths={[240, 480]} sizes="(min-width: 900px) 17vw, 30vw" {...img} />
+                    <Image class="fx-ph fx-ph--d" src={photo5} widths={[480, 900]} sizes="(min-width: 900px) 34vw, 60vw" {...img} />
+                  </div>
+                ) : service.id === 'video' ? (
+                  <div class="fx-media fx-media--video r" style="--k: 1">
+                    <Image class="fx-still" src={kiss} widths={[640, 1100]} sizes="(min-width: 900px) 46vw, 92vw" {...img} />
+                    <Image class="fx-still" src={smile} widths={[640, 1100]} sizes="(min-width: 900px) 46vw, 92vw" {...img} />
+                  </div>
+                ) : (
+                  <div class="fx-media fx-media--pack r" style="--k: 1">
+                    <Image class="fx-still" src={hands} widths={[640, 1100]} sizes="(min-width: 900px) 46vw, 92vw" {...img} />
+                    <div class="fx-row">
+                      <Image class="fx-ph" src={photo2} widths={[240, 480]} sizes="(min-width: 900px) 12vw, 25vw" {...img} />
+                      <Image class="fx-ph" src={photo3} widths={[480, 900]} sizes="(min-width: 900px) 22vw, 45vw" {...img} />
+                      <Image class="fx-ph" src={photo6} widths={[240, 480]} sizes="(min-width: 900px) 12vw, 25vw" {...img} />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))
@@ -299,6 +330,69 @@ const serviceDossiers = (serviceId: string) =>
     const wantedInput = wanted ? form.querySelector<HTMLInputElement>(`input[name="servicio"][value="${CSS.escape(wanted)}"]`) : null;
     if (wantedInput) wantedInput.checked = true;
 
+    // ── La caja de carpetas ───────────────────────────────────────
+    const stack = form.querySelector<HTMLElement>('[data-stack]');
+    const ids = folders.map((f) => f.dataset.folder ?? '');
+    const ease = 'cubic-bezier(.2,.7,.1,1)';
+    let shown = '';
+
+    // Sube por detrás de las demás, pasa delante en lo alto y se posa; las demás se
+    // recolocan por CSS.
+    const pull = (folder: HTMLElement, from: number) => {
+      if (!stack) return;
+      const css = getComputedStyle(stack);
+      const peek = parseFloat(css.getPropertyValue('--peek')) || 0;
+      const shrink = parseFloat(css.getPropertyValue('--shrink')) || 0;
+      const mobile = window.matchMedia('(max-width: 599px)').matches;
+      const y0 = -from * peek;
+      const s0 = 1 - from * shrink;
+      const top = y0 - (mobile ? 46 : 78);
+      // Solo se cancela un tirón anterior, nunca las transiciones de color recién empezadas
+      folder.getAnimations().forEach((a) => {
+        if (!(window.CSSTransition && a instanceof CSSTransition)) a.cancel();
+      });
+      const anim = folder.animate(
+        [
+          { offset: 0, transform: `translateY(${y0}px) scale(${s0})`, zIndex: 0, easing: 'cubic-bezier(.35,0,.25,1)' },
+          { offset: 0.36, transform: `translateY(${top}px) scale(${s0})`, zIndex: 0, easing: 'linear' },
+          { offset: 0.4, transform: `translateY(${top - 2}px) scale(${(s0 + 1) / 2})`, zIndex: 9, easing: ease },
+          { offset: 1, transform: 'translateY(0px) scale(1)', zIndex: 9 },
+        ],
+        { duration: mobile ? 900 : 1050 },
+      );
+      const done = () => folder.classList.remove('is-pulling');
+      anim.onfinish = done;
+      anim.oncancel = done;
+    };
+
+    const show = (id: string, animate: boolean) => {
+      const chosen = folders[ids.indexOf(id)];
+      if (!chosen || !stack) return;
+      const order = [id, ...ids.filter((x) => x !== id)];
+      const from = Number(chosen.dataset.depth);
+      const moving = animate && from !== 0 && !reduceMotion;
+      if (moving) {
+        stack.classList.add('is-switching');
+        chosen.classList.add('is-pulling');
+      }
+      folders.forEach((folder) => {
+        const depth = order.indexOf(folder.dataset.folder ?? '');
+        folder.dataset.depth = String(depth);
+        folder.style.setProperty('--d', String(depth));
+        const body = folder.querySelector<HTMLElement>('[data-body]');
+        if (body) body.inert = depth !== 0;
+      });
+      if (moving) {
+        window.clearTimeout(Number(stack.dataset.timer));
+        stack.dataset.timer = String(window.setTimeout(() => stack.classList.remove('is-switching'), 1200));
+        pull(chosen, from);
+      }
+      shown = id;
+    };
+
+    stack?.classList.add('is-live');
+    requestAnimationFrame(() => requestAnimationFrame(() => stack?.classList.add('is-ready')));
+
     const label = (extra: Data['extras'][number], service: Data['services'][number]) =>
       `${extra.name}${service.groups.length > 1 ? ` (${extra.group === 'video' ? 'vídeo' : 'foto'})` : ''}`;
 
@@ -306,14 +400,8 @@ const serviceDossiers = (serviceId: string) =>
       const serviceId = form.querySelector<HTMLInputElement>('input[name="servicio"]:checked')?.value ?? data.services[0].id;
       const service = data.services.find((s) => s.id === serviceId) ?? data.services[0];
 
-      // Carpetas: la elegida delante; las demás detrás, en su orden.
-      const order = [serviceId, ...folders.map((f) => f.dataset.folder ?? '').filter((id) => id !== serviceId)];
-      folders.forEach((folder) => {
-        const depth = order.indexOf(folder.dataset.folder ?? '');
-        folder.dataset.depth = String(depth);
-        const body = folder.querySelector<HTMLElement>('[data-folder-body]');
-        if (body) body.inert = depth !== 0;
-      });
+      // Carpetas: la elegida se saca de la caja y pasa delante.
+      if (serviceId !== shown) show(serviceId, shown !== '');
 
       // Invitados: se informa, nunca se marca nada por la persona.
       const guestInput = form.querySelector<HTMLInputElement>('input[name="invitados"]:checked');
@@ -411,206 +499,307 @@ const serviceDossiers = (serviceId: string) =>
 
   .fprice__form { display: grid; gap: clamp(32px, 4vw, 56px); }
 
-  /* ── Carpetas ───────────────────────────────────────────────── */
-  .ffolders {
-    --tab-h: 50px;
-    --peek: 14px;
-    --tab-step: clamp(104px, 21vw, 220px);
+  /* ── La caja de carpetas ───────────────────────────────────── */
+  /* El tono de cada carpeta es un color registrado: pestaña, hombros y cuerpo cambian a la vez */
+  @property --tone { syntax: '<color>'; inherits: true; initial-value: #131416; }
+  @property --fg2 { syntax: '<color>'; inherits: true; initial-value: rgba(255, 255, 255, 0.62); }
+
+  .fx {
+    --t0: #131416;
+    --t1: #393C41;
+    --t2: #66696F;
+    --ease: var(--f-ease-out);
+    --ease-in-out: cubic-bezier(0.45, 0, 0.2, 1);
+  }
+
+  /* ═══ The stack of folders ═══════════════════════════════════════
+     One grid cell, three folders on top of each other. The tallest
+     folder sets the height, so switching never moves the page. */
+  .fx {
+    --tab-h: 58px;          /* tab height */
+    --tab-w: clamp(210px, 25%, 330px);
+    --inset: 44px;          /* first/last tab distance from the body edge (>= card radius + shoulder - 4) */
+    --sh: 18px;             /* concave shoulder radius */
+    --tr: 18px;             /* tab top radius */
+    --r: 30px;              /* card radius */
+    --peek: 18px;           /* how much each folder behind peeks out */
+    --shrink: 0.026;        /* and how much narrower it is */
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
     margin: 0;
     padding: calc(var(--tab-h) + 2 * var(--peek)) 0 0;
     border: 0;
-    min-width: 0;
   }
 
-  .ffolder {
-    --folder: #17191C;
+  .fx-folder {
+    --d: 0;
+    --lift: 0px;
+    --tone: var(--t0);
+    --fg: #FFFFFF;
+    --fg2: rgba(255, 255, 255, 0.64);
     grid-area: 1 / 1;
     position: relative;
-    z-index: 3;
-    color: #FFFFFF;
-    transform-origin: 50% 0;
-    transition:
-      transform 760ms var(--f-ease-out),
-      filter 760ms var(--f-ease-out);
-  }
-
-  /* Detrás: un tono medio más claro, asomando por arriba y un poco más estrecha */
-  .ffolder[data-depth='1'] { --folder: #2E3136; z-index: 2; transform: translateY(calc(var(--peek) * -1)) scale(0.975); }
-  .ffolder[data-depth='2'] { --folder: #464A50; z-index: 1; transform: translateY(calc(var(--peek) * -2)) scale(0.95); }
-
-  /* Sin JS: la elegida delante (las demás, detrás a la misma altura) */
-  .ffolders:not(.is-live *) .ffolder:has(input:checked) { z-index: 4; }
-
-  .ffolder__tab {
-    position: absolute;
-    bottom: 100%;
-    left: calc(24px + var(--i) * var(--tab-step));
-    display: inline-flex;
-    align-items: center;
-    height: var(--tab-h);
-    padding-inline: 22px;
-    border-radius: 18px 18px 0 0;
-    background: var(--folder);
-    color: inherit;
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: background-color 760ms var(--f-ease-out), color var(--f-dur) var(--f-ease);
-  }
-
-  .ffolder[data-depth='1'] .ffolder__tab,
-  .ffolder[data-depth='2'] .ffolder__tab { color: rgba(255, 255, 255, 0.78); }
-  .ffolder[data-depth='1'] .ffolder__tab:hover,
-  .ffolder[data-depth='2'] .ffolder__tab:hover { color: #FFFFFF; }
-
-  .ffolder__tab input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-  .ffolder__tab:has(input:focus-visible) { outline: 2px solid #111111; outline-offset: 3px; }
-
-  .ffolder__body {
     display: grid;
-    gap: clamp(28px, 3vw, 48px);
-    height: 100%;
-    padding: clamp(24px, 3.4vw, 48px);
-    border-radius: var(--f-r-card);
-    background:
-      linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 45%),
-      var(--folder);
-    box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.06) inset, var(--f-shadow);
-    transition: background-color 760ms var(--f-ease-out);
+    z-index: calc(3 - var(--d));
+    color: var(--fg);
+    transform-origin: 50% 0;
+    transform: translateY(calc(var(--d) * var(--peek) * -1 - var(--lift))) scale(calc(1 - var(--d) * var(--shrink)));
+    filter: drop-shadow(0 -4px 10px rgba(17, 17, 17, 0.12));
+    transition:
+      transform 760ms var(--ease),
+      --tone 640ms var(--ease-in-out),
+      --fg2 640ms var(--ease-in-out);
   }
 
-  /* Las carpetas de detrás no ocupan sitio: la altura la marca la de delante */
-  .ffolder:not([data-depth='0']) .ffolder__body { position: absolute; inset: 0; overflow: hidden; }
+  .fx-folder[data-depth='1'] { --tone: var(--t1); --fg2: rgba(255, 255, 255, 0.8); }
+  .fx-folder[data-depth='2'] { --tone: var(--t2); --fg2: rgba(255, 255, 255, 0.86); }
 
-  /* El contenido de las carpetas de detrás no se ve; el de la de delante entra con un fundido */
-  .ffolder__body > * { transition: opacity 520ms var(--f-ease-out) 160ms, transform 700ms var(--f-ease-out) 120ms; }
-  .ffolder:not([data-depth='0']) .ffolder__body > * { opacity: 0; transform: translateY(10px); transition-delay: 0ms; }
-  .ffolders:not(.is-live *) .ffolder:not(:has(input:checked)) .ffolder__body > * { opacity: 0; }
+  /* The folders that stay behind wait until the pulled one comes over them, then settle back */
+  .fx.is-switching .fx-folder:not([data-depth='0']) { transition-delay: 340ms; }
 
-  .ffolder__info { display: grid; align-content: start; gap: 18px; }
-  .ffolder__label { color: rgba(255, 255, 255, 0.62); }
+  /* While a folder is being pulled out, the script drives its transform */
+  .fx-folder.is-pulling { transition: --tone 520ms var(--ease-in-out) 340ms, --fg2 520ms var(--ease-in-out) 340ms; }
 
-  /* Servicio y precio en dos tonos, como la referencia */
-  .ffolder__name {
+  /* Hovering a tab behind lifts that folder a touch, like a finger on the edge */
+  .fx.is-live .fx-folder:not([data-depth='0']):has(.fx-tab:hover) { --lift: 7px; }
+
+  /* ── Tab: same fill as the body, with concave shoulders ───────── */
+  .fx-tab {
+    position: absolute;
+    bottom: calc(100% - 1px);
+    left: calc(var(--inset) + var(--i) * (100% - 2 * var(--inset) - var(--tab-w)) / 2);
+    width: var(--tab-w);
+    height: calc(var(--tab-h) + 1px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 24px 1px;
+    border-radius: var(--tr) var(--tr) 0 0;
+    background: var(--tone);
+    color: var(--fg);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .fx-tab::before,
+  .fx-tab::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: calc(var(--sh) + 1px);
+    height: calc(var(--sh) + 1px);
+    pointer-events: none;
+  }
+
+  .fx-tab::before { right: calc(100% - 1px); background: radial-gradient(circle at 0 0, transparent calc(var(--sh) - 0.6px), var(--tone) var(--sh)); }
+  .fx-tab::after { left: calc(100% - 1px); background: radial-gradient(circle at 100% 0, transparent calc(var(--sh) - 0.6px), var(--tone) var(--sh)); }
+
+  .fx-tab input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .fx-tab:has(input:focus-visible) { outline: 2px solid var(--fg); outline-offset: -8px; }
+
+  .fx-tab__name { font-size: 16px; font-weight: 600; letter-spacing: -0.005em; white-space: nowrap; }
+  .fx-tab__price { color: var(--fg2); font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* ── Body ─────────────────────────────────────────────────────── */
+  .fx-body {
+    position: relative;
+    display: grid;
+    min-width: 0;
+    border-radius: var(--r);
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.2) 100%),
+      var(--tone);
+    color: var(--fg);
+  }
+
+  .fx-folder[data-depth='0'] .fx-body { box-shadow: 0 50px 80px -50px rgba(17, 17, 17, 0.55); }
+
+  .fx-info { display: flex; flex-direction: column; gap: 22px; min-width: 0; padding: clamp(28px, 3.8vw, 56px); }
+  .fx-label { color: var(--fg2); }
+
+  .fx-name {
     display: grid;
     font-family: var(--font-display);
-    font-size: clamp(40px, 5vw, 76px);
+    font-size: clamp(42px, 4.6vw, 70px);
     font-weight: 700;
     line-height: 0.98;
     letter-spacing: -0.04em;
   }
 
-  .ffolder__price { color: #9A9A96; }
+  .fx-price { color: #8F8F8B; }
+  .fx-summary { max-width: 46ch; color: rgba(255, 255, 255, 0.72); font-size: 17px; line-height: 1.55; }
 
-  .ffolder__list { display: grid; }
-
-  .ffolder__list li {
+  .fx-list { display: grid; }
+  .fx-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
     padding-block: 11px;
-    border-top: var(--f-hair) solid rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.88);
-    font-size: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 17px;
     line-height: 1.4;
   }
+  .fx-list li::before { content: ''; flex: none; width: 5px; height: 5px; border-radius: 50%; background: rgba(255, 255, 255, 0.45); transform: translateY(-3px); }
 
-  .ffolder__actions { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 6px; }
+  .fx-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; padding-top: 8px; }
+  .fx-next { margin-top: auto; color: rgba(255, 255, 255, 0.6); font-size: 15px; }
 
-  .ffolder__ghost {
-    border-color: rgba(255, 255, 255, 0.32);
-    background: rgba(255, 255, 255, 0.06);
-    color: #FFFFFF;
-  }
+  /* ── Home: sample images fill the right half ──────────────────── */
+  .fx-media { display: grid; gap: 10px; min-width: 0; padding: 12px 12px 12px 0; }
+  .fx-media :global(img) { width: 100%; height: 100%; min-height: 0; object-fit: cover; border-radius: 18px; background: rgba(255, 255, 255, 0.06); }
+  /* Mosaic images take the cell's size, never set it */
+  .fx-media--foto :global(img), .fx-row :global(img) { contain: size; }
 
-  .ffolder__ghost:hover { background: rgba(255, 255, 255, 0.14); }
+  .fx-media--foto { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); min-height: 560px; }
+  .fx-media :global(.fx-ph--a) { grid-column: 1 / 3; }
+  .fx-media :global(.fx-ph--b) { grid-column: 3; }
+  .fx-media :global(.fx-ph--c) { grid-column: 1; }
+  .fx-media :global(.fx-ph--d) { grid-column: 2 / 4; }
 
-  /* Imágenes de ejemplo */
-  .ffolder__media { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-content: center; min-width: 0; }
+  .fx-media--video { grid-template-rows: auto auto; align-content: center; }
+  .fx-media :global(.fx-still) { height: auto; aspect-ratio: 2.39 / 1; }
 
-  .ffolder__sheet {
+  .fx-media--pack { grid-template-rows: auto minmax(0, 1fr); }
+  .fx-row { display: grid; grid-template-columns: 0.75fr 1.5fr 0.75fr; gap: 10px; min-height: 250px; }
+
+  /* ── Tarifas: the dossier fills the right half ────────────────── */
+  .fx-tray {
+    position: relative;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: auto minmax(0, 1fr);
     gap: 8px;
-  }
-
-  .ffolder__sheet :global(picture),
-  .ffolder__sheet :global(img) {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 3 / 4;
-    object-fit: cover;
-    border-radius: 12px;
-  }
-
-  .ffolder__film :global(picture),
-  .ffolder__film :global(img) {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 2.39 / 1;
-    object-fit: cover;
-    border-radius: 14px;
-  }
-
-  /* Dossieres (en /tarifas, en lugar de las imágenes) */
-  .ffolder__dossiers { display: grid; gap: 12px; }
-
-  .fdoc {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 18px;
-    padding: 16px 18px;
-    border: var(--f-hair) solid rgba(255, 255, 255, 0.16);
+    min-width: 0;
+    min-height: 560px;
+    margin: 12px 12px 12px 0;
+    padding: 24px 28px 28px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
     border-radius: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    color: #FFFFFF;
-    text-decoration: none;
-    transition: background-color var(--f-dur) var(--f-ease), border-color var(--f-dur) var(--f-ease);
+    background:
+      radial-gradient(80% 60% at 55% 34%, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 70%),
+      linear-gradient(180deg, #24262A, #1A1B1E);
+    overflow: hidden;
   }
 
-  .fdoc:hover { border-color: rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.1); }
+  .fx-tray__label { color: rgba(255, 255, 255, 0.6); }
+  .fx-tray__docs { display: grid; align-content: center; gap: 28px; min-width: 0; }
+  .fx-tray--pair .fx-tray__docs { grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: center; }
+  @media (min-width: 600px) {
+    .fx-tray--pair .fx-tray__docs { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+    .fx-doc--pair { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); align-items: center; gap: 34px; }
+    .fx-doc--pair .fx-sheets { width: 92%; margin: 26px 0 8px 6%; }
+    .fx-doc--pair + .fx-doc--pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr); }
+    .fx-doc--pair + .fx-doc--pair .fx-sheets { order: 2; margin: 26px 6% 8px 2%; }
+    .fx-doc--pair + .fx-doc--pair :global(.fx-sheet--inner) { transform: translate(9%, -13%) rotate(3deg); }
+    .fx-doc--pair + .fx-doc--pair :global(.fx-sheet--cover) { transform: translate(-7%, 6%) rotate(-1.4deg); }
+    .fx-doc--pair + .fx-doc--pair .fx-doc__foot { align-items: flex-end; text-align: right; }
+  }
 
-  .fdoc__sheet {
-    display: grid;
-    align-content: space-between;
-    gap: 3px;
-    width: 72px;
-    aspect-ratio: 297 / 210;
-    padding: 7px 8px;
-    border-radius: 6px;
+  .fx-doc { display: grid; gap: 28px; min-width: 0; }
+  .fx-sheets { position: relative; width: min(100%, 470px); aspect-ratio: 297 / 210; margin: 28px auto 6px; }
+  .fx-doc--pair .fx-sheets { width: 86%; margin-top: 34px; }
+
+  :global(.fx-sheet) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
     background: #FFFFFF;
-    color: #111111;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    transition: transform 520ms var(--f-ease-out);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 26px 50px -18px rgba(0, 0, 0, 0.7);
   }
 
-  .fdoc:hover .fdoc__sheet { transform: rotate(-3deg) translateY(-2px); }
-  .fdoc__sheet i { display: block; height: 2px; border-radius: 2px; background: rgba(17, 17, 17, 0.3); }
-  .fdoc__sheet i:first-of-type { width: 70%; height: 4px; background: #111111; }
+  /* Open: the inner page sits up and to the right, the cover in front */
+  :global(.fx-sheet--inner) { transform: translate(-9%, -13%) rotate(-3deg); }
+  :global(.fx-sheet--cover) { transform: translate(7%, 6%) rotate(1.4deg); }
 
-  .fdoc__text { display: grid; gap: 2px; min-width: 0; }
-  .fdoc__text strong { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
-  .fdoc__text span { color: rgba(255, 255, 255, 0.66); font-size: 14px; }
+  .fx-doc__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 20px; }
+  .fx-doc__text { display: grid; gap: 2px; }
+  .fx-doc__text strong { font-family: var(--font-display); font-size: 21px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+  .fx-doc__text span { color: rgba(255, 255, 255, 0.64); font-size: 14px; }
+  .fx-doc--pair .fx-doc__foot { flex-direction: column; align-items: flex-start; }
+  .fx-doc--pair .fx-doc__btn { min-height: 46px; padding-inline: 20px; font-size: 15px; }
 
-  .fdoc__cta { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
-  .fdoc__cta svg { width: 17px; height: 17px; }
+  /* ── Content reveal: what is inside comes out after the folder lands ── */
+  .r { transition: opacity 520ms var(--ease) calc(500ms + var(--k, 0) * 80ms), transform 900ms var(--ease) calc(500ms + var(--k, 0) * 80ms); }
+  .fx-media.r, .fx-tray__docs .fx-doc { transition-delay: calc(560ms + var(--k, 0) * 90ms); }
+  :global(.fx-sheet) { transition: transform 1000ms var(--ease) calc(560ms + var(--k, 1) * 110ms), opacity 400ms var(--ease) calc(560ms + var(--k, 1) * 110ms); }
+  :global(.fx-sheet--cover) { transition-delay: calc(660ms + var(--k, 1) * 110ms); }
+  .fx-doc__foot { transition: opacity 500ms var(--ease) calc(800ms + var(--k, 1) * 90ms); }
 
+  .fx.is-live .fx-folder:not([data-depth='0']) .r,
+  .fx:not(.is-live) .fx-folder:not(:has(input:checked)) .r { opacity: 0; transform: translateY(16px); transition-duration: 220ms; transition-delay: 0ms; }
+  /* While switching, what was in front stays put until the pulled folder covers it */
+  .fx.is-switching .fx-folder:not([data-depth='0']) .r { transition-delay: 380ms; }
+  .fx.is-live .fx-folder:not([data-depth='0']) .fx-tray { opacity: 0; transition: opacity 220ms var(--ease) 0ms; }
+  .fx.is-switching .fx-folder:not([data-depth='0']) .fx-tray,
+  .fx.is-switching .fx-folder:not([data-depth='0']) :global(.fx-sheet),
+  .fx.is-switching .fx-folder:not([data-depth='0']) .fx-doc__foot { transition-delay: 380ms; }
+  .fx-tray { transition: opacity 500ms var(--ease) 460ms; }
+  .fx.is-live .fx-folder:not([data-depth='0']) .fx-media.r { transform: translateY(40px); }
+  .fx.is-live .fx-folder:not([data-depth='0']) :global(.fx-sheet) { opacity: 0; transform: translateY(70px) rotate(0deg); transition-duration: 300ms; transition-delay: 40ms; }
+  .fx.is-live .fx-folder:not([data-depth='0']) .fx-doc__foot { opacity: 0; transition-duration: 160ms; transition-delay: 0ms; }
+
+  /* No JS: the checked folder simply comes to the front */
+  .fx:not(.is-live) .fx-folder:has(input:checked) { z-index: 5; --d: 0 !important; --tone: var(--t0); }
+
+  /* Before the first paint nothing animates */
+  .fx:not(.is-ready) *, .fx:not(.is-ready) { transition: none !important; }
+
+  /* ── Layout ───────────────────────────────────────────────────── */
   @media (min-width: 900px) {
-    .ffolder__body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: center; }
+    .fx-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.14fr); }
+    .fx[data-mode='full'] .fx-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); }
   }
 
-  @media (max-width: 559px) {
-    .ffolders { --tab-h: 44px; --peek: 10px; --tab-step: 30%; }
-    .ffolder__tab { left: calc(12px + var(--i) * var(--tab-step)); padding-inline: 13px; font-size: 13.5px; border-radius: 14px 14px 0 0; }
-    .ffolder__sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .fdoc { grid-template-columns: auto 1fr; }
-    .fdoc__cta { grid-column: 1 / -1; }
+  @media (max-width: 899px) {
+    .fx-body { grid-template-rows: auto minmax(0, 1fr); }
+    .fx-media { padding: 0 10px 10px; }
+    .fx-media--foto { grid-template-rows: repeat(2, minmax(150px, 1fr)) !important; }
+    .fx-media--video { align-content: end; }
+    .fx-row { min-height: 140px; }
+    .fx-actions { margin-top: 4px; }
+    .fx-media :global(img) { border-radius: 14px; }
+    .fx-media--foto { min-height: 0; grid-template-rows: repeat(2, 150px); }
+    .fx-tray { min-height: 0; margin: 0 10px 10px; padding: 20px 18px 22px; }
+    .fx-info { gap: 18px; }
+  }
+
+  @media (max-width: 599px) {
+    .fx {
+      --tab-h: 56px;
+      --inset: 26px;
+      --sh: 11px;
+      --tr: 14px;
+      --r: 22px;
+      --peek: 10px;
+      --shrink: 0.03;
+      --tab-w: calc((100% - 2 * var(--inset) - 2 * 15px) / 3);
+    }
+    .fx-tab { flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 0 6px 1px 11px; }
+    .fx-tab__name { font-size: 14px; font-stretch: 92%; }
+    .fx-tab__price { font-size: 12.5px; }
+    .fx-info { padding: 26px 22px 24px; }
+    .fx-name { font-size: 44px; }
+    .fx-list li { font-size: 16.5px; padding-block: 10px; }
+    .fx-actions .btn { flex: 1 1 100%; }
+    .fx-row { grid-template-columns: 0.8fr 1.4fr 0.8fr; }
+    .fx-doc { gap: 22px; }
+    .fx-sheets { width: 84%; margin-top: 30px; }
+    .fx-tray--pair .fx-tray__docs { gap: 14px; }
+    .fx-doc--pair { gap: 18px; }
+    .fx-doc--pair .fx-sheets { width: 82%; margin-top: 22px; }
+    .fx-doc--pair .fx-doc__text strong { font-size: 16px; }
+    .fx-doc--pair .fx-doc__text span { font-size: 12.5px; }
+    .fx-doc--pair .fx-doc__btn { width: 100%; min-height: 44px; padding-inline: 14px; font-size: 14px; }
+    .fx-doc__text strong { font-size: 19px; }
+    .head { margin-bottom: 64px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fx *, .fx-folder, :global(.fx-sheet) { transition: none !important; animation: none !important; }
   }
 
   /* ── Personalizar (tarifas) ─────────────────────────────────── */
