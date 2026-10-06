@@ -2,7 +2,8 @@
 /**
  * Dossier imprimible (A4 apaisado), generado desde los mismos datos que la web. Sustituye
  * a los PDF hechos a mano: un precio cambia en pricing.ts y cambia en la web y en el PDF.
- * `npm run dossieres` imprime /dossier/fotografia y /dossier/video en public/dossieres.
+ * `npm run dossieres` imprime /dossier/fotografia y /dossier/video en public/dossieres y
+ * captura la portada y la tarifa (#portada, #tarifa) para las vistas previas de /tarifas.
  *
  * Uno por servicio, como los dossieres originales para parejas: en /tarifas, la carpeta de
  * Fotografía ofrece el de fotografía; la de Vídeo, el de vídeo; la de Foto + vídeo, los dos.
@@ -47,7 +48,7 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
 
 <div class="dossier">
   <!-- Portada -->
-  <section class="sheet sheet--cover">
+  <section id="portada" class="sheet sheet--cover">
     <img class="cover__img" src={cover.src} alt="" />
     <div class="cover__band">
       <FlatWordmark tone="paper" />
@@ -80,7 +81,7 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
   </section>
 
   <!-- Tarifa -->
-  <section class="sheet">
+  <section id="tarifa" class="sheet">
     <header class="sheet__head"><span>Tarifa</span><span>{n('Tarifa')}</span></header>
     <div class="title-row">
       <h2 class="big">Tarifa</h2>
@@ -111,7 +112,7 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
   </section>
 
   <!-- Extras -->
-  <section class="sheet">
+  <section id="extras" class="sheet">
     <header class="sheet__head"><span>Extras</span><span>{n('Extras')}</span></header>
     <div class="title-row">
       <h2 class="big">Extras</h2>
@@ -353,6 +354,13 @@ const n = (name: string) => String(pages.indexOf(name) + 2).padStart(2, '0');
   .close__text { display: grid; align-content: center; gap: 10mm; padding: 16mm; }
   .close__text :global(.wordmark) { font-size: 28pt; }
   .close__data { display: grid; gap: 1mm; font-size: 10pt; opacity: 0.85; }
+
+  /* Captura de una sola hoja (/dossier/video/#tarifa): la usa `npm run dossieres` para las
+     vistas previas de /tarifas */
+  :global(html:has(.sheet:target)),
+  :global(body:has(.sheet:target)) { background: #FFFFFF; }
+  .dossier:has(.sheet:target) { display: block; padding: 0; }
+  .dossier:has(.sheet:target) .sheet:not(:target) { display: none; }
 
   @media print {
     :global(html), :global(body) { background: none; }

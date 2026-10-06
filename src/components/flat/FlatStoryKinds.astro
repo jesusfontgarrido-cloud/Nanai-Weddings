@@ -1,0 +1,114 @@
+---
+/**
+ * /historias: el selector. Dos puertas del mismo tamaño, vídeo (tráilers) y fotografía
+ * (galerías por momentos), cada una con su imagen. También se llega directo desde el
+ * desplegable «Historias» de la barra.
+ */
+import { Picture } from 'astro:assets';
+import { storyKinds } from '../../data/copy';
+import { works } from '../../data/stories';
+import kiss from '../../assets/media/provisional/fotograma-beso-chaqueta-charra.jpg';
+import bougainvillea from '../../assets/media/provisional/fotograma-novia-buganvilla.jpg';
+
+const doors = [
+  { kind: 'video' as const, name: 'Tráilers', label: 'Vídeo', cta: 'Ver tráilers', image: kiss, focus: '42% 40%', alt: 'Fotograma: beso de los novios entre burbujas' },
+  { kind: 'foto' as const, name: 'Galerías', label: 'Fotografía', cta: 'Ver galerías', image: bougainvillea, focus: '62% 30%', alt: 'La novia, con capa blanca, sonríe junto a una buganvilla' },
+].map((door) => ({ ...door, href: storyKinds[door.kind].path, count: works.filter((work) => work.kind === door.kind).length }));
+---
+
+<section class="sec fkinds" aria-label="Elegid qué ver">
+  <div class="wrap">
+    <ul class="fkinds__list" role="list" data-stagger>
+      {
+        doors.map((door) => (
+          <li>
+            <a class="fkind" href={door.href}>
+              <Picture src={door.image} formats={['avif', 'webp']} widths={[640, 1000, 1400]} sizes="(min-width: 900px) 46vw, 92vw" alt={door.alt} loading="eager" style={`object-position: ${door.focus}`} />
+              <span class="fkind__text">
+                <span class="label">{door.label}</span>
+                <span class="fkind__name">{door.name}</span>
+                <span class="btn btn--light btn--small fkind__cta" aria-hidden="true">
+                  {door.cta}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                </span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .fkinds { padding-top: 0; }
+
+  .fkinds__list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--f-gap);
+  }
+
+  .fkind {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    align-items: end;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: var(--f-r-card);
+    background: #1A1B1D;
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+
+  .fkind :global(picture),
+  .fkind :global(img) {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .fkind :global(img) { transition: transform 1400ms var(--f-ease-out); }
+
+  .fkind::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(to top, rgba(10, 10, 10, 0.62), rgba(10, 10, 10, 0.1) 55%, rgba(10, 10, 10, 0) 75%);
+  }
+
+  .fkind__text {
+    display: grid;
+    justify-items: start;
+    gap: 8px;
+    padding: clamp(22px, 3vw, 40px);
+  }
+
+  .fkind__text .label { color: rgba(255, 255, 255, 0.8); }
+
+  .fkind__name {
+    font-family: var(--font-display);
+    font-size: clamp(40px, 5vw, 80px);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+  }
+
+  .fkind__cta { margin-top: 10px; }
+
+  @media (hover: hover) {
+    .fkind:hover :global(img) { transform: scale(1.04); }
+    .fkinds__list:has(.fkind:hover) .fkind:not(:hover) :global(img) { filter: brightness(0.7) grayscale(0.3); }
+  }
+
+  .fkind :global(img) { transition: transform 1400ms var(--f-ease-out), filter 700ms var(--f-ease-out); }
+
+  @media (min-width: 760px) {
+    .fkinds__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>

@@ -2,20 +2,26 @@
 /**
  * Barra superior de cristal: una píldora blanca translúcida con desenfoque, flotando
  * (sobre el hero, más transparente; al bajar, más opaca y con sombra).
- * Logotipo a la izquierda, las páginas en el centro (la activa, con un punto debajo) y a
+ * Logotipo a la izquierda, las páginas en el centro (la activa, con un punto debajo;
+ * «Historias» despliega Vídeo y Fotografía al pulsar, no al pasar el ratón) y a
  * la derecha dos botones redondeados: «Profesionales» (el único dorado de la web; abre un
  * formulario corto, la página para profesionales va aparte, por enlace) y
  * «Consultar fecha» (negro; en móvil, «Hablemos»).
  * En móvil: «Menú» abre una hoja a pantalla completa con WhatsApp a mano.
  */
 import { site } from '../../data/site';
-import { proDialog } from '../../data/copy';
+import { proDialog, storyKinds } from '../../data/copy';
 import FlatWordmark from './FlatWordmark.astro';
 
 const links = [
   { href: '/', label: 'Inicio' },
   { href: '/historias', label: 'Historias' },
   { href: '/tarifas', label: 'Tarifas' },
+];
+
+const storyLinks = [
+  { href: storyKinds.video.path, label: storyKinds.video.nav, text: 'Tráilers de boda' },
+  { href: storyKinds.foto.path, label: storyKinds.foto.nav, text: 'Galerías por momentos' },
 ];
 
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
@@ -32,11 +38,31 @@ const cta = { href: path === '/' ? '#contacto' : '/#contacto', label: 'Consultar
     <nav class="fnav__links" aria-label="Principal">
       <ul role="list">
         {
-          links.map((link) => (
-            <li>
-              <a href={link.href} aria-current={current(link.href)}>{link.label}</a>
-            </li>
-          ))
+          links.map((link) =>
+            link.href === '/historias' ? (
+              <li>
+                <details class="fnav__drop" data-nav-drop>
+                  <summary class:list={['fnav__drop-btn', { 'is-current': current(link.href) }]}>
+                    {link.label}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+                  </summary>
+                  <div class="fnav__drop-panel">
+                    {storyLinks.map((item) => (
+                      <a class="fnav__drop-link" href={item.href} aria-current={current(item.href)}>
+                        <strong>{item.label}</strong>
+                        <span>{item.text}</span>
+                      </a>
+                    ))}
+                    <a class="fnav__drop-all" href="/historias" aria-current={path === '/historias' ? 'page' : undefined}>Todas las historias</a>
+                  </div>
+                </details>
+              </li>
+            ) : (
+              <li>
+                <a href={link.href} aria-current={current(link.href)}>{link.label}</a>
+              </li>
+            ),
+          )
         }
       </ul>
     </nav>
@@ -62,7 +88,14 @@ const cta = { href: path === '/' ? '#contacto' : '/#contacto', label: 'Consultar
       {
         links.map((link) => (
           <li>
-            <a href={link.href} aria-current={current(link.href)}>{link.label}</a>
+            <a href={link.href} aria-current={path === link.href ? 'page' : undefined}>{link.label}</a>
+            {link.href === '/historias' && (
+              <span class="fmenu__sub">
+                {storyLinks.map((item) => (
+                  <a class="chip" href={item.href} aria-current={current(item.href)}>{item.label}</a>
+                ))}
+              </span>
+            )}
           </li>
         ))
       }
@@ -87,6 +120,22 @@ const cta = { href: path === '/' ? '#contacto' : '/#contacto', label: 'Consultar
       } catch {
         // Navegador sin popover o menú ya cerrado.
       }
+    });
+  });
+
+  // Desplegable de Historias: uno abierto a la vez; se cierra al pulsar fuera o con Escape.
+  const drops = [...document.querySelectorAll<HTMLDetailsElement>('[data-nav-drop]')];
+  document.addEventListener('click', (event) => {
+    drops.forEach((drop) => {
+      if (drop.open && !drop.contains(event.target as Node)) drop.open = false;
+    });
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    drops.forEach((drop) => {
+      if (!drop.open) return;
+      drop.open = false;
+      drop.querySelector('summary')?.focus();
     });
   });
 
@@ -153,7 +202,7 @@ const cta = { href: path === '/' ? '#contacto' : '/#contacto', label: 'Consultar
     gap: 6px;
   }
 
-  .fnav__links a,
+  .fnav__links > ul > li > a,
   .fnav__pro,
   .fnav__cta,
   .fnav__menu {
@@ -163,7 +212,7 @@ const cta = { href: path === '/' ? '#contacto' : '/#contacto', label: 'Consultar
   }
 
   /* Enlaces: pastilla translúcida al pasar; la activa, con un punto debajo */
-  .fnav__links a {
+  .fnav__links > ul > li > a {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -175,9 +224,9 @@ const cta = { href: path === '/' ? '#contacto' : '/#contacto', label: 'Consultar
     transition: color var(--f-dur) var(--f-ease), background-color var(--f-dur) var(--f-ease);
   }
 
-  .fnav__links a:hover { background: rgba(17, 17, 17, 0.05); color: #111111; }
+  .fnav__links > ul > li > a:hover { background: rgba(17, 17, 17, 0.05); color: #111111; }
 
-  .fnav__links a::after {
+  .fnav__links > ul > li > a::after {
     content: '';
     position: absolute;
     left: 50%;
@@ -192,8 +241,97 @@ const cta = { href: path === '/' ? '#contacto' : '/#contacto', label: 'Consultar
     transition: transform 420ms var(--f-ease-out), opacity 420ms var(--f-ease-out);
   }
 
-  .fnav__links a[aria-current='page'] { color: #111111; font-weight: 600; }
-  .fnav__links a[aria-current='page']::after { opacity: 1; transform: none; }
+  .fnav__links > ul > li > a[aria-current='page'] { color: #111111; font-weight: 600; }
+  .fnav__links > ul > li > a[aria-current='page']::after { opacity: 1; transform: none; }
+
+  /* Desplegable de Historias (details/summary: funciona sin JS) */
+  .fnav__drop { position: relative; }
+
+  .fnav__drop-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding-inline: 16px 12px;
+    border-radius: var(--f-r);
+    color: #555555;
+    font-size: 14px;
+    font-weight: 500;
+    list-style: none;
+    cursor: pointer;
+    transition: color var(--f-dur) var(--f-ease), background-color var(--f-dur) var(--f-ease);
+  }
+
+  .fnav__drop-btn::-webkit-details-marker { display: none; }
+  .fnav__drop-btn:hover,
+  .fnav__drop[open] .fnav__drop-btn { background: rgba(17, 17, 17, 0.05); color: #111111; }
+  .fnav__drop-btn svg { width: 14px; height: 14px; transition: transform var(--f-dur) var(--f-ease); }
+  .fnav__drop[open] .fnav__drop-btn svg { transform: rotate(180deg); }
+  .fnav__drop-btn.is-current { color: #111111; font-weight: 600; }
+
+  .fnav__drop-btn.is-current::after {
+    content: '';
+    position: absolute;
+    left: calc(50% - 6px);
+    bottom: 6px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .fnav__drop-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    display: grid;
+    gap: 4px;
+    width: 260px;
+    padding: 8px;
+    border: var(--f-hair) solid rgba(255, 255, 255, 0.7);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 18px 50px rgba(17, 17, 17, 0.14);
+    transform: translateX(-50%);
+    -webkit-backdrop-filter: var(--f-blur);
+    backdrop-filter: var(--f-blur);
+  }
+
+  html.motion .fnav__drop[open] .fnav__drop-panel { animation: fnav-drop 320ms var(--f-ease-out); }
+
+  @keyframes fnav-drop {
+    from { opacity: 0; transform: translate(-50%, -6px); }
+  }
+
+  .fnav__drop-link {
+    display: grid;
+    gap: 2px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    color: #111111;
+    text-decoration: none;
+    transition: background-color var(--f-dur) var(--f-ease);
+  }
+
+  .fnav__drop-link strong { font-size: 15px; font-weight: 600; }
+  .fnav__drop-link span { color: #6E6E6B; font-size: 13px; }
+  .fnav__drop-link:hover,
+  .fnav__drop-link[aria-current='page'] { background: rgba(17, 17, 17, 0.05); }
+
+  .fnav__drop-all {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: 2px;
+    padding: 0 14px;
+    border-top: var(--f-hair) solid rgba(17, 17, 17, 0.08);
+    color: #555555;
+    font-size: 13px;
+    text-decoration: none;
+  }
+
+  .fnav__drop-all:hover { color: #111111; }
 
   .fnav__actions {
     display: flex;
@@ -298,7 +436,7 @@ const cta = { href: path === '/' ? '#contacto' : '/#contacto', label: 'Consultar
     align-content: center;
   }
 
-  .fmenu__list a {
+  .fmenu__list > li > a {
     display: flex;
     align-items: center;
     gap: 14px;
@@ -312,7 +450,18 @@ const cta = { href: path === '/' ? '#contacto' : '/#contacto', label: 'Consultar
     text-decoration: none;
   }
 
-  .fmenu__list a[aria-current='page']::before {
+  .fmenu__sub {
+    display: flex;
+    gap: 8px;
+    padding: 0 4px 16px;
+    border-bottom: var(--f-hair) solid rgba(17, 17, 17, 0.08);
+  }
+
+  .fmenu__list li:has(.fmenu__sub) > a { border-bottom: 0; }
+  .fmenu__sub .chip { min-height: 44px; text-decoration: none; }
+  .fmenu__sub .chip[aria-current='page'] { border-color: transparent; background: #111111; color: #FFFFFF; }
+
+  .fmenu__list > li > a[aria-current='page']::before {
     content: '';
     width: 8px;
     height: 8px;

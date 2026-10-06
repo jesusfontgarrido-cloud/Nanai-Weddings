@@ -1,21 +1,28 @@
 ---
 /**
- * /historias: galería de muestra. Todos los trabajos pesan lo mismo: la portada en el
- * centro y, alrededor, cuatro fotogramas del propio trabajo. Debajo, una línea (pareja,
- * lugar, fecha). Al pulsar se abre el tráiler o la galería (FlatWorkViewer); con
- * /historias#<id> se abre al cargar (así enlazan las tarjetas de la home).
+ * Galería de muestra de un tipo (tráilers o galerías de fotos). Todos los trabajos pesan
+ * lo mismo: la portada en el centro y, alrededor, cuatro fotogramas del propio trabajo.
+ * Debajo, una línea (pareja, lugar, fecha). Al pulsar se abre el tráiler o la galería
+ * (FlatWorkViewer); con #<id> se abre al cargar (así enlazan las tarjetas de la home).
  */
 import { Picture } from 'astro:assets';
 import FlatPh from './FlatPh.astro';
 import FlatWorkViewer from './FlatWorkViewer.astro';
-import { kindNames, works } from '../../data/stories';
+import { kindNames, works, type Work } from '../../data/stories';
+
+interface Props {
+  kind: Work['kind'];
+}
+
+const { kind } = Astro.props;
+const list = works.filter((work) => work.kind === kind);
 ---
 
-<section class="sec fshow" aria-label="Trabajos">
+<section class="sec fshow" aria-label={kind === 'video' ? 'Tráilers' : 'Galerías de fotos'}>
   <div class="wrap">
     <ul class="fshow__list" role="list">
       {
-        works.map((work) => (
+        list.map((work) => (
           <li id={work.id} class="fwork">
             <div class="fwork__stage">
               {work.frames.map((frame, i) => (
@@ -29,7 +36,11 @@ import { kindNames, works } from '../../data/stories';
               ))}
 
               <a class="fwork__cover" href={`#${work.id}`} data-open-dialog={`ver-${work.id}`} data-reveal="focus" aria-label={`${work.kind === 'video' ? 'Ver el tráiler' : 'Ver la galería'}: ${work.couple}, ${work.place}`}>
-                <Picture src={work.cover.src} formats={['avif', 'webp']} widths={[640, 1000, 1400]} sizes="(min-width: 900px) 52vw, 92vw" alt="" loading="lazy" style={work.cover.focus ? `object-position: ${work.cover.focus}` : undefined} />
+                {work.cover ? (
+                  <Picture src={work.cover.src} formats={['avif', 'webp']} widths={[640, 1000, 1400]} sizes="(min-width: 900px) 52vw, 92vw" alt="" loading="lazy" style={work.cover.focus ? `object-position: ${work.cover.focus}` : undefined} />
+                ) : (
+                  <FlatPh what="Portada" format={work.kind === 'video' ? 'FOTOGRAMA · 16:9' : 'FOTO · 16:9'} ratio="auto" />
+                )}
                 <span class="fwork__open" aria-hidden="true">
                   {work.kind === 'video' ? (
                     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z" /></svg>
@@ -101,7 +112,8 @@ import { kindNames, works } from '../../data/stories';
   }
 
   .fwork__cover :global(picture),
-  .fwork__cover :global(img) {
+  .fwork__cover :global(img),
+  .fwork__cover :global(.ph) {
     position: absolute;
     inset: 0;
     width: 100%;

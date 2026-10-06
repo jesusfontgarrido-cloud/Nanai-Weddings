@@ -31,7 +31,8 @@ export interface Work {
   couple: string;
   place: string;
   date: string;
-  cover: Shot;
+  /** Portada (sin ella, hueco). */
+  cover?: Shot;
   /** Cuatro fotogramas del propio trabajo, alrededor de la portada. */
   frames: (Shot | null)[];
   /** Vídeo: id de Vimeo del tráiler. */
@@ -73,6 +74,21 @@ export const works: Work[] = [
     pending: true,
   },
   {
+    id: 'galeria-02',
+    kind: 'foto',
+    couple: '[Nombres de la pareja]',
+    place: '[Finca, ciudad]',
+    date: '[Fecha]',
+    frames: [null, null, null, null],
+    chapters: [
+      { name: 'Preparativos', photos: pendingPhotos(6) },
+      { name: 'Ceremonia', photos: pendingPhotos(6) },
+      { name: 'Retratos', photos: pendingPhotos(6) },
+      { name: 'La fiesta', photos: pendingPhotos(6) },
+    ],
+    pending: true,
+  },
+  {
     id: 'trailer-02',
     kind: 'video',
     couple: '[Nombres de la pareja]',
@@ -95,3 +111,9 @@ export const works: Work[] = [
 ];
 
 export const kindNames = { video: 'Tráiler', foto: 'Galería' } as const;
+
+/** Página de cada tipo: los tráilers en /historias/video y las galerías en /historias/fotografia. */
+export const kindPaths = { video: '/historias/video', foto: '/historias/fotografia' } as const;
+
+/** Enlace a un trabajo: su página y su ancla (que abre el visor al cargar). */
+export const workHref = (work: Work) => `${kindPaths[work.kind]}#${work.id}`;

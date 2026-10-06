@@ -286,6 +286,19 @@ body:has(> .flat) {
   color: var(--f-on-gold);
 }
 
+/* Dorado suave: SOLO para los botones que abren el formulario de profesionales */
+.flat .btn--pro {
+  border-color: rgba(191, 160, 106, 0.55);
+  background: linear-gradient(135deg, rgba(217, 195, 148, 0.34), rgba(191, 160, 106, 0.22));
+  color: #111111;
+}
+
+.flat .btn--pro:hover {
+  border-color: var(--f-gold);
+  background: linear-gradient(135deg, var(--f-gold-light), var(--f-gold));
+  box-shadow: 0 8px 22px rgba(191, 160, 106, 0.3);
+}
+
 .flat .btn--small { min-height: 42px; padding-inline: 18px; font-size: 14px; }
 
 /* Enlace con subrayado que se dibuja */

@@ -1,0 +1,20 @@
+---
+/** Historias en vídeo: los tráilers. Textos en copy.ts (storyKinds). */
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import FlatPageHeader from '../../components/flat/FlatPageHeader.astro';
+import FlatShowcase from '../../components/flat/FlatShowcase.astro';
+import FlatContact from '../../components/flat/FlatContact.astro';
+import { storyKinds } from '../../data/copy';
+
+const text = storyKinds.video;
+---
+
+<SiteLayout
+  title={`${text.seo} | Nanai Weddings`}
+  description={text.deck}
+  path={text.path}
+>
+  <FlatPageHeader label={text.nav} title={text.title} deck={text.deck} />
+  <FlatShowcase kind="video" />
+  <FlatContact />
+</SiteLayout>

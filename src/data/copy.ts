@@ -22,11 +22,28 @@ export const pricingIntro = {
   deck: 'Preferimos daros a escoger cómo se cuenta vuestra boda: precios cerrados y desglosados, sin sorpresas.',
 };
 
-/** Historias. Origen: nuevo. */
+/** Historias. Origen: nuevo. Hay tráilers (vídeo) y galerías (fotografía), cada uno en su página. */
 export const storiesIntro = {
   title: 'Bodas que hemos contado',
   deck: 'Cada boda, entera: de los preparativos a la pista.',
 };
+
+export const storyKinds = {
+  video: {
+    path: '/historias/video',
+    nav: 'Vídeo',
+    title: ['Bodas que', 'hemos *filmado*'] as [string, string],
+    deck: 'Tráilers de bodas reales. Pulsad en cualquiera para verlo.',
+    seo: 'Tráilers de boda en Sevilla',
+  },
+  foto: {
+    path: '/historias/fotografia',
+    nav: 'Fotografía',
+    title: ['Bodas que', 'hemos *fotografiado*'] as [string, string],
+    deck: 'Galerías de bodas reales, ordenadas por momentos. Pulsad en cualquiera para verla.',
+    seo: 'Fotografía de bodas en Sevilla',
+  },
+} as const;
 
 /**
  * Cómo trabajamos. Origen: dossier para planners («Estilo cinematográfico y dinámico»)
@@ -44,19 +61,26 @@ export const method = {
 };
 
 /**
- * Proceso. Origen: condiciones del dossier, ordenadas como un calendario. Redacción nueva.
- * Las cifras (reserva, kilómetros) viven en las preguntas, no aquí.
+ * Proceso. Origen: el usuario (revisión 4): tres pasos — reserva y necesidades, el día y la
+ * entrega. Las cifras (reserva, kilómetros) viven en las preguntas, no aquí.
  */
 export const process = {
   label: 'Del primer mensaje a la entrega',
   title: 'Así es trabajar con nosotros',
-  deck: 'Cinco pasos, de la primera consulta a la entrega.',
+  deck: 'Tres pasos, de la reserva a la entrega.',
   steps: [
-    { name: 'Hablamos', text: 'Nos contáis fecha y lugar, y os decimos si estamos libres.' },
-    { name: 'Reservamos', text: 'Con la reserva, la fecha es vuestra.' },
-    { name: 'Nos conocemos', text: 'Un café, vuestro cronograma y vuestras películas, series y artistas favoritos.' },
-    { name: 'El día', text: 'De los preparativos a una hora después del inicio de la barra libre.' },
-    { name: 'La entrega', text: 'Como mucho, cuatro meses después. En pendrive y con una revisión del vídeo.' },
+    {
+      name: 'Reservamos y nos conocemos',
+      text: 'Reservamos vuestra fecha y acordamos todo lo que necesitáis. Nos tomamos un café y nos contáis vuestro cronograma y vuestras películas, series y artistas favoritos.',
+    },
+    {
+      name: 'El día de la boda',
+      text: 'La retratamos respetando uno de los días más importantes de vuestra vida: de los preparativos a una hora después del inicio de la barra libre.',
+    },
+    {
+      name: 'La entrega',
+      text: 'Os entregamos todo el trabajo editado, como se merece, en un máximo de cuatro meses.',
+    },
   ],
 };
 
@@ -107,6 +131,18 @@ export const proDialog = {
   lead: 'Wedding planners, fincas y proveedores: contadnos quiénes sois y qué os interesa de nosotros, y os responderemos a la mayor brevedad posible.',
   professions: ['Wedding planner', 'Finca o espacio', 'Otro proveedor'],
   sent: '¡Gracias! Os responderemos a la mayor brevedad posible.',
+};
+
+/**
+ * Sección de la home que explica el botón «Profesionales» (servicios entre empresas, lo
+ * que en inglés se llama B2B). Origen: el usuario (revisión 4). Sin cifras ni comisiones:
+ * eso va en la landing aparte.
+ */
+export const proBand = {
+  label: 'Para profesionales',
+  title: '¿Trabajáis en *bodas*?',
+  text: 'Si sois wedding planner, finca o proveedor y queréis conocer nuestros servicios para empresas del sector, escribidnos: os contamos cómo colaboramos y os enviamos nuestras condiciones para profesionales.',
+  cta: 'Soy profesional',
 };
 
 /**

@@ -1,11 +1,11 @@
 ---
 /**
- * Historias: galería de muestra. Todos los trabajos con el mismo peso: la portada en el
- * centro, fotogramas alrededor, y al pulsar, el tráiler o la galería. Sin página por boda.
+ * Historias: el selector entre tráilers (vídeo) y galerías (fotografía). Cada uno tiene su
+ * página; la barra los ofrece también en un desplegable. Sin página por boda.
  */
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import FlatPageHeader from '../../components/flat/FlatPageHeader.astro';
-import FlatShowcase from '../../components/flat/FlatShowcase.astro';
+import FlatStoryKinds from '../../components/flat/FlatStoryKinds.astro';
 import FlatContact from '../../components/flat/FlatContact.astro';
 ---
 
@@ -17,8 +17,8 @@ import FlatContact from '../../components/flat/FlatContact.astro';
   <FlatPageHeader
     label="Historias"
     title={['Bodas que', 'hemos *contado*']}
-    deck="Tráilers y galerías de bodas reales. Pulsad en cualquiera para verla."
+    deck="En vídeo, los tráilers; en fotografía, las galerías por momentos. Elegid por dónde empezar."
   />
-  <FlatShowcase />
+  <FlatStoryKinds />
   <FlatContact />
 </SiteLayout>

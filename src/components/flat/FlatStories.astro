@@ -2,17 +2,19 @@
 /**
  * Bodas que hemos contado (home): banda oscura en tarjeta redondeada. Arriba, un tráiler
  * a lo ancho; debajo, tres trabajos en vertical, con pareja, lugar y fecha. Al pulsar uno
- * se abre su tráiler o su galería aquí mismo (FlatWorkViewer); sin JS, lleva a
- * /historias#<id>. No hay página por boda.
+ * se abre su tráiler o su galería aquí mismo (FlatWorkViewer); sin JS, lleva a su página
+ * (/historias/video#<id> o /historias/fotografia#<id>). Arriba a la derecha, las dos
+ * puertas: tráilers y galerías. No hay página por boda.
  */
 import { Picture } from 'astro:assets';
 import FlatFilm from './FlatFilm.astro';
 import FlatWorkViewer from './FlatWorkViewer.astro';
-import { kindNames, works } from '../../data/stories';
-import { storiesIntro } from '../../data/copy';
+import { kindNames, workHref, works } from '../../data/stories';
+import { storiesIntro, storyKinds } from '../../data/copy';
 import trailerPoster from '../../assets/media/provisional/fotograma-chaqueta-bordada.jpg';
 
-const shown = works.slice(0, 3);
+// Tres trabajos con portada, alternando tráiler y galería.
+const shown = works.filter((work) => work.cover).slice(0, 3);
 ---
 
 <section id="historias" class="sec sec--card tone-dark fstories" aria-labelledby="stories-title">
@@ -22,7 +24,10 @@ const shown = works.slice(0, 3);
         <h2 id="stories-title" class="h2" data-reveal="lines"><span>{storiesIntro.title}</span></h2>
         <p class="fstories__deck" data-reveal style="--i: 2">{storiesIntro.deck}</p>
       </div>
-      <a class="btn btn--glass btn--small" href="/historias" data-reveal>Ver todas las historias</a>
+      <div class="fstories__doors" data-reveal>
+        <a class="btn btn--glass btn--small" href={storyKinds.video.path}>Ver tráilers</a>
+        <a class="btn btn--glass btn--small" href={storyKinds.foto.path}>Ver galerías de fotos</a>
+      </div>
     </div>
 
     <div class="fstories__trailer" data-reveal="focus">
@@ -33,16 +38,16 @@ const shown = works.slice(0, 3);
       {
         shown.map((work) => (
           <li>
-            <a class="fstory" href={`/historias#${work.id}`} data-open-dialog={`ver-${work.id}`}>
+            <a class="fstory" href={workHref(work)} data-open-dialog={`ver-${work.id}`}>
               <span class="fstory__media">
                 <Picture
-                  src={work.cover.src}
+                  src={work.cover!.src}
                   formats={['avif', 'webp']}
                   widths={[480, 800, 1100]}
                   sizes="(min-width: 900px) 31vw, 92vw"
-                  alt={work.cover.alt}
+                  alt={work.cover!.alt}
                   loading="lazy"
-                  style={work.cover.focus ? `object-position: ${work.cover.focus}` : undefined}
+                  style={work.cover!.focus ? `object-position: ${work.cover!.focus}` : undefined}
                 />
                 <span class="fstory__kind">{kindNames[work.kind]}</span>
               </span>
@@ -72,6 +77,7 @@ const shown = works.slice(0, 3);
 
   .fstories__head h2 > span { display: block; }
   .fstories__titles { display: grid; gap: 10px; }
+  .fstories__doors { display: flex; flex-wrap: wrap; gap: 8px; }
   .fstories__deck { max-width: 52ch; color: var(--f-muted); }
 
   .fstories__trailer { margin-bottom: clamp(32px, 4vw, 56px); }

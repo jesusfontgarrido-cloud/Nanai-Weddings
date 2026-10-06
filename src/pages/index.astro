@@ -2,7 +2,8 @@
 /**
  * Inicio. Orden (cada sección dice una cosa):
  * hero · cómo trabajamos · proceso · historias (la prueba) · tarifas (carpetas) ·
- * sobre nosotros · preguntas (las condiciones) · contacto.
+ * para profesionales (qué es el botón dorado) · sobre nosotros · preguntas (las
+ * condiciones) · contacto.
  */
 import SiteLayout from '../layouts/SiteLayout.astro';
 import FlatHero from '../components/flat/FlatHero.astro';
@@ -10,6 +11,7 @@ import FlatMethod from '../components/flat/FlatMethod.astro';
 import FlatSteps from '../components/flat/FlatSteps.astro';
 import FlatStories from '../components/flat/FlatStories.astro';
 import FlatPricing from '../components/flat/FlatPricing.astro';
+import FlatProBand from '../components/flat/FlatProBand.astro';
 import FlatAbout from '../components/flat/FlatAbout.astro';
 import FlatFaq from '../components/flat/FlatFaq.astro';
 import FlatContact from '../components/flat/FlatContact.astro';
@@ -22,6 +24,7 @@ import { homeFaq } from '../data/faq';
   <FlatSteps />
   <FlatStories />
   <FlatPricing mode="compact" />
+  <FlatProBand />
   <FlatAbout />
   <FlatFaq items={homeFaq} more={{ href: '/tarifas#preguntas', label: 'Todas las condiciones' }} />
   <FlatContact />

@@ -1,6 +1,6 @@
 ---
 /**
- * Proceso: del primer mensaje a la entrega, en cinco pasos unidos por un hilo.
+ * Proceso: del primer mensaje a la entrega, en tres pasos unidos por un hilo.
  *
  * Nada de efectos de cámara (eso es de Studio) ni de cosas escondidas tras un hover (en
  * móvil no hay ratón): el hilo se va dibujando conforme se baja por la sección y cada paso
@@ -18,7 +18,7 @@ import { process } from '../../data/copy';
       <p class="fsteps__deck">{process.deck}</p>
     </div>
 
-    <ol class="fsteps__list" role="list" data-steps>
+    <ol class="fsteps__list" role="list" data-steps style={`--n: ${process.steps.length}`}>
       <li class="fsteps__thread" aria-hidden="true"><span></span></li>
       {
         process.steps.map((step, i) => (
@@ -152,12 +152,12 @@ import { process } from '../../data/copy';
 
   @media (min-width: 900px) {
     .fsteps__list {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(var(--n), minmax(0, 1fr));
       gap: var(--f-gap);
       padding: 34px 0 0;
     }
 
-    .fsteps__thread { top: 7px; bottom: auto; left: 8px; right: calc(20% - 0.8 * var(--f-gap) - 8px); width: auto; height: 2px; }
+    .fsteps__thread { top: 7px; bottom: auto; left: 8px; right: calc(100% / var(--n) - (var(--n) - 1) / var(--n) * var(--f-gap) - 8px); width: auto; height: 2px; }
     .fsteps__thread span { transform: scaleX(var(--p)); transform-origin: 0 50%; }
     .fstep__dot { top: -34px; left: 0; }
     .fstep { grid-row: 1; }

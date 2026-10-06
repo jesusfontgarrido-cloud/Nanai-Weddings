@@ -2,7 +2,8 @@
 /**
  * Visor de un trabajo, en ventana emergente oscura: el tráiler (Vimeo con fachada) o la
  * galería de fotos ordenada por momentos. Sin más información que la pareja y el lugar.
- * Se abre con cualquier [data-open-dialog="ver-<id>"]; en /historias, también con #<id>.
+ * Se abre con cualquier [data-open-dialog="ver-<id>"]; en /historias/video y
+ * /historias/fotografia, también con #<id>.
  */
 import { Picture } from 'astro:assets';
 import FlatFilm from './FlatFilm.astro';
@@ -31,7 +32,7 @@ const title = `${kindNames[work.kind]} · ${work.couple}`;
   {
     work.kind === 'video' ? (
       <div class="fviewer__film">
-        <FlatFilm vimeoId={work.vimeoId} title={title} poster={work.cover.src} posterAlt={work.cover.alt} ratio="16 / 9" pendingWhat="Tráiler de la boda" bare />
+        <FlatFilm vimeoId={work.vimeoId} title={title} poster={work.cover?.src} posterAlt={work.cover?.alt} ratio="16 / 9" pendingWhat="Tráiler de la boda" bare />
       </div>
     ) : (
       <div class="fviewer__gallery">

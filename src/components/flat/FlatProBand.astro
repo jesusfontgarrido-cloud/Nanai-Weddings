@@ -1,0 +1,52 @@
+---
+/**
+ * Para profesionales (home): explica para qué es el botón «Profesionales» de la barra.
+ * Servicios entre empresas del sector (wedding planners, fincas, proveedores), sin cifras
+ * ni comisiones: eso va en la landing aparte, que se envía por enlace. El botón abre el
+ * mismo formulario corto (FlatProDialog) y es, con el de la barra, el único dorado.
+ */
+import FlatEm from './FlatEm.astro';
+import { proBand } from '../../data/copy';
+---
+
+<section class="sec fpro" aria-labelledby="pro-band-title">
+  <div class="wrap">
+    <div class="fpro__card" data-reveal>
+      <div class="fpro__head">
+        <p class="label">{proBand.label}</p>
+        <h2 id="pro-band-title" class="h2 fpro__title"><FlatEm text={proBand.title} /></h2>
+      </div>
+      <div class="fpro__body">
+        <p class="fpro__text">{proBand.text}</p>
+        <button class="btn btn--pro" type="button" data-open-dialog="pro-dialog" aria-haspopup="dialog">
+          {proBand.cta}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .fpro { padding-block: clamp(24px, 3vw, 48px); }
+
+  .fpro__card {
+    display: grid;
+    gap: 20px 48px;
+    padding: clamp(24px, 3.4vw, 48px);
+    border: var(--f-hair) solid rgba(191, 160, 106, 0.32);
+    border-radius: var(--f-r-card);
+    background:
+      radial-gradient(120% 140% at 100% 0%, rgba(217, 195, 148, 0.14), rgba(217, 195, 148, 0) 55%),
+      linear-gradient(160deg, #FFFFFF, #F7F6F3);
+  }
+
+  .fpro__head { display: grid; gap: 10px; align-content: start; }
+  .fpro__title { font-size: clamp(30px, 3.2vw, 48px); }
+  .fpro__body { display: grid; justify-items: start; gap: 20px; align-content: center; }
+  .fpro__text { max-width: 52ch; color: var(--f-muted); }
+
+  @media (min-width: 900px) {
+    .fpro__card { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; }
+  }
+</style>

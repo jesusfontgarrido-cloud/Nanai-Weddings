@@ -1,6 +1,7 @@
 /**
  * Imprime los dossieres en PDF desde la web (las hojas de /dossier/*), para que digan
- * siempre lo mismo que ella. Uso: `npm run build && npm run dossieres`, y otra vez
+ * siempre lo mismo que ella, y captura la portada y la hoja de tarifa de cada uno en
+ * src/assets/media/dossier/ (las vistas previas de las carpetas de /tarifas). Uso: `npm run build && npm run dossieres`, y otra vez
  * `npm run build` para que los PDF nuevos entren en dist/ (o súbelos tal cual: se
  * copian también a dist/dossieres si existe).
  *
@@ -14,9 +15,12 @@ const root = resolve(import.meta.dirname, '..');
 const out = join(root, 'public', 'dossieres');
 const port = 4391;
 const sheets = [
-  { path: '/dossier/fotografia/', file: 'nanai-weddings-dossier-fotografia.pdf' },
-  { path: '/dossier/video/', file: 'nanai-weddings-dossier-video.pdf' },
+  { path: '/dossier/fotografia/', file: 'nanai-weddings-dossier-fotografia.pdf', id: 'foto' },
+  { path: '/dossier/video/', file: 'nanai-weddings-dossier-video.pdf', id: 'video' },
 ];
+// Hojas que se capturan como imagen (A4 apaisado a 1,5×).
+const previews = ['portada', 'tarifa'];
+const previewDir = join(root, 'src', 'assets', 'media', 'dossier');
 
 const candidates = [
   process.env.CHROME,
@@ -66,6 +70,25 @@ for (const sheet of sheets) {
   if (existsSync(join(root, 'dist'))) {
     mkdirSync(dist, { recursive: true });
     copyFileSync(target, join(dist, sheet.file));
+  }
+}
+
+mkdirSync(previewDir, { recursive: true });
+for (const sheet of sheets) {
+  for (const name of previews) {
+    const target = join(previewDir, `${sheet.id}-${name}.png`);
+    execFileSync(chrome, [
+      '--headless=new',
+      '--disable-gpu',
+      '--no-sandbox',
+      '--hide-scrollbars',
+      '--force-device-scale-factor=1.5',
+      '--window-size=1123,794',
+      '--virtual-time-budget=10000',
+      `--screenshot=${target}`,
+      `${base}${sheet.path}#${name}`,
+    ], { stdio: 'ignore' });
+    console.log(`✓ ${sheet.id}-${name}.png (${Math.round(statSync(target).size / 1024)} KB)`);
   }
 }
 
